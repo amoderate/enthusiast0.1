@@ -1,0 +1,209 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="shop-category-data.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-list-itemgold.html">
+
+<link rel="import" href="shop-gold-data.html">
+
+<dom-module id="shop-listgold">
+
+  <template>
+
+    <style include="shop-common-styles">
+
+      .hero-image {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        margin-bottom: 32px;
+      }
+
+      .hero-image {
+        --shop-image-img: {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+        };
+      }
+
+      .grid {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-justified);
+        margin: 0 10px 32px 10px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .grid li {
+        -webkit-flex: 1 1;
+        flex: 1 1;
+        -webkit-flex-basis: 33%;
+        flex-basis: 33%;
+        max-width: 33%;
+      }
+      
+      .grid a {
+        display:block;
+        text-decoration: none;
+      }
+
+      @media (max-width: 767px) {
+/*        .hero-image {
+          display: none;
+        }*/
+
+        .grid  li {
+          -webkit-flex-basis: 50%;
+          flex-basis: 50%;
+          max-width: 50%;
+        }
+      }
+
+    </style>
+
+    <!--
+      app-route provides the name of the shop.
+    -->
+    <app-route
+        route="[[route]]"
+        pattern="/:shop"
+        data="{{routeData}}">
+    </app-route>
+
+    <!--
+      shop-category-data provides the shop data for a given shop name.
+    -->
+    <shop-gold-data
+        id="shopData"
+        shop-name="[[routeData.shop]]"
+        shop="{{shop}}"
+        failure="{{failure}}">
+    </shop-gold-data>
+
+
+
+
+    <shop-image
+        alt="[[shop.shopTitle]]"
+        src="[[shop.image]]"
+        placeholder-img="[[shop.placeholder]]" class="hero-image">
+    </shop-image>
+
+
+
+    <header>
+      <h1>Welcome to [[shop.shopTitle]]</h1>
+      <span>[[_getPluralizedQuantity(shop.items.length)]]</span>
+    </header>
+
+    <ul class="grid" hidden$="[[failure]]">
+      <template is="dom-repeat" items="[[_getListItems(shop.items)]]" initial-count="4">
+        <li>
+          <a href$="[[_getItemHref(item)]]"><shop-list-itemgold item="[[item]]"></shop-list-itemgold></a>
+        </li>
+      </template>
+    </ul>
+    
+    <!--
+      shop-network-warning shows a warning message when the items can't be rendered due
+      to network conditions.
+    -->
+    <shop-network-warning
+        hidden$="[[!failure]]"
+        offline="[[offline]]"
+        on-try-reconnect="_tryReconnect"></shop-network-warning>
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'shop-listgold',
+
+      properties: {
+
+        shop: Object,
+
+        route: Object,
+
+        routeData: Object,
+
+        visible: Boolean,
+
+        offline: {
+          type: Boolean,
+          observer: '_offlineChanged'
+        },
+
+        failure: Boolean
+
+      },
+
+      observers: [
+        '_shopChanged(shop, visible)'
+      ],
+
+      _getListItems: function(items) {
+        // Return placeholder items when the items haven't loaded yet.
+        return items || [{},{},{},{},{},{},{},{},{},{}];
+      },
+
+      _getItemHref: function(item) {
+        // By returning null when `itemId` is undefined, the href attribute won't be set and
+        // the link will be disabled.
+        return item.name ? ['/detailgold', this.shop.shopName, item.name].join('/') : null;
+      },
+
+      _getPluralizedQuantity: function(quantity) {
+        if (!quantity) {
+          return '';
+        }
+        var pluralizedQ = quantity === 1 ? 'item' : 'items';
+        return  '(' + quantity + ' ' + pluralizedQ + ')';
+      },
+
+      _shopChanged: function(shop, visible) {
+        if (visible) {
+          this.debounce('change-section', function() {
+            // Notify the shop and the page's shopTitle
+            this.fire('change-section', {
+              shop: shop.shopName,
+              shopTitle: shop.shopTitle
+            });
+          });
+        }
+      },
+
+      _tryReconnect: function() {
+        this.$.shopData.refresh();
+      },
+
+      _offlineChanged: function(offline) {
+        if (!offline) {
+          this._tryReconnect();
+        }
+      }
+
+    });
+
+  </script>
+
+</dom-module>

@@ -12,12 +12,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-button.html">
-<link rel="import" href="shop-category-data.html">
+<link rel="import" href="shop-gold-data.html">
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-image.html">
 <link rel="import" href="shop-select.html">
 
-<dom-module id="shop-detail">
+<dom-module id="shop-detailgold">
 
   <template>
 
@@ -62,6 +62,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       h1 {
         font-size: 24px;
+        font-weight: 500;
+        line-height: 28px;
+        margin: 0;
+      }
+
+      h3 {
+        font-size: 32px;
         font-weight: 500;
         line-height: 28px;
         margin: 0;
@@ -136,49 +143,80 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     -->
     <app-route
         route="[[route]]"
-        pattern="/:category/:item"
+        pattern="/:shop/:item"
         data="{{routeData}}"></app-route>
 
     <!--
       shop-category-data provides the item data for a given category and item name.
     -->
+    <shop-gold-data
+        id="shopData"
+        shop-name="[[routeData.shop]]"
+        item-name="[[routeData.item]]"
+        item="{{item}}"
+        failure="{{failure}}"></shop-gold-data>
 
-    <firebase-query id="query"
-      path="/shop"
-      data="{{items}}"
-      order-by-child="/shopName"
-      start-at="{{routeData.item}}"
-      limit-to-last=1
-      >
-    </firebase-query>
-
-
-    <div id="content">
-      <template is="dom-repeat" items="{{items}}" as="item" >
-      <shop-image alt="[[item.shopName]]" src="[[item.url]]"></shop-image>
+    <div id="content" hidden$="[[failure]]">
+      <shop-image alt="[[item.title]]" src="[[item.largeImage]]"></shop-image>
       <div class="detail" has-content$="[[_isDefined(item)]]">
 
+        <shop-button>
+          <button on-tap="_goToShopPage" aria-label="Visit Shop">
+            <a href$="/listgold/[[item.shopName]]">Back to [[item.shopTitle]]</a>
+          </button>
+        </shop-button>
         <div class="description"></div>
 
-        <h1>[[item.shopName]]</h1>
+
+        
+        <h1>[[item.title]]</h1>
+        <div class="price">[[_formatPrice(item.price)]]</div>
+        <div class="pickers">
+          <shop-select>
+            <label id="sizeLabel" prefix>Size</label>
+            <select id="sizeSelect" aria-labelledby="sizeLabel">
+              <option value="XS">XS</option>
+              <option value="S">S</option>
+              <option value="M" selected>M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+            </select>
+            <shop-md-decorator aria-hidden="true">
+              <shop-underline></shop-underline>
+            </shop-md-decorator>
+          </shop-select>
+          <shop-select>
+            <label id="quantityLabel" prefix>Quantity</label>
+            <select id="quantitySelect" aria-labelledby="quantityLabel">
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+            <shop-md-decorator aria-hidden="true">
+              <shop-underline></shop-underline>
+            </shop-md-decorator>
+          </shop-select>
+        </div>
         <div class="description">
           <h2>Description</h2>
           <p id="desc"></p>
         </div>
-
-        <shop-button>
-          <button on-tap="_goToShopPage" aria-label="Visit Shop">
-            <a href$="/listgold/[[routeData.item]]">Jump to [[routeData.item]]</a>
-          </button>
+        <shop-button responsive>
+          <button on-tap="_addToCart" aria-label="Add this item to cart">Add to Cart</button>
         </shop-button>
-
       </div>
-    </template>
     </div>
+
     <!--
       shop-network-warning shows a warning message when the items can't be rendered due
       to network conditions.
     -->
+    <shop-network-warning
+        hidden$="[[!failure]]"
+        offline="[[offline]]"
+        on-try-reconnect="_tryReconnect"></shop-network-warning>
 
   </template>
 
@@ -186,7 +224,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     Polymer({
 
-      is: 'shop-detail',
+      is: 'shop-detailgold',
 
       properties: {
 
@@ -198,11 +236,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         visible: Boolean,
 
+        offline: {
+          type: Boolean,
+          observer: '_offlineChanged'
+        },
+
         failure: Boolean
 
       },
 
       observers: [
+        '_itemChanged(item, visible)'
       ],
 
       _itemChanged: function(item, visible) {
@@ -218,7 +262,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.$.sizeSelect.value = 'M';
 
             this.fire('change-section', {
-              category: item.category,
+              shop: item.shop,
               title: item.title
             });
           });
@@ -238,7 +282,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _addToCart: function() {
         // This event will be handled by shop-app.
         this.fire('add-cart-item', {
-          item: this.items,
+          item: this.item,
           quantity: parseInt(this.$.quantitySelect.value, 10),
           size: this.$.sizeSelect.value
         });
@@ -248,9 +292,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return item != null;
       },
 
-      _goToShopPage: function() {        
-        console.log("SHOP PAGE: " + this.routeData.item);
-      },  
+      _tryReconnect: function() {
+        this.$.shopData.refresh();
+      },
+
+      _offlineChanged: function(offline) {
+        if (!offline) {
+          this._tryReconnect();
+        }
+      },
+
+      _goToShopPage: function() {
+        console.log("SHOP PAGE: " + this.item.shopName);        
+      },      
 
     });
 
