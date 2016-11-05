@@ -340,21 +340,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <!-- home view -->
       <shop-home name="home" categories="[[categories]]"></shop-home>
       <!-- list view of items in a category -->
-      <shop-list name="list" route="[[subroute]]" offline="[[offline]]"></shop-list>
-      <!-- list view of items in a shop page -->
-      <shop-listgold name="listgold" route="[[subroute]]" offline="[[offline]]"></shop-listgold>
+      <shop-list name="list" route="[[subroute]]" offline="[[offline]]"></shop-list>      
       <!-- detail view of one item -->
-      <shop-detail name="detail" route="[[subroute]]" offline="[[offline]]"></shop-detail>
-      <!-- detail view of one item from shop page-->
-      <shop-detailgold name="detailgold" route="[[subroute]]" offline="[[offline]]"></shop-detail>
+      <shop-detail name="detail" route="[[subroute]]" offline="[[offline]]"></shop-detail>      
       <!-- cart view -->
       <shop-cart name="cart" cart="[[cart]]" total="[[total]]"></shop-cart>
       <!-- checkout view -->
       <item-create name="create"></item-create>
-
       <!-- checkout view -->
       <shop-checkout name="checkout" cart="[[cart]]" total="[[total]]" route="{{subroute}}"></shop-checkout>
-
+      <!-- list view of items in a shop page -->
+      <shop-listgold name="listgold" route="[[subroute]]" offline="[[offline]]"></shop-listgold>
+      <!-- detail view of one item from shop page-->
+      <shop-detailgold name="detailgold" route="[[subroute]]" offline="[[offline]]"></shop-detail>
     </iron-pages>
 
     
