@@ -82,14 +82,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <app-route
         route="[[route]]"
         pattern="/:category"
-        data="{{routeData}}"></app-route>
+        data="{{routeData}}">
+    </app-route>
 
-    <firebase-query id="query"
-      path="/shop"
-      data="{{itemList}}"
-      limit-to-last="30"
-      >
-    </firebase-query>
+
 
     <!--
       shop-category-data provides the category data for a given category name.
@@ -98,7 +94,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         id="categoryData"
         category-name="[[routeData.category]]"
         category="{{category}}"
-        failure="{{failure}}"></shop-category-data>
+        failure="{{failure}}">
+    </shop-category-data>
+
+        <firebase-query id="query"
+          path="/items"
+          data="{{itemList}}"
+          order-by-child="/theme"
+          start-at="[[category.title}}"
+          end-at="[[category.title]]"
+          >
+        </firebase-query>
 
     <shop-image
         alt="[[category.title]]"
@@ -166,7 +172,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _getItemHref: function(item) {
         // By returning null when `itemId` is undefined, the href attribute won't be set and
         // the link will be disabled.
-        return item.shopName ? ['/detail', this.category.name, item.shopName].join('/') : null;
+        return item.shopName ? ['/detail', item.shopName, item.itemName].join('/') : null;
       },
 
       _getPluralizedQuantity: function(quantity) {

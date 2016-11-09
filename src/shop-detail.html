@@ -97,6 +97,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         padding: 16px 24px 16px 70px;
       }
 
+      iron-collapse {
+       box-shadow: 6px;
+      }
+
+      paper-button {
+       width: 100%;
+       text-transform: none;
+      }
+
       @media (max-width: 767px) {
 
         #content {
@@ -136,18 +145,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     -->
     <app-route
         route="[[route]]"
-        pattern="/:category/:item"
-        data="{{routeData}}"></app-route>
+        pattern="/:shop/:item"
+        data="{{routeData}}">
+      </app-route>
 
     <!--
       shop-category-data provides the item data for a given category and item name.
     -->
 
     <firebase-query id="query"
-      path="/shop"
+      path="/items"
       data="{{items}}"
       order-by-child="/shopName"
-      start-at="{{routeData.item}}"
+      start-at="{{routeData.id}}"
       limit-to-last=1
       >
     </firebase-query>
@@ -157,18 +167,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <template is="dom-repeat" items="{{items}}" as="item" >
       <shop-image alt="[[item.shopName]]" src="[[item.url]]"></shop-image>
       <div class="detail" has-content$="[[_isDefined(item)]]">
-
-        <div class="description"></div>
-
-        <h1>[[item.shopName]]</h1>
         <div class="description">
           <h2>Description</h2>
-          <p id="desc"></p>
+            <h1>[[item.itemName]]</h1>
         </div>
-
         <shop-button>
           <button on-tap="_goToShopPage" aria-label="Visit Shop">
-            <a href$="/listgold/[[routeData.item]]">Jump to [[routeData.item]]</a>
+            <a href$="/listgold/[[routeData.shop]]">Jump to [[routeData.shop]]</a>
           </button>
         </shop-button>
 
@@ -205,26 +210,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       observers: [
       ],
 
-      _itemChanged: function(item, visible) {
-        if (visible) {
-          this.debounce('item-change', function() {
-            // The item description contains escaped HTML (e.g. "&lt;br&gt;"), so we need to
-            // unescape it ("<br>") and set it as innerHTML.
-            var text = item ? item.description : '';
-            this.$.desc.innerHTML = this._unescapeText(text);
-
-            // Reset the select menus.
-            this.$.quantitySelect.value = '1';
-            this.$.sizeSelect.value = 'M';
-
-            this.fire('change-section', {
-              category: item.category,
-              title: item.title
-            });
-          });
-        }
-      },
-
       _unescapeText: function(text) {
         var elem = document.createElement('textarea');
         elem.innerHTML = text;
@@ -248,9 +233,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return item != null;
       },
 
-      _goToShopPage: function() {        
+      _goToShopPage: function() {
         console.log("SHOP PAGE: " + this.routeData.item);
-      },  
+      },
+
 
     });
 

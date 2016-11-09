@@ -58,7 +58,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         flex-basis: 33%;
         max-width: 33%;
       }
-      
+
       .grid a {
         display:block;
         text-decoration: none;
@@ -90,45 +90,41 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <!--
       shop-category-data provides the shop data for a given shop name.
     -->
-    <shop-gold-data
-        id="shopData"
-        shop-name="[[routeData.shop]]"
-        shop="{{shop}}"
-        failure="{{failure}}">
-    </shop-gold-data>
 
+    <firebase-query id="query"
+      path="/items"
+      data="{{shops}}"
+      order-by-child="/shopName"
+      start-at="{{routeData.shop}}"
+      limit-to-last=1
+      >
+    </firebase-query>
 
-
-
-    <shop-image
-        alt="[[shop.shopTitle]]"
-        src="[[shop.image]]"
-        placeholder-img="[[shop.placeholder]]" class="hero-image">
-    </shop-image>
-
-
+    <firebase-query id="query"
+      path="/items"
+      data="{{items}}"
+      order-by-child="/shopName"
+      start-at="{{routeData.shop}}"
+      >
+    </firebase-query>
 
     <header>
-      <h1>Welcome to [[shop.shopTitle]]</h1>
-      <span>[[_getPluralizedQuantity(shop.items.length)]]</span>
+      <h1>Welcome to [[routeData.shop]]</h1>
     </header>
 
     <ul class="grid" hidden$="[[failure]]">
-      <template is="dom-repeat" items="[[_getListItems(shop.items)]]" initial-count="4">
+      <template is="dom-repeat" items="[[items]]" as ="item" initial-count="4">
+
         <li>
           <a href$="[[_getItemHref(item)]]"><shop-list-itemgold item="[[item]]"></shop-list-itemgold></a>
         </li>
       </template>
     </ul>
-    
+
     <!--
       shop-network-warning shows a warning message when the items can't be rendered due
       to network conditions.
     -->
-    <shop-network-warning
-        hidden$="[[!failure]]"
-        offline="[[offline]]"
-        on-try-reconnect="_tryReconnect"></shop-network-warning>
 
   </template>
 
@@ -161,15 +157,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         '_shopChanged(shop, visible)'
       ],
 
-      _getListItems: function(items) {
-        // Return placeholder items when the items haven't loaded yet.
-        return items || [{},{},{},{},{},{},{},{},{},{}];
-      },
 
       _getItemHref: function(item) {
         // By returning null when `itemId` is undefined, the href attribute won't be set and
         // the link will be disabled.
-        return item.name ? ['/detailgold', this.shop.shopName, item.name].join('/') : null;
+        return item.itemName ? ['/detail', item.shopName, item.itemName].join('/') : null;
       },
 
       _getPluralizedQuantity: function(quantity) {
@@ -192,13 +184,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
-      _tryReconnect: function() {
-        this.$.shopData.refresh();
-      },
-
       _offlineChanged: function(offline) {
         if (!offline) {
-          this._tryReconnect();
+
         }
       }
 

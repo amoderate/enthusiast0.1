@@ -12,7 +12,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/paper-input/paper-input-container.html">
 
@@ -23,6 +25,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-image.html">
 <link rel="import" href="shop-select.html">
+
 
 <dom-module id="item-create">
 
@@ -169,9 +172,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <!--
       shop-category-data provides the item data for a given category and item name.
     -->
+      <shop-category-data categories="{{categories}}"></shop-category-data>
+
+    <firebase-auth id="auth"
+      user="{{user}}"
+      provider="google"
+      on-error="showError"
+      >
+    </firebase-auth>
 
     <firebase-query id="query"
-      path="/image"
+      path="/imageDraft/[[user.uid]]"
       data="{{items}}"
       limit-to-last="1"
       >
@@ -190,16 +201,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <paper-input label="Shop Name" value="{{shopName}}">
         </paper-input>
 
-        <paper-textarea label="〒" value="{{shopAddress}}">
+        <paper-textarea label="Item" value="{{itemName}}">
         </paper-textarea>
 
-        <paper-input label="@" value="{{shopEmail}}">
+        <paper-textarea label="Price" value="{{itemPrice}}">
+        </paper-textarea>
+
+        <paper-input label="Theme" value="{{theme}}">
         </paper-input>
 
-        <paper-input label="phone" value="{{shopPhone}}">
-        </paper-input>
 
-        <paper-input label="#tags" value="{{shopTags}}">
+      <paper-tabs  scrollable  selected="{{theme}}" attr-for-selected="label">
+        <template is="dom-repeat" items="[[categories]]" as="category" initial-count="4" filter="{{computeFilter(theme)}}">
+          <paper-tab label="{{category.title}}">
+            {{category.title}}
+          </paper-tab>
+        </template>
+
+        </paper-tabs>
+
+        <paper-input label="#Tags" value="{{shopTags}}">
         </paper-input>
 
         <shop-button responsive>
@@ -212,7 +233,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </label>
         </div>
         <div class="horizontal justified">
-
           <input id="file-input" type="file" style="display: none;"/>
         </div>
       </div>
@@ -250,41 +270,55 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: Object,
           notify: true
         },
-        entry: {
-          type: String,
-          value: '## write something!',
-          notify: true
-        },
+
         shopName: {
           type: String,
-          value: 'Mars',
           notify: true
 
         },
-        shopEmail:{
+        itemName: {
+          type: String,
+          notify: true
+
+        },
+        theme:{
+          type: String,
+          notify: true
+        },
+
+        itemPrice:{
           type: String,
           value:'',
           notify: true
         },
-        shopAddress:{
-          type: String,
-          value:'',
-          notify: true
-        },
-        shopPhone:{
-          type: String,
-          value:'',
-          notify: true
-        },
+
         shopTags:{
           type: String,
           value:'',
           notify: true
         },
 
+        tokens: {
+          type: Array,
+          notify: true
+        },
+
+        shoptypes:{
+          type: String,
+          notify: true
+        },
+
+        searchString: {
+          type: String,
+          value: 'For the love of beer',
+          notify: true
+        },
+
         failure: Boolean
 
       },
+
+
 
       observers: [
         '_itemChanged(item, visible)'
@@ -341,6 +375,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       imageUploadTap: function(e) {
         var file = e.target.files[0];
         var storageRef = firebase.storage().ref('image/' + file.name);
+
         var uploadTask = storageRef.put(file);
         var shopName = this.shopName;
         console.log(shopName);
@@ -354,7 +389,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
         function (){
 
-          var newImageKey = firebase.database().ref().child('image').push().key;
+          var newImageKey = firebase.database().ref().child('imageDraft/').push().key;
           var user = firebase.auth().currentUser;
           var downloadURL = uploadTask.snapshot.downloadURL;
           var updates = {};
@@ -363,7 +398,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             user: user.uid,
             shop: shopName
           };
-          updates['/image/' + newImageKey] = imageData;
+          updates['/imageDraft/'+ user.uid + '/' + newImageKey] = imageData;
           updates['/users/' + user.uid + "/image/" + newImageKey] = imageData;
           console.log(downloadURL)
           firebase.database().ref().update(updates);
@@ -372,35 +407,65 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      },
      _uploadShopClick: function(e) {
        var user = firebase.auth().currentUser;
-       var entrys = this.entry;
        var shopNames = this.shopName;
-       var shopEmails = this.shopEmail;
-       var shopAddresss = this.shopAddress;
-       var shopPhones = this.shopPhone;
+       var itemNames = this.itemName;
+       var themes = this.theme;
+       var prices = this.itemPrice
        var shopsTagss = this.shopTags;
-       var newShopKey = firebase.database().ref().child('shops').push().key;
+       var newItemKey = firebase.database().ref().child('items').push().key;
+       if (user != null && (this.itemName != null || this.shopName  != null ||  this.theme != null || this.itemPrice != null || this.shopTags != null)) {
+       this.itemName = '';
+       this.shopName = '';
+       this.theme = '';
+       this.itemPrice = '';
+       this.shopTags = '';
+     }
+
        if (user != null && this.items != null) {
           console.log("it's clicked");
            this.items.forEach(function (post) {
              var urls = post.url;
              var users = post.user;
              var updates = {};
-             var shopData = {
+             var itemData = {
                url: urls,
                user: post.user,
-               entry: entrys,
                shopName: shopNames,
-               shopAddress: shopAddresss,
-               shopEmail: shopEmails,
-               shopPhone: shopPhones,
-               shopsTags: shopsTagss,
+               itemName: itemNames,
+               price: prices,
+               theme: themes,
+               shopsTags: shopsTagss
               };
-              updates['/shop/' + newShopKey] = shopData;
+              updates['/items/' + newItemKey] = itemData;
               console.log(updates);
               firebase.database().ref().update(updates);
+              firebase.database().ref().child('imageDraft').remove();
+
            });
          }
+       },
+       computeFilter: function(string) {
+       if (!string) {
+         // set filter to null to disable filtering
+         return null;
+       } else {
+         // return a filter function for the current search string
+         string = string.toLowerCase();
+         return function(item) {
+           var japanese_name = item.title.toLowerCase();
+           var english_name = item.name.toLowerCase();
+           return (japanese_name.indexOf(string) != -1 ||
+               english_name.indexOf(string) != -1);
+         };
        }
+     },
+
+     toggleSelection: function(e) {
+       console.log("it's selected")
+      var item = this.$.categories.itemForElement(e.target);
+      this.$.selector.select(item.title)
+      this.theme = item.name
+    },
 
     });
 

@@ -12,7 +12,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-button.html">
-<link rel="import" href="shop-gold-data.html">
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-image.html">
 <link rel="import" href="shop-select.html">
@@ -168,7 +167,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div class="description"></div>
 
 
-        
+
         <h1>[[item.title]]</h1>
         <div class="price">[[_formatPrice(item.price)]]</div>
         <div class="pickers">
@@ -303,8 +302,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _goToShopPage: function() {
-        console.log("SHOP PAGE: " + this.item.shopName);        
-      },      
+        console.log("SHOP PAGE: " + this.item.shopName);
+      },
 
     });
 
