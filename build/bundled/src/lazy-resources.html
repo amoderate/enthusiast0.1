@@ -1,0 +1,671 @@
+<html><head><meta charset="UTF-8"><link rel="import" href="shop-app.html"></head><body><div hidden="" by-vulcanize=""><dom-module id="app-drawer" assetpath="../bower_components/app-layout/app-drawer/">
+  <template>
+    <style>
+      :host {
+        position: fixed;
+        top: -120px;
+        right: 0;
+        bottom: -120px;
+        left: 0;
+
+        visibility: hidden;
+
+        transition-property: visibility;
+      }
+
+      :host([opened]) {
+        visibility: visible;
+      }
+
+      :host([persistent]) {
+        width: var(--app-drawer-width, 256px);
+      }
+
+      :host([persistent][position=left]) {
+        right: auto;
+      }
+
+      :host([persistent][position=right]) {
+        left: auto;
+      }
+
+      #contentContainer {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+
+        width: var(--app-drawer-width, 256px);
+        padding: 120px 0;
+
+        transition-property: -webkit-transform;
+        transition-property: transform;
+        -webkit-transform: translate3d(-100%, 0, 0);
+        transform: translate3d(-100%, 0, 0);
+
+        background-color: #FFF;
+
+        @apply(--app-drawer-content-container);
+      }
+
+      :host([position=right]) > #contentContainer {
+        right: 0;
+        left: auto;
+
+        -webkit-transform: translate3d(100%, 0, 0);
+        transform: translate3d(100%, 0, 0);
+      }
+
+      :host([swipe-open]) > #contentContainer::after {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 100%;
+
+        visibility: visible;
+
+        width: 20px;
+
+        content: '';
+      }
+
+      :host([swipe-open][position=right]) > #contentContainer::after {
+        right: 100%;
+        left: auto;
+      }
+
+      :host([opened]) > #contentContainer {
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+      }
+
+      #scrim {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+
+        transition-property: opacity;
+        -webkit-transform: translateZ(0);
+        transform:  translateZ(0);
+
+        opacity: 0;
+        background: var(--app-drawer-scrim-background, rgba(0, 0, 0, 0.5));
+      }
+
+      :host([opened]) > #scrim {
+        opacity: 1;
+      }
+
+      :host([opened][persistent]) > #scrim {
+        visibility: hidden;
+        /**
+         * NOTE(keanulee): Keep both opacity: 0 and visibility: hidden to prevent the
+         * scrim from showing when toggling between closed and opened/persistent.
+         */
+
+        opacity: 0;
+      }
+    </style>
+
+    <div id="scrim" on-tap="close"></div>
+
+    <div id="contentContainer">
+      <content></content>
+    </div>
+  </template>
+
+  <script>Polymer({is:"app-drawer",properties:{opened:{type:Boolean,value:!1,notify:!0,reflectToAttribute:!0},persistent:{type:Boolean,value:!1,reflectToAttribute:!0},transitionDuration:{type:Number,value:200},align:{type:String,value:"left"},position:{type:String,readOnly:!0,reflectToAttribute:!0},swipeOpen:{type:Boolean,value:!1,reflectToAttribute:!0},noFocusTrap:{type:Boolean,value:!1}},observers:["resetLayout(position, isAttached)","_resetPosition(align, isAttached)","_styleTransitionDuration(transitionDuration)","_openedPersistentChanged(opened, persistent)"],_translateOffset:0,_trackDetails:null,_drawerState:0,_boundEscKeydownHandler:null,_firstTabStop:null,_lastTabStop:null,attached:function(){this._styleTransitionDuration(0),Polymer.RenderStatus.afterNextRender(this,function(){this._styleTransitionDuration(this.transitionDuration),this._boundEscKeydownHandler=this._escKeydownHandler.bind(this),this._resetDrawerState(),this.$.scrim.addEventListener("transitionend",this._transitionend.bind(this)),this.$.contentContainer.addEventListener("transitionend",this._transitionend.bind(this)),this.addEventListener("keydown",this._tabKeydownHandler.bind(this)),this.listen(this,"track","_track"),this.setScrollDirection("y")}),this.fire("app-drawer-attached")},detached:function(){document.removeEventListener("keydown",this._boundEscKeydownHandler)},open:function(){this.opened=!0},close:function(){this.opened=!1},toggle:function(){this.opened=!this.opened},getWidth:function(){return this.$.contentContainer.offsetWidth},resetLayout:function(){this.fire("app-drawer-reset-layout")},_isRTL:function(){return"rtl"===window.getComputedStyle(this).direction},_resetPosition:function(){switch(this.align){case"start":return void this._setPosition(this._isRTL()?"right":"left");case"end":return void this._setPosition(this._isRTL()?"left":"right")}this._setPosition(this.align)},_escKeydownHandler:function(t){var i=27;t.keyCode===i&&(t.preventDefault(),this.close())},_track:function(t){if(!this.persistent)switch(t.preventDefault(),t.detail.state){case"start":this._trackStart(t);break;case"track":this._trackMove(t);break;case"end":this._trackEnd(t)}},_trackStart:function(t){this._drawerState=this._DRAWER_STATE.TRACKING,this._styleTransitionDuration(0),this.style.visibility="visible";var i=this.$.contentContainer.getBoundingClientRect();"left"===this.position?this._translateOffset=i.left:this._translateOffset=i.right-window.innerWidth,this._trackDetails=[]},_trackMove:function(t){this._translateDrawer(t.detail.dx+this._translateOffset),this._trackDetails.push({dx:t.detail.dx,timeStamp:Date.now()})},_trackEnd:function(t){var i=t.detail.dx+this._translateOffset,e=this.getWidth(),n="left"===this.position,s=n?i>=0||i<=-e:i<=0||i>=e;if(!s){var a=this._trackDetails;if(this._trackDetails=null,this._flingDrawer(t,a),this._drawerState===this._DRAWER_STATE.FLINGING)return}var r=e/2;t.detail.dx<-r?this.opened="right"===this.position:t.detail.dx>r&&(this.opened="left"===this.position),s&&this._resetDrawerState(),this._styleTransitionDuration(this.transitionDuration),this._resetDrawerTranslate(),this.style.visibility=""},_calculateVelocity:function(t,i){for(var e,n=Date.now(),s=n-100,a=0,r=i.length-1;a<=r;){var o=a+r>>1,h=i[o];h.timeStamp>=s?(e=h,r=o-1):a=o+1}if(e){var l=t.detail.dx-e.dx,d=n-e.timeStamp||1;return l/d}return 0},_flingDrawer:function(t,i){var e=this._calculateVelocity(t,i);if(!(Math.abs(e)<this._MIN_FLING_THRESHOLD)){this._drawerState=this._DRAWER_STATE.FLINGING;var n,s=t.detail.dx+this._translateOffset,a=this.getWidth(),r="left"===this.position,o=e>0,h=!o&&r,l=o&&!r;n=h?-(s+a):l?a-s:-s,o?(e=Math.max(e,this._MIN_TRANSITION_VELOCITY),this.opened="left"===this.position):(e=Math.min(e,-this._MIN_TRANSITION_VELOCITY),this.opened="right"===this.position),this._styleTransitionDuration(this._FLING_INITIAL_SLOPE*n/e),this._styleTransitionTimingFunction(this._FLING_TIMING_FUNCTION),this._resetDrawerTranslate()}},_transitionend:function(){this._drawerState===this._DRAWER_STATE.FLINGING&&(this._styleTransitionDuration(this.transitionDuration),this._styleTransitionTimingFunction(""),this.style.visibility=""),this._resetDrawerState()},_styleTransitionDuration:function(t){this.style.transitionDuration=t+"ms",this.$.contentContainer.style.transitionDuration=t+"ms",this.$.scrim.style.transitionDuration=t+"ms"},_styleTransitionTimingFunction:function(t){this.$.contentContainer.style.transitionTimingFunction=t,this.$.scrim.style.transitionTimingFunction=t},_translateDrawer:function(t){var i=this.getWidth();"left"===this.position?(t=Math.max(-i,Math.min(t,0)),this.$.scrim.style.opacity=1+t/i):(t=Math.max(0,Math.min(t,i)),this.$.scrim.style.opacity=1-t/i),this.translate3d(t+"px","0","0",this.$.contentContainer)},_resetDrawerTranslate:function(){this.$.scrim.style.opacity="",this.transform("",this.$.contentContainer)},_resetDrawerState:function(){var t=this._drawerState;this.opened?this._drawerState=this.persistent?this._DRAWER_STATE.OPENED_PERSISTENT:this._DRAWER_STATE.OPENED:this._drawerState=this._DRAWER_STATE.CLOSED,t!==this._drawerState&&(this._drawerState===this._DRAWER_STATE.OPENED?(this._setKeyboardFocusTrap(),document.addEventListener("keydown",this._boundEscKeydownHandler),document.body.style.overflow="hidden"):(document.removeEventListener("keydown",this._boundEscKeydownHandler),document.body.style.overflow=""),t!==this._DRAWER_STATE.INIT&&this.fire("app-drawer-transitioned"))},_setKeyboardFocusTrap:function(){if(!this.noFocusTrap){var t=['a[href]:not([tabindex="-1"])','area[href]:not([tabindex="-1"])','input:not([disabled]):not([tabindex="-1"])','select:not([disabled]):not([tabindex="-1"])','textarea:not([disabled]):not([tabindex="-1"])','button:not([disabled]):not([tabindex="-1"])','iframe:not([tabindex="-1"])','[tabindex]:not([tabindex="-1"])','[contentEditable=true]:not([tabindex="-1"])'].join(","),i=Polymer.dom(this).querySelectorAll(t);i.length>0?(this._firstTabStop=i[0],this._lastTabStop=i[i.length-1]):(this._firstTabStop=null,this._lastTabStop=null);var e=this.getAttribute("tabindex");e&&parseInt(e,10)>-1?this.focus():this._firstTabStop&&this._firstTabStop.focus()}},_tabKeydownHandler:function(t){if(!this.noFocusTrap){var i=9;this._drawerState===this._DRAWER_STATE.OPENED&&t.keyCode===i&&(t.shiftKey?this._firstTabStop&&Polymer.dom(t).localTarget===this._firstTabStop&&(t.preventDefault(),this._lastTabStop.focus()):this._lastTabStop&&Polymer.dom(t).localTarget===this._lastTabStop&&(t.preventDefault(),this._firstTabStop.focus()))}},_openedPersistentChanged:function(){0===this.transitionDuration&&this._resetDrawerState()},_MIN_FLING_THRESHOLD:.2,_MIN_TRANSITION_VELOCITY:1.2,_FLING_TIMING_FUNCTION:"cubic-bezier(0.667, 1, 0.667, 1)",_FLING_INITIAL_SLOPE:1.5,_DRAWER_STATE:{INIT:0,OPENED:1,OPENED_PERSISTENT:2,CLOSED:3,TRACKING:4,FLINGING:5}});</script>
+</dom-module>
+<script>document.registerElement("shop-analytics",{prototype:{__proto__:HTMLElement.prototype,attachedCallback:function(){!function(e,t,a,n,o,c,s){e.GoogleAnalyticsObject=o,e[o]=e[o]||function(){(e[o].q=e[o].q||[]).push(arguments)},e[o].l=1*new Date,c=t.createElement(a),s=t.getElementsByTagName("body")[0],c.async=1,c.src=n,s.parentNode.insertBefore(c,s)}(window,document,"script","//www.google-analytics.com/analytics.js","ga"),ga("create",this.getAttribute("key"),"auto"),ga("send","pageview")}}});</script><iron-iconset-svg name="icons" size="24">
+<svg><defs>
+<g id="arrow-back"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></g>
+<g id="menu"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></g>
+<g id="shopping-cart"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"></path></g>
+<g id="close"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></g>
+<g id="perm-scan-wifi"><path d="M12 3C6.95 3 3.15 4.85 0 7.23L12 22 24 7.25C20.85 4.87 17.05 3 12 3zm1 13h-2v-6h2v6zm-2-8V6h2v2h-2z"></path></g>
+</defs></svg>
+</iron-iconset-svg>
+<dom-module id="shop-snackbar" assetpath="/">
+
+  <template>
+
+    <style>
+      :host {
+        display: block;
+        position: fixed;
+        left: calc(50% - 160px);
+        right: calc(50% - 160px);
+        bottom: 0;
+        background-color: var(--app-primary-color);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        color: white;
+        width: 320px;
+        padding: 12px;
+        visibility: hidden;
+        text-align: center;
+        will-change: transform;
+        -webkit-transform: translate3d(0, 100%, 0);
+        transform: translate3d(0, 100%, 0);
+        transition-property: visibility, -webkit-transform, opacity;
+        transition-property: visibility, transform, opacity;
+        transition-duration: 0.2s;
+      }
+      :host(.opened) {
+        visibility: visible;
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+      }
+      @media (max-width: 767px) {
+        :host {
+          top: auto;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          width: auto;
+          -webkit-transform: translate3d(0, 100%, 0);
+          transform: translate3d(0, 100%, 0);
+        }
+      }
+    </style>
+
+    <content></content>
+
+  </template>
+
+  <script>Polymer({is:"shop-snackbar",open:function(){Polymer.dom.flush(),this.offsetHeight&&this.classList.add("opened"),this.debounce("_close",this.close,4e3)},close:function(){this.classList.remove("opened")}});</script>
+
+</dom-module>
+<dom-module id="shop-tabs-overlay" assetpath="/">
+  <template strip-whitespace="">
+    <style>
+      :host {
+        position: absolute;
+        display: none;
+        pointer-events: none;
+        opacity: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        transition-property: top, right, bottom, left, opacity;
+      }
+    </style>
+  </template>
+  <script>Polymer({is:"shop-tabs-overlay",properties:{target:{type:Object,observer:"_targetChanged"}},listeners:{transitionend:"_onTransitionend"},created:function(){this._lastTarget=void 0,this._transitionsInFlight=[]},_targetChanged:function(t,i){this._transitionsInFlight.length||(this._lastTarget&&this._lastTarget.classList.remove("shop-tabs-overlay-static-above"),this.style.display="block",this._move(i,t),this._lastTarget=this.target)},_onTransitionend:function(t){var i=this._transitionsInFlight.indexOf(t.propertyName);i>=0&&this._transitionsInFlight.splice(i,1),this._transitionsInFlight.length||this._moveComplete()},_moveComplete:function(){this._lastTarget!==this.target?(this._move(this._lastTarget,this.target),this._lastTarget=this.target):(this._lastTarget&&this._lastTarget.classList.add("shop-tabs-overlay-static-above"),this.style.display="none")},_move:function(t,i){var s=t||i,e=i||t;if(s||e){var o=t?1:0,n=i?1:0;Polymer.dom.flush();var a=this.getBoundingClientRect(),r=window.getComputedStyle(this),h=s.getBoundingClientRect(),l=e.getBoundingClientRect();if(0===l.top&&0===l.right&&0===l.bottom&&0===l.left&&0===l.width&&0===l.height)return this.style.transitionProperty="none",this.style.opacity=n,this._transitionsInFlight=[],void this.async(this._moveComplete);this.style.transitionProperty="";var p=parseFloat(r.top||"0")+(h.top-a.top),g=parseFloat(r.right||"0")-(h.right-a.right),y=parseFloat(r.bottom||"0")-(h.bottom-a.bottom),m=parseFloat(r.left||"0")+(h.left-a.left);this.style.transitionDuration="0s",this.style.transitionDelay="0s";var f=[this.style.top=p+"px",this.style.right=g+"px",this.style.bottom=y+"px",this.style.left=m+"px",this.style.opacity=String(o)];p+=l.top-h.top,g-=l.right-h.right,y-=l.bottom-h.bottom,m+=l.left-h.left;var _=[.2,.2,.2,.2,.2],c=[0,0,0,0,0];h.left<l.left&&h.right<l.right?c[3]=.1:h.left>l.left&&h.right>l.right&&(c[1]=.1),h.top<l.top&&h.bottom<l.bottom?c[0]=.1:h.top>l.top&&h.bottom>l.bottom&&(c[2]=.1);for(var v=[p+"px",g+"px",y+"px",m+"px",String(n)],b=["top","right","bottom","left","opacity"],d=0;d<f.length;d++)f[d]!==v[d]&&(0===_[d]&&0===c[d]||this._transitionsInFlight.push(b[d]));this.async(function(){this.style.transitionDuration=_.map(function(t){return t+"s"}).join(", "),this.style.transitionDelay=c.map(function(t){return t+"s"}).join(", "),this.style.top=p+"px",this.style.right=g+"px",this.style.bottom=y+"px",this.style.left=m+"px",this.style.opacity=String(n)},1)}}});</script>
+</dom-module>
+<dom-module id="shop-tabs" assetpath="/">
+  <template strip-whitespace="">
+    <style>
+      :host {
+        @apply(--layout);
+        @apply(--layout-center-center);
+      }
+
+      #container {
+        position: relative;
+      }
+
+      shop-tabs-overlay {
+        @apply(--shop-tab-overlay);
+      }
+    </style>
+    <div id="container">
+      <shop-tabs-overlay id="overlay"></shop-tabs-overlay>
+      <content></content>
+    </div>
+  </template>
+  <script>Polymer({is:"shop-tabs",behaviors:[Polymer.IronSelectableBehavior],observers:["_onSelectedItemChanged(selectedItem)"],_onSelectedItemChanged:function(e){void 0===e&&this.selected||(this.$.overlay.target=e)}});</script>
+</dom-module>
+<dom-module id="shop-ripple-container" assetpath="/">
+  <template strip-whitespace="">
+    <style>
+      :host {
+        display: inline-block;
+        position: relative;
+      }
+
+      paper-ripple {
+        color: var(--app-accent-color);
+      }
+    </style>
+    <content></content>
+  </template>
+  <script>Polymer({is:"shop-ripple-container",behaviors:[Polymer.PaperRippleBehavior],listeners:{down:"_rippleDown",up:"_rippleUp"},created:function(){this.addEventListener("focus",this._onFocus.bind(this),!0),this.addEventListener("blur",this._onBlur.bind(this),!0),this._isDown=!1},_onFocus:function(i){this._isDown||this._rippleDown(i)},_onBlur:function(i){this._rippleUp(i)},_rippleDown:function(i){this._isDown=!0,this.getRipple().downAction(i)},_rippleUp:function(i){this._isDown=!1,this.getRipple().upAction(i)}});</script>
+</dom-module>
+<dom-module id="shop-tab" assetpath="/">
+  <template strip-whitespace="">
+    <style>
+      [hidden] {
+        display: none !important;
+      }
+
+      :host {
+        display: inline-block;
+        position: relative;
+      }
+
+      #overlay {
+        pointer-events: none;
+        display: none;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        @apply(--shop-tab-overlay);
+      }
+
+      :host(.shop-tabs-overlay-static-above) #overlay {
+        display: block;
+      }
+    </style>
+    <div id="overlay"></div>
+    <shop-ripple-container>
+      <content></content>
+    </shop-ripple-container>
+  </template>
+  <script>Polymer({is:"shop-tab"});</script>
+</dom-module>
+<dom-module id="shop-network-warning" assetpath="/">
+
+  <template>
+
+    <style include="shop-button">
+
+      :host {
+        display: block;
+        padding: 40px 20px;
+        text-align: center;
+        color: var(--app-secondary-color);
+      }
+
+      iron-icon {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+      }
+
+      h1 {
+        margin: 50px 0 10px 0;
+        font-weight: 300;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      shop-button {
+        margin-top: 50px;
+      }
+
+    </style>
+
+    <div hidden$="[[offline]]">
+      <h1>Couldn't reach the server</h1>
+    </div>
+    <div hidden$="[[!offline]]">
+      <iron-icon icon="perm-scan-wifi"></iron-icon>
+      <h1>No internet connection</h1>
+      <p>Check if your device is connected to a mobile network or WiFi.</p>
+    </div>
+    <shop-button>
+      <button on-tap="_tryReconnect">Try Again</button>
+    </shop-button>
+
+  </template>
+
+  <script>Polymer({is:"shop-network-warning",properties:{offline:Boolean},_tryReconnect:function(){this.fire("try-reconnect",null,{bubbles:!1})}});</script>
+
+</dom-module>
+<script>"use strict";Polymer({is:"iron-request",hostAttributes:{hidden:!0},properties:{xhr:{type:Object,notify:!0,readOnly:!0,value:function(){return new XMLHttpRequest}},response:{type:Object,notify:!0,readOnly:!0,value:function(){return null}},status:{type:Number,notify:!0,readOnly:!0,value:0},statusText:{type:String,notify:!0,readOnly:!0,value:""},completes:{type:Object,readOnly:!0,notify:!0,value:function(){return new Promise(function(e,t){this.resolveCompletes=e,this.rejectCompletes=t}.bind(this))}},progress:{type:Object,notify:!0,readOnly:!0,value:function(){return{}}},aborted:{type:Boolean,notify:!0,readOnly:!0,value:!1},errored:{type:Boolean,notify:!0,readOnly:!0,value:!1},timedOut:{type:Boolean,notify:!0,readOnly:!0,value:!1}},get succeeded(){if(this.errored||this.aborted||this.timedOut)return!1;var e=this.xhr.status||0;return 0===e||e>=200&&e<300},send:function(e){var t=this.xhr;if(t.readyState>0)return null;t.addEventListener("progress",function(e){this._setProgress({lengthComputable:e.lengthComputable,loaded:e.loaded,total:e.total})}.bind(this)),t.addEventListener("error",function(e){this._setErrored(!0),this._updateStatus(),this.rejectCompletes(e)}.bind(this)),t.addEventListener("timeout",function(e){this._setTimedOut(!0),this._updateStatus(),this.rejectCompletes(e)}.bind(this)),t.addEventListener("abort",function(){this._updateStatus(),this.rejectCompletes(new Error("Request aborted."))}.bind(this)),t.addEventListener("loadend",function(){return this._updateStatus(),this._setResponse(this.parseResponse()),this.succeeded?void this.resolveCompletes(this):void this.rejectCompletes(new Error("The request failed with status code: "+this.xhr.status))}.bind(this)),this.url=e.url,t.open(e.method||"GET",e.url,e.async!==!1);var r={json:"application/json",text:"text/plain",html:"text/html",xml:"application/xml",arraybuffer:"application/octet-stream"}[e.handleAs],s=e.headers||Object.create(null),n=Object.create(null);for(var o in s)n[o.toLowerCase()]=s[o];if(s=n,r&&!s.accept&&(s.accept=r),Object.keys(s).forEach(function(e){/[A-Z]/.test(e)&&Polymer.Base._error("Headers must be lower case, got",e),t.setRequestHeader(e,s[e])},this),e.async!==!1){e.async&&(t.timeout=e.timeout);var i=e.handleAs;!e.jsonPrefix&&i||(i="text"),t.responseType=t._responseType=i,e.jsonPrefix&&(t._jsonPrefix=e.jsonPrefix)}t.withCredentials=!!e.withCredentials;var a=this._encodeBodyObject(e.body,s["content-type"]);return t.send(a),this.completes},parseResponse:function(){var e=this.xhr,t=e.responseType||e._responseType,r=!this.xhr.responseType,s=e._jsonPrefix&&e._jsonPrefix.length||0;try{switch(t){case"json":if(r||void 0===e.response)try{return JSON.parse(e.responseText)}catch(e){return null}return e.response;case"xml":return e.responseXML;case"blob":case"document":case"arraybuffer":return e.response;case"text":default:if(s)try{return JSON.parse(e.responseText.substring(s))}catch(e){return null}return e.responseText}}catch(e){this.rejectCompletes(new Error("Could not parse response. "+e.message))}},abort:function(){this._setAborted(!0),this.xhr.abort()},_encodeBodyObject:function(e,t){if("string"==typeof e)return e;var r=e;switch(t){case"application/json":return JSON.stringify(r);case"application/x-www-form-urlencoded":return this._wwwFormUrlEncode(r)}return e},_wwwFormUrlEncode:function(e){if(!e)return"";var t=[];return Object.keys(e).forEach(function(r){t.push(this._wwwFormUrlEncodePiece(r)+"="+this._wwwFormUrlEncodePiece(e[r]))},this),t.join("&")},_wwwFormUrlEncodePiece:function(e){return null===e?"":encodeURIComponent(e.toString().replace(/\r?\n/g,"\r\n")).replace(/%20/g,"+")},_updateStatus:function(){this._setStatus(this.xhr.status),this._setStatusText(void 0===this.xhr.statusText?"":this.xhr.statusText)}});</script>
+<script>"use strict";Polymer({is:"iron-ajax",hostAttributes:{hidden:!0},properties:{url:{type:String},params:{type:Object,value:function(){return{}}},method:{type:String,value:"GET"},headers:{type:Object,value:function(){return{}}},contentType:{type:String,value:null},body:{type:Object,value:null},sync:{type:Boolean,value:!1},handleAs:{type:String,value:"json"},withCredentials:{type:Boolean,value:!1},timeout:{type:Number,value:0},auto:{type:Boolean,value:!1},verbose:{type:Boolean,value:!1},lastRequest:{type:Object,notify:!0,readOnly:!0},loading:{type:Boolean,notify:!0,readOnly:!0},lastResponse:{type:Object,notify:!0,readOnly:!0},lastError:{type:Object,notify:!0,readOnly:!0},activeRequests:{type:Array,notify:!0,readOnly:!0,value:function(){return[]}},debounceDuration:{type:Number,value:0,notify:!0},jsonPrefix:{type:String,value:""},bubbles:{type:Boolean,value:!1},_boundHandleResponse:{type:Function,value:function(){return this._handleResponse.bind(this)}}},observers:["_requestOptionsChanged(url, method, params.*, headers, contentType, body, sync, handleAs, jsonPrefix, withCredentials, timeout, auto)"],get queryString(){var e,t,s=[];for(e in this.params)if(t=this.params[e],e=window.encodeURIComponent(e),Array.isArray(t))for(var n=0;n<t.length;n++)s.push(e+"="+window.encodeURIComponent(t[n]));else null!==t?s.push(e+"="+window.encodeURIComponent(t)):s.push(e);return s.join("&")},get requestUrl(){var e=this.queryString,t=this.url||"";if(e){var s=t.indexOf("?")>=0?"&":"?";return t+s+e}return t},get requestHeaders(){var e={},t=this.contentType;null==t&&"string"==typeof this.body&&(t="application/x-www-form-urlencoded"),t&&(e["content-type"]=t);var s;if(this.headers instanceof Object)for(s in this.headers)e[s]=this.headers[s].toString();return e},toRequestOptions:function(){return{url:this.requestUrl||"",method:this.method,headers:this.requestHeaders,body:this.body,async:!this.sync,handleAs:this.handleAs,jsonPrefix:this.jsonPrefix,withCredentials:this.withCredentials,timeout:this.timeout}},generateRequest:function(){var e=document.createElement("iron-request"),t=this.toRequestOptions();return this.push("activeRequests",e),e.completes.then(this._boundHandleResponse).catch(this._handleError.bind(this,e)).then(this._discardRequest.bind(this,e)),e.send(t),this._setLastRequest(e),this._setLoading(!0),this.fire("request",{request:e,options:t},{bubbles:this.bubbles}),this.fire("iron-ajax-request",{request:e,options:t},{bubbles:this.bubbles}),e},_handleResponse:function(e){e===this.lastRequest&&(this._setLastResponse(e.response),this._setLastError(null),this._setLoading(!1)),this.fire("response",e,{bubbles:this.bubbles}),this.fire("iron-ajax-response",e,{bubbles:this.bubbles})},_handleError:function(e,t){this.verbose&&Polymer.Base._error(t),e===this.lastRequest&&(this._setLastError({request:e,error:t,status:e.xhr.status,statusText:e.xhr.statusText,response:e.xhr.response}),this._setLastResponse(null),this._setLoading(!1)),this.fire("iron-ajax-error",{request:e,error:t},{bubbles:this.bubbles}),this.fire("error",{request:e,error:t},{bubbles:this.bubbles})},_discardRequest:function(e){var t=this.activeRequests.indexOf(e);t>-1&&this.splice("activeRequests",t,1)},_requestOptionsChanged:function(){this.debounce("generate-request",function(){null!=this.url&&this.auto&&this.generateRequest()},this.debounceDuration)}});</script>
+<script>Polymer({is:"iron-form",extends:"form",properties:{disableNativeValidationUi:{type:Boolean,value:!1},withCredentials:{type:Boolean,value:!1},contentType:{type:String,value:"application/x-www-form-urlencoded"},headers:{type:Object,value:function(){return{}}},request:{type:Object}},listeners:{"iron-form-element-register":"_registerElement","iron-form-element-unregister":"_unregisterElement",submit:"_onSubmit",reset:"_onReset"},registered:function(){var e=document.createElement("form"),t=document.createElement("input");t.setAttribute("required","true"),e.appendChild(t);var i=document.createElement("input");i.setAttribute("type","submit"),e.appendChild(i),Polymer.clientSupportsFormValidationUI=!0,e.addEventListener("submit",function(e){Polymer.clientSupportsFormValidationUI=!1,e.preventDefault()}),i.click()},ready:function(){this.request=document.createElement("iron-ajax"),this.request.addEventListener("response",this._handleFormResponse.bind(this)),this.request.addEventListener("error",this._handleFormError.bind(this)),this._customElements=[],this._customElementsInitialValues=[]},submit:function(){if(!this.noValidate&&!this.validate())return Polymer.clientSupportsFormValidationUI&&!this.disableNativeValidationUi&&this._doFakeSubmitForValidation(),void this.fire("iron-form-invalid");var e=this.serialize();this.request.url=this.getAttribute("action"),this.request.method=this.getAttribute("method"),this.request.contentType=this.contentType,this.request.withCredentials=this.withCredentials,this.request.headers=this.headers,"POST"===this.method.toUpperCase()?this.request.body=e:this.request.params=e;var t=this.fire("iron-form-presubmit",{},{cancelable:!0});t.defaultPrevented||(this.request.generateRequest(),this.fire("iron-form-submit",e))},_onSubmit:function(e){return this.submit(),e&&e.preventDefault(),!1},_onReset:function(e){this._resetCustomElements()},serialize:function(){function e(e,t){i[e]?(Array.isArray(i[e])||(i[e]=[i[e]]),i[e].push(t)):i[e]=t}for(var t,i={},s=0;t=this._customElements[s],s<this._customElements.length;s++)!this._isChildOfRegisteredParent(t,!0)&&this._useValue(t)&&e(t.name,t.value);for(var t,s=0;t=this.elements[s],s<this.elements.length;s++)if(!this._isChildOfRegisteredParent(t,!0)&&this._useValue(t))if("select"===t.tagName.toLowerCase()&&t.multiple)for(var r=0;r<t.options.length;r++)t.options[r].selected&&e(t.name,t.options[r].value);else e(t.name,t.value);return i},_handleFormResponse:function(e){this.fire("iron-form-response",e.detail)},_handleFormError:function(e){this.fire("iron-form-error",e.detail)},_registerElement:function(e){var t=Polymer.dom(e).rootTarget;t._parentForm=this,this._customElements.push(t),this._customElementsInitialValues.push(this._usesCheckedInsteadOfValue(t)?t.checked:t.value)},_unregisterElement:function(e){var t=e.detail.target;if(t){var i=this._customElements.indexOf(t);i>-1&&(this._customElements.splice(i,1),this._customElementsInitialValues.splice(i,1))}},validate:function(){for(var e,t,i=!0,s=0;t=this._customElements[s],s<this._customElements.length;s++)this._isChildOfRegisteredParent(t,!1)||t.disabled||(e=t,e.validate&&(i=!!e.validate()&&i));for(var t,s=0;t=this.elements[s],s<this.elements.length;s++)this._isChildOfRegisteredParent(t,!1)||!t.hasAttribute("is")&&t.willValidate&&t.checkValidity&&(i=t.checkValidity()&&i);return i},_usesCheckedInsteadOfValue:function(e){return!("checkbox"!=e.type&&"radio"!=e.type&&"checkbox"!=e.getAttribute("role")&&"radio"!=e.getAttribute("role")&&!e._hasIronCheckedElementBehavior)},_useValue:function(e){return!(e.disabled||!e.name)&&(!this._usesCheckedInsteadOfValue(e)||e.checked)},_doFakeSubmitForValidation:function(){var e=document.createElement("input");e.setAttribute("type","submit"),e.style.display="none",this.appendChild(e),e.click(),this.removeChild(e)},_resetCustomElements:function(){this.async(function(){for(var e,t=0;e=this._customElements[t],t<this._customElements.length;t++)if(!e.disabled){if(this._usesCheckedInsteadOfValue(e))e.checked=this._customElementsInitialValues[t];else{var i=this._customElementsInitialValues[t];void 0===i&&(i=null),e.value=i,e.inputElement?e.inputElement.value=e.value:e.textarea&&(e.textarea.value=e.value)}e.invalid=!1}this.fire("iron-form-reset")},1)},_isChildOfRegisteredParent:function(e,t){for(var i=e;i&&i!==document&&i!=this;)if(i=Polymer.dom(i).parentNode||i.host,i&&(!t||i.name)&&i._parentForm===this)return!0;return!1}});</script>
+<script>Polymer.PaperSpinnerBehavior={listeners:{animationend:"__reset",webkitAnimationEnd:"__reset"},properties:{active:{type:Boolean,value:!1,reflectToAttribute:!0,observer:"__activeChanged"},alt:{type:String,value:"loading",observer:"__altChanged"},__coolingDown:{type:Boolean,value:!1}},__computeContainerClasses:function(e,t){return[e||t?"active":"",t?"cooldown":""].join(" ")},__activeChanged:function(e,t){this.__setAriaHidden(!e),this.__coolingDown=!e&&t},__altChanged:function(e){e===this.getPropertyInfo("alt").value?this.alt=this.getAttribute("aria-label")||e:(this.__setAriaHidden(""===e),this.setAttribute("aria-label",e))},__setAriaHidden:function(e){var t="aria-hidden";e?this.setAttribute(t,"true"):this.removeAttribute(t)},__reset:function(){this.active=!1,this.__coolingDown=!1}};</script>
+<dom-module id="paper-spinner-styles" assetpath="../bower_components/paper-spinner/">
+  <template>
+    <style>
+      /*
+      /**************************/
+      /* STYLES FOR THE SPINNER */
+      /**************************/
+
+      /*
+       * Constants:
+       *      ARCSIZE     = 270 degrees (amount of circle the arc takes up)
+       *      ARCTIME     = 1333ms (time it takes to expand and contract arc)
+       *      ARCSTARTROT = 216 degrees (how much the start location of the arc
+       *                                should rotate each time, 216 gives us a
+       *                                5 pointed star shape (it's 360/5 * 3).
+       *                                For a 7 pointed star, we might do
+       *                                360/7 * 3 = 154.286)
+       *      SHRINK_TIME = 400ms
+       */
+
+      :host {
+        display: inline-block;
+        position: relative;
+        width: 28px;
+        height: 28px;
+
+        /* 360 * ARCTIME / (ARCSTARTROT + (360-ARCSIZE)) */
+        --paper-spinner-container-rotation-duration: 1568ms;
+
+        /* ARCTIME */
+        --paper-spinner-expand-contract-duration: 1333ms;
+
+        /* 4 * ARCTIME */
+        --paper-spinner-full-cycle-duration: 5332ms;
+
+        /* SHRINK_TIME */
+        --paper-spinner-cooldown-duration: 400ms;
+      }
+
+      #spinnerContainer {
+        width: 100%;
+        height: 100%;
+
+        /* The spinner does not have any contents that would have to be
+         * flipped if the direction changes. Always use ltr so that the
+         * style works out correctly in both cases. */
+        direction: ltr;
+      }
+
+      #spinnerContainer.active {
+        -webkit-animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite;
+        animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite;
+      }
+
+      @-webkit-keyframes container-rotate {
+        to { -webkit-transform: rotate(360deg) }
+      }
+
+      @keyframes container-rotate {
+        to { transform: rotate(360deg) }
+      }
+
+      .spinner-layer {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        white-space: nowrap;
+        border-color: var(--paper-spinner-color, --google-blue-500);
+      }
+
+      .layer-1 {
+        border-color: var(--paper-spinner-layer-1-color, --google-blue-500);
+      }
+
+      .layer-2 {
+        border-color: var(--paper-spinner-layer-2-color, --google-red-500);
+      }
+
+      .layer-3 {
+        border-color: var(--paper-spinner-layer-3-color, --google-yellow-500);
+      }
+
+      .layer-4 {
+        border-color: var(--paper-spinner-layer-4-color, --google-green-500);
+      }
+
+      /**
+       * IMPORTANT NOTE ABOUT CSS ANIMATION PROPERTIES (keanulee):
+       *
+       * iOS Safari (tested on iOS 8.1) does not handle animation-delay very well - it doesn't
+       * guarantee that the animation will start _exactly_ after that value. So we avoid using
+       * animation-delay and instead set custom keyframes for each color (as layer-2undant as it
+       * seems).
+       */
+      .active .spinner-layer {
+        -webkit-animation-name: fill-unfill-rotate;
+        -webkit-animation-duration: var(--paper-spinner-full-cycle-duration);
+        -webkit-animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+        -webkit-animation-iteration-count: infinite;
+        animation-name: fill-unfill-rotate;
+        animation-duration: var(--paper-spinner-full-cycle-duration);
+        animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+        animation-iteration-count: infinite;
+        opacity: 1;
+      }
+
+      .active .spinner-layer.layer-1 {
+        -webkit-animation-name: fill-unfill-rotate, layer-1-fade-in-out;
+        animation-name: fill-unfill-rotate, layer-1-fade-in-out;
+      }
+
+      .active .spinner-layer.layer-2 {
+        -webkit-animation-name: fill-unfill-rotate, layer-2-fade-in-out;
+        animation-name: fill-unfill-rotate, layer-2-fade-in-out;
+      }
+
+      .active .spinner-layer.layer-3 {
+        -webkit-animation-name: fill-unfill-rotate, layer-3-fade-in-out;
+        animation-name: fill-unfill-rotate, layer-3-fade-in-out;
+      }
+
+      .active .spinner-layer.layer-4 {
+        -webkit-animation-name: fill-unfill-rotate, layer-4-fade-in-out;
+        animation-name: fill-unfill-rotate, layer-4-fade-in-out;
+      }
+
+      @-webkit-keyframes fill-unfill-rotate {
+        12.5% { -webkit-transform: rotate(135deg) } /* 0.5 * ARCSIZE */
+        25%   { -webkit-transform: rotate(270deg) } /* 1   * ARCSIZE */
+        37.5% { -webkit-transform: rotate(405deg) } /* 1.5 * ARCSIZE */
+        50%   { -webkit-transform: rotate(540deg) } /* 2   * ARCSIZE */
+        62.5% { -webkit-transform: rotate(675deg) } /* 2.5 * ARCSIZE */
+        75%   { -webkit-transform: rotate(810deg) } /* 3   * ARCSIZE */
+        87.5% { -webkit-transform: rotate(945deg) } /* 3.5 * ARCSIZE */
+        to    { -webkit-transform: rotate(1080deg) } /* 4   * ARCSIZE */
+      }
+
+      @keyframes fill-unfill-rotate {
+        12.5% { transform: rotate(135deg) } /* 0.5 * ARCSIZE */
+        25%   { transform: rotate(270deg) } /* 1   * ARCSIZE */
+        37.5% { transform: rotate(405deg) } /* 1.5 * ARCSIZE */
+        50%   { transform: rotate(540deg) } /* 2   * ARCSIZE */
+        62.5% { transform: rotate(675deg) } /* 2.5 * ARCSIZE */
+        75%   { transform: rotate(810deg) } /* 3   * ARCSIZE */
+        87.5% { transform: rotate(945deg) } /* 3.5 * ARCSIZE */
+        to    { transform: rotate(1080deg) } /* 4   * ARCSIZE */
+      }
+
+      @-webkit-keyframes layer-1-fade-in-out {
+        0% { opacity: 1 }
+        25% { opacity: 1 }
+        26% { opacity: 0 }
+        89% { opacity: 0 }
+        90% { opacity: 1 }
+        to { opacity: 1 }
+      }
+
+      @keyframes layer-1-fade-in-out {
+        0% { opacity: 1 }
+        25% { opacity: 1 }
+        26% { opacity: 0 }
+        89% { opacity: 0 }
+        90% { opacity: 1 }
+        to { opacity: 1 }
+      }
+
+      @-webkit-keyframes layer-2-fade-in-out {
+        0% { opacity: 0 }
+        15% { opacity: 0 }
+        25% { opacity: 1 }
+        50% { opacity: 1 }
+        51% { opacity: 0 }
+        to { opacity: 0 }
+      }
+
+      @keyframes layer-2-fade-in-out {
+        0% { opacity: 0 }
+        15% { opacity: 0 }
+        25% { opacity: 1 }
+        50% { opacity: 1 }
+        51% { opacity: 0 }
+        to { opacity: 0 }
+      }
+
+      @-webkit-keyframes layer-3-fade-in-out {
+        0% { opacity: 0 }
+        40% { opacity: 0 }
+        50% { opacity: 1 }
+        75% { opacity: 1 }
+        76% { opacity: 0 }
+        to { opacity: 0 }
+      }
+
+      @keyframes layer-3-fade-in-out {
+        0% { opacity: 0 }
+        40% { opacity: 0 }
+        50% { opacity: 1 }
+        75% { opacity: 1 }
+        76% { opacity: 0 }
+        to { opacity: 0 }
+      }
+
+      @-webkit-keyframes layer-4-fade-in-out {
+        0% { opacity: 0 }
+        65% { opacity: 0 }
+        75% { opacity: 1 }
+        90% { opacity: 1 }
+        to { opacity: 0 }
+      }
+
+      @keyframes layer-4-fade-in-out {
+        0% { opacity: 0 }
+        65% { opacity: 0 }
+        75% { opacity: 1 }
+        90% { opacity: 1 }
+        to { opacity: 0 }
+      }
+
+      .circle-clipper {
+        display: inline-block;
+        position: relative;
+        width: 50%;
+        height: 100%;
+        overflow: hidden;
+        border-color: inherit;
+      }
+
+      /**
+       * Patch the gap that appear between the two adjacent div.circle-clipper while the
+       * spinner is rotating (appears on Chrome 50, Safari 9.1.1, and Edge).
+       */
+      .spinner-layer::after {
+        left: 45%;
+        width: 10%;
+        border-top-style: solid;
+      }
+
+      .spinner-layer::after,
+      .circle-clipper::after {
+        content: '';
+        box-sizing: border-box;
+        position: absolute;
+        top: 0;
+        border-width: var(--paper-spinner-stroke-width, 3px);
+        border-color: inherit;
+        border-radius: 50%;
+      }
+
+      .circle-clipper::after {
+        bottom: 0;
+        width: 200%;
+        border-style: solid;
+        border-bottom-color: transparent !important;
+      }
+
+      .circle-clipper.left::after {
+        left: 0;
+        border-right-color: transparent !important;
+        -webkit-transform: rotate(129deg);
+        transform: rotate(129deg);
+      }
+
+      .circle-clipper.right::after {
+        left: -100%;
+        border-left-color: transparent !important;
+        -webkit-transform: rotate(-129deg);
+        transform: rotate(-129deg);
+      }
+
+      .active .gap-patch::after,
+      .active .circle-clipper::after {
+        -webkit-animation-duration: var(--paper-spinner-expand-contract-duration);
+        -webkit-animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+        -webkit-animation-iteration-count: infinite;
+        animation-duration: var(--paper-spinner-expand-contract-duration);
+        animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+        animation-iteration-count: infinite;
+      }
+
+      .active .circle-clipper.left::after {
+        -webkit-animation-name: left-spin;
+        animation-name: left-spin;
+      }
+
+      .active .circle-clipper.right::after {
+        -webkit-animation-name: right-spin;
+        animation-name: right-spin;
+      }
+
+      @-webkit-keyframes left-spin {
+        0% { -webkit-transform: rotate(130deg) }
+        50% { -webkit-transform: rotate(-5deg) }
+        to { -webkit-transform: rotate(130deg) }
+      }
+
+      @keyframes left-spin {
+        0% { transform: rotate(130deg) }
+        50% { transform: rotate(-5deg) }
+        to { transform: rotate(130deg) }
+      }
+
+      @-webkit-keyframes right-spin {
+        0% { -webkit-transform: rotate(-130deg) }
+        50% { -webkit-transform: rotate(5deg) }
+        to { -webkit-transform: rotate(-130deg) }
+      }
+
+      @keyframes right-spin {
+        0% { transform: rotate(-130deg) }
+        50% { transform: rotate(5deg) }
+        to { transform: rotate(-130deg) }
+      }
+
+      #spinnerContainer.cooldown {
+        -webkit-animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite, fade-out var(--paper-spinner-cooldown-duration) cubic-bezier(0.4, 0.0, 0.2, 1);
+        animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite, fade-out var(--paper-spinner-cooldown-duration) cubic-bezier(0.4, 0.0, 0.2, 1);
+      }
+
+      @-webkit-keyframes fade-out {
+        0% { opacity: 1 }
+        to { opacity: 0 }
+      }
+
+      @keyframes fade-out {
+        0% { opacity: 1 }
+        to { opacity: 0 }
+      }
+    </style>
+  </template>
+</dom-module>
+<dom-module id="paper-spinner-lite" assetpath="../bower_components/paper-spinner/">
+  <template strip-whitespace="">
+    <style include="paper-spinner-styles"></style>
+
+    <div id="spinnerContainer" class-name="[[__computeContainerClasses(active, __coolingDown)]]">
+      <div class="spinner-layer">
+        <div class="circle-clipper left"></div>
+        <div class="circle-clipper right"></div>
+      </div>
+    </div>
+  </template>
+
+  <script>Polymer({is:"paper-spinner-lite",behaviors:[Polymer.PaperSpinnerBehavior]});</script>
+</dom-module>
+</div></body></html>

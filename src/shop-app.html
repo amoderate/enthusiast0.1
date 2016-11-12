@@ -88,12 +88,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       .menu-btn {
         display: none;
       }
-
-      .cart-btn-container {
-        position: relative;
-        width: 40px;
-      }
-
       .announcer {
         position: fixed;
         height: 0;
@@ -137,22 +131,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         color: var(--app-primary-color);
       }
 
-      .cart-badge {
-        position: absolute;
-        top: -2px;
-        right: 0;
-        width: 20px;
-        height: 20px;
-        background-color: var(--app-accent-color);
-        border-radius: 50%;
-        color: white;
-        font-size: 12px;
-        font-weight: 500;
-        pointer-events: none;
-        @apply(--layout-vertical);
-        @apply(--layout-center-center);
-      }
-
       .drawer-list {
         margin: 0 20px;
       }
@@ -168,10 +146,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       .drawer-list a.iron-selected {
         color: black;
         font-weight: bold;
-      }
-
-      shop-cart-modal {
-        z-index: 2;
       }
 
       app-drawer {
@@ -236,7 +210,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         auth-domain="obsessed-tokyo.firebaseapp.com"
         database-url="https://obsessed-tokyo.firebaseio.com"
         storage-bucket ="obsessed-tokyo.appspot.com"
-        messagingSenderId: "606255433763"
         >
     </firebase-app>
 
@@ -270,15 +243,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     -->
     <shop-category-data categories="{{categories}}"></shop-category-data>
 
-    <!--
-      shop-cart-data maintains the state of the user's shopping cart (in localstorage) and
-      calculates the total amount.
-    -->
-    <shop-cart-data
-        id="cart"
-        cart="{{cart}}"
-        num-items="{{numItems}}"
-        total="{{total}}"></shop-cart-data>
 
     <app-header role="navigation" id="header" effects="waterfall" condenses reveals>
       <app-toolbar>
@@ -295,7 +259,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
         <div class="logo" main-title><a href="/" aria-label="SHOP Home">EXPLORE</a></div>
         <div>
-          <a href="/create" tabindex="-1">
+          <a href="/item-create" tabindex="-1">
             <paper-icon-button icon="icons:create"></paper-icon-button>
           </a>
         </div>
@@ -343,15 +307,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <shop-listgold name="listgold" route="[[subroute]]" offline="[[offline]]"></shop-listgold>
       <!-- detail view of one item -->
       <shop-detail name="detail" route="[[subroute]]" offline="[[offline]]"></shop-detail>
-      <!-- detail view of one item from shop page-->
-      <shop-detailgold name="detailgold" route="[[subroute]]" offline="[[offline]]"></shop-detailgold>
-      <!-- cart view -->
-      <shop-cart name="cart" cart="[[cart]]" total="[[total]]"></shop-cart>
-      <!-- checkout view -->
-      <item-create name="create"></item-create>
-
-      <!-- checkout view -->
-      <shop-checkout name="checkout" cart="[[cart]]" total="[[total]]" route="{{subroute}}"></shop-checkout>
+      <!-- create an item -->
+      <shop-item-create name="item-create"></shop-item-create>
 
     </iron-pages>
 
@@ -401,9 +358,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ],
 
       listeners: {
-        'add-cart-item': '_onAddCartItem',
-        'set-cart-item': '_onSetCartItem',
-        'clear-cart': '_onClearCart',
         'change-section': '_onChangeSection',
         'announce': '_onAnnounce',
         'dom-change': '_domChange'
@@ -505,31 +459,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           document.title = detail.title + ' - SHOP';
           this._announce(detail.title + ', loaded');
         }
-      },
-
-      _onAddCartItem: function(event) {
-        if (!this._cartModal) {
-          this._cartModal = document.createElement('shop-cart-modal');
-          Polymer.dom(this.root).appendChild(this._cartModal);
-        }
-        this.$.cart.addItem(event.detail);
-        this._cartModal.open();
-        this._announce('Item added to the cart');
-      },
-
-      _onSetCartItem: function(event) {
-        var detail = event.detail;
-        this.$.cart.setItem(detail);
-        if (detail.quantity === 0) {
-          this._announce('Item deleted');
-        } else {
-          this._announce('Quantity changed to ' + detail.quantity);
-        }
-      },
-
-      _onClearCart: function() {
-        this.$.cart.clearCart();
-        this._announce('Cart cleared');
       },
 
       // Elements in the app can notify a change to be a11y announced.

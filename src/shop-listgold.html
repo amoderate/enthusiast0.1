@@ -7,15 +7,12 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
-
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-category-data.html">
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-image.html">
-<link rel="import" href="shop-list-itemgold.html">
-
 <link rel="import" href="shop-gold-data.html">
 
 <dom-module id="shop-listgold">
@@ -93,18 +90,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <firebase-query id="query"
       path="/items"
-      data="{{shops}}"
-      order-by-child="/shopName"
-      start-at="{{routeData.shop}}"
-      limit-to-last=1
-      >
-    </firebase-query>
-
-    <firebase-query id="query"
-      path="/items"
       data="{{items}}"
       order-by-child="/shopName"
       start-at="{{routeData.shop}}"
+      end-at="{{routeData.shop}}"
+
       >
     </firebase-query>
 
@@ -116,7 +106,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <template is="dom-repeat" items="[[items]]" as ="item" initial-count="4">
 
         <li>
-          <a href$="[[_getItemHref(item)]]"><shop-list-itemgold item="[[item]]"></shop-list-itemgold></a>
+          <a href$="[[_getItemHref(item)]]"><shop-list-item item="[[item]]"></shop-list-item></a>
         </li>
       </template>
     </ul>

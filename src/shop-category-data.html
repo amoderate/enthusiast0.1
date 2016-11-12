@@ -8,7 +8,6 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
 
 <dom-module id="shop-category-data">
 
@@ -91,7 +90,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // which means `category.items` may not be set initially (but that path
         // will be notified when the fetch completes).
         var categoryObj = this._getCategoryObject(categoryName);
-        this._fetchItems(categoryObj, 1);
         return categoryObj;
       },
 
@@ -101,23 +99,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             return item;
           }
         }
-      },
-
-      _fetchItems: function(category, attempts) {
-        this._setFailure(false);
-        // Only fetch the items of a category if it has not been previously set.
-        if (!category || category.items) {
-          return;
-        }
-        this._getResource({
-          url: '/data/' + category.name + '.json',
-          onLoad: function(e) {
-            this.set('category.items', JSON.parse(e.target.responseText));
-          },
-          onError: function(e) {
-            this._setFailure(true);
-          }
-        }, attempts);
       },
 
       _getResource: function(rq, attempts) {
@@ -139,7 +120,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       refresh: function() {
         if (this.categoryName) {
           // Try at most 3 times to get the items.
-          this._fetchItems(this._getCategoryObject(this.categoryName), 3);
+
         }
       }
 

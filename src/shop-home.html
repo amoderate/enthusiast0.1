@@ -8,7 +8,6 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="shop-button.html">
 <link rel="import" href="shop-image.html">
 
@@ -104,10 +103,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <a class="image-link" href$="/list/[[item.name]]">
           <shop-image src="[[item.image]]" alt="[[item.title]]" placeholder-img="[[item.placeholder]]"></shop-image>
         </a>
-        <h2>[[item.title]]</h2>
-        <shop-button>
-          <a aria-label$="[[item.title]] Shop Now" href$="/list/[[item.name]]">Shop Now</a>
-        </shop-button>
+        <h2><shop-button>
+          <a aria-label$="[[item.title]]" href$="/list/[[item.name]]">[[item.title]]</a>
+        </shop-button></h2>
+
+
       </div>
     </template>
 

@@ -128,10 +128,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       shop-network-warning shows a warning message when the items can't be rendered due
       to network conditions.
     -->
-    <shop-network-warning
-        hidden$="[[!failure]]"
-        offline="[[offline]]"
-        on-try-reconnect="_tryReconnect"></shop-network-warning>
+    
 
   </template>
 
@@ -172,7 +169,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _getItemHref: function(item) {
         // By returning null when `itemId` is undefined, the href attribute won't be set and
         // the link will be disabled.
-        return item.shopName ? ['/detail', item.shopName, item.itemName].join('/') : null;
+        console.log(item)
+        return item.shopName ? ['/detail', item.shopName, item.itemName, item.itemid].join('/') : null;
+
       },
 
       _getPluralizedQuantity: function(quantity) {

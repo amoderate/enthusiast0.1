@@ -1,0 +1,95 @@
+<html><head><meta charset="UTF-8"><link rel="import" href="shop-app.html"></head><body><div hidden="" by-vulcanize=""><dom-module id="shop-gold-data" assetpath="/">
+
+  <script>!function(){var A=[{shopName:"ShopTestT",shopTitle:"ShopTestT",image:"/images/tkyo_yko_chba.jpg",placeholder:"data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAXAABAQEAAAAAAAAAAAAAAAAAAAIEAQEAAAAAAAAAAAAAAAAAAAACEAAAAwYHAQAAAAAAAAAAAAAAERMBAhIyYhQhkaEDIwUVNREBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A3dkr5e8tfpwuneJITOzIcmQpit037Bw4mnCVNOpAAQv/2Q=="},{shopName:"Mars",shopTitle:"Mars",image:"/images/mars.jpg",placeholder:"data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAWQABAQAAAAAAAAAAAAAAAAAAAAEBAQEAAAAAAAAAAAAAAAAAAAIDEAABAwMFAQAAAAAAAAAAAAARAAEygRIDIlITMwUVEQEBAAAAAAAAAAAAAAAAAAAAQf/aAAwDAQACEQMRAD8Avqn5meQ0kwk1UyclmLtNj7L4PQoioFf/2Q=="},{shopName:"Saturn",shopTitle:"Saturn",image:"/images/saturn.png",placeholder:"data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAWQABAQAAAAAAAAAAAAAAAAAAAAEBAQEAAAAAAAAAAAAAAAAAAAIDEAABAwMFAQAAAAAAAAAAAAARAAEygRIDIlITMwUVEQEBAAAAAAAAAAAAAAAAAAAAQf/aAAwDAQACEQMRAD8Avqn5meQ0kwk1UyclmLtNj7L4PQoioFf/2Q=="}];Polymer({is:"shop-gold-data",properties:{shopName:String,itemName:String,shops:{type:Array,value:A,readOnly:!0,notify:!0},shop:{type:Object,computed:"_computeShop(shopName)",notify:!0},item:{type:Object,computed:"_computeItem(shop.items, itemName)",notify:!0},failure:{type:Boolean,notify:!0,readOnly:!0}},_getShopObject:function(A){for(var e,t=0;e=this.shops[t];++t)if(e.shopName===A)return e;return null},_computeShop:function(A){var e=this._getShopObject(A);return this._fetchItems(e,1),e},_computeItem:function(A,e){for(var t,s=0;t=A[s];++s)if(t.name===e)return t},_fetchItems:function(A,e){this._setFailure(!1),A&&!A.items&&this._getResource({url:"/data/"+A.shopName+".json",onLoad:function(A){this.set("shop.items",JSON.parse(A.target.responseText))},onError:function(A){this._setFailure(!0)}},e)},_getResource:function(A,e){var t=new XMLHttpRequest;t.addEventListener("load",A.onLoad.bind(this)),t.addEventListener("error",function(t){e>1?this.debounce("_getResource",this._getResource.bind(this,A,e-1),200):A.onError.call(this,t)}.bind(this)),t.open("GET",A.url),t.send()},refresh:function(){this.shopName&&this._fetchItems(this._getShopObject(this.shopName),3)}})}();</script>
+
+</dom-module>
+</div><dom-module id="shop-listgold">
+
+  <template>
+
+    <style include="shop-common-styles">
+
+      .hero-image {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        margin-bottom: 32px;
+      }
+
+      .hero-image {
+        --shop-image-img: {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+        };
+      }
+
+      .grid {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-justified);
+        margin: 0 10px 32px 10px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .grid li {
+        -webkit-flex: 1 1;
+        flex: 1 1;
+        -webkit-flex-basis: 33%;
+        flex-basis: 33%;
+        max-width: 33%;
+      }
+
+      .grid a {
+        display:block;
+        text-decoration: none;
+      }
+
+      @media (max-width: 767px) {
+/*        .hero-image {
+          display: none;
+        }*/
+
+        .grid  li {
+          -webkit-flex-basis: 50%;
+          flex-basis: 50%;
+          max-width: 50%;
+        }
+      }
+
+    </style>
+
+    
+    <app-route route="[[route]]" pattern="/:shop" data="{{routeData}}">
+    </app-route>
+
+    
+
+    <firebase-query id="query" path="/items" data="{{items}}" order-by-child="/shopName" start-at="{{routeData.shop}}" end-at="{{routeData.shop}}">
+    </firebase-query>
+
+    <header>
+      <h1>Welcome to [[routeData.shop]]</h1>
+    </header>
+
+    <ul class="grid" hidden$="[[failure]]">
+      <template is="dom-repeat" items="[[items]]" as="item" initial-count="4">
+
+        <li>
+          <a href$="[[_getItemHref(item)]]"><shop-list-item item="[[item]]"></shop-list-item></a>
+        </li>
+      </template>
+    </ul>
+
+    
+
+  </template>
+
+  <script>Polymer({is:"shop-listgold",properties:{shop:Object,route:Object,routeData:Object,visible:Boolean,offline:{type:Boolean,observer:"_offlineChanged"},failure:Boolean},observers:["_shopChanged(shop, visible)"],_getItemHref:function(e){return e.itemName?["/detail",e.shopName,e.itemName].join("/"):null},_getPluralizedQuantity:function(e){if(!e)return"";var o=1===e?"item":"items";return"("+e+" "+o+")"},_shopChanged:function(e,o){o&&this.debounce("change-section",function(){this.fire("change-section",{shop:e.shopName,shopTitle:e.shopTitle})})},_offlineChanged:function(e){}});</script>
+
+</dom-module>
+</body></html>

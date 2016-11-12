@@ -7,7 +7,6 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
-
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
@@ -145,7 +144,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     -->
     <app-route
         route="[[route]]"
-        pattern="/:shop/:item"
+        pattern="/:shop/:item/:itemid"
         data="{{routeData}}">
       </app-route>
 
@@ -156,9 +155,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <firebase-query id="query"
       path="/items"
       data="{{items}}"
-      order-by-child="/shopName"
-      start-at="{{routeData.id}}"
-      limit-to-last=1
+      order-by-child="/itemid"
+      start-at="{{routeData.itemid}}"
+      end-at="{{routeData.itemid}}"
       >
     </firebase-query>
 
@@ -173,7 +172,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
         <shop-button>
           <button on-tap="_goToShopPage" aria-label="Visit Shop">
-            <a href$="/listgold/[[routeData.shop]]">Jump to [[routeData.shop]]</a>
+            <a href$="/listgold/[[routeData.shop]]"> Jump to [[routeData.shop]]</a>
           </button>
         </shop-button>
 
@@ -235,6 +234,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _goToShopPage: function() {
         console.log("SHOP PAGE: " + this.routeData.item);
+        console.log(this.routeData.item)
       },
 
 

@@ -1,0 +1,216 @@
+<html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="shop-button.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-select.html">
+
+
+</head><body><dom-module id="shop-item-create">
+
+  <template>
+
+    <style include="shop-common-styles shop-button shop-select">
+
+      :host {
+        display: block;
+      }
+
+      #content {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+      shop-image {
+        position: relative;
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 600px;
+        --shop-image-img: {
+          @apply(--layout-fit);
+        };
+      }
+
+      shop-image::before {
+        content: "";
+        display: block;
+        padding-top: 100%;
+      }
+
+      .detail {
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 400px;
+        transition: opacity 0.4s;
+        opacity: 1;
+      }
+
+      h1 {
+        font-size: 24px;
+        font-weight: 500;
+        line-height: 28px;
+        margin: 0;
+      }
+
+      paper-icon-button.giant {
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 600px;
+        width: 100px;
+        height: 100px;
+        padding: 16px 0 16px 0;
+        width: calc(99.66% - 8px);
+        margin: 8px auto;
+        background: white;
+      }
+      .price {
+        margin: 16px 0 40px;
+        font-size: 16px;
+        color: var(--app-secondary-color);
+      }
+
+      .description {
+        margin: 32px 0;
+      }
+
+      .description > h2 {
+        margin: 16px 0;
+        font-size: 13px;
+      }
+
+      .description > p {
+        margin: 0;
+        color: var(--app-secondary-color);
+      }
+
+      .pickers {
+        @apply(--layout-vertical);
+        border-top: 1px solid #ccc;
+      }
+
+      .centered{
+        height: 100%;
+        padding: 16px 0 16px 0;
+        width: calc(99.66% - 8px);
+        margin: 8px auto;
+        background: white;
+      }
+
+      shop-select > select {
+        font-size: 16px;
+        padding: 16px 24px 16px 70px;
+      }
+
+      @media (max-width: 767px) {
+
+        #content {
+          @apply(--layout-vertical);
+          @apply(--layout-center);
+        }
+
+        shop-image {
+          margin: 0;
+          width: 80%;
+        }
+        input {
+          @apply(--paper-font-body2);
+          display: none;
+        }
+
+        .detail {
+          box-sizing: border-box;
+          margin: 32px 0;
+          padding: 0 24px;
+          width: 100%;
+          max-width: 600px;
+        }
+
+        h1 {
+          font-size: 20px;
+          line-height: 24px;
+        }
+
+        .price {
+          font-size: inherit;
+          margin: 12px 0 32px;
+        }
+
+      }
+
+    </style>
+
+    
+    <app-route route="[[route]]" pattern="/:category/:item" data="{{routeData}}">
+    </app-route>
+
+    <shop-category-data categories="{{categories}}"></shop-category-data>
+
+    <firebase-auth id="auth" user="{{user}}" provider="google" on-error="showError">
+    </firebase-auth>
+
+    <firebase-query id="query" path="/imageDraft/[[user.uid]]" data="{{items}}" limit-to-last="1">
+    </firebase-query>
+
+
+    <div id="content" hidden$="[[failure]]">
+
+      <template is="dom-repeat" items="{{items}}" as="item" hidden$="[[failure]]">
+        <shop-image alt="[[item.shopName]]" src="[[item.url]]"></shop-image>
+
+      </template>
+      <div class="detail">
+        <paper-input label="Shop Name" value="{{shopName}}">
+        </paper-input>
+
+        <paper-textarea label="Item" value="{{itemName}}">
+        </paper-textarea>
+
+        <paper-textarea label="Price" value="{{itemPrice}}">
+        </paper-textarea>
+
+        <paper-input label="Theme" value="{{theme}}">
+        </paper-input>
+
+
+      <paper-tabs scrollable="" selected="{{theme}}" attr-for-selected="label">
+        <template is="dom-repeat" items="[[categories]]" as="category" initial-count="4" filter="{{computeFilter(theme)}}">
+          <paper-tab label="{{category.title}}">
+            {{category.title}}
+          </paper-tab>
+        </template>
+
+        </paper-tabs>
+
+        <paper-input label="#Tags" value="{{shopTags}}">
+        </paper-input>
+
+        <shop-button responsive="">
+          <button on-tap="_uploadShopClick" aria-label="update item description">Update Item Description</button>
+        </shop-button>
+
+        <div class="centered">
+          <label for="file-input">
+              <paper-icon-button type="file" icon="image:photo-camera" class="giant"> </paper-icon-button>
+          </label>
+        </div>
+        <div class="horizontal justified">
+          <input id="file-input" type="file" style="display: none">
+        </div>
+      </div>
+    </div>
+
+
+    
+
+  </template>
+
+  <script>Polymer({is:"shop-item-create",properties:{item:Object,route:Object,routeData:Object,visible:Boolean,offline:{type:Boolean,observer:"_offlineChanged"},items:{type:Object,notify:!0},shopName:{type:String,notify:!0},itemName:{type:String,notify:!0},theme:{type:String,notify:!0},itemPrice:{type:String,value:"",notify:!0},shopTags:{type:String,value:"",notify:!0},tokens:{type:Array,notify:!0},shoptypes:{type:String,notify:!0},searchString:{type:String,value:"For the love of beer",notify:!0},failure:Boolean},observers:["_itemChanged(item, visible)"],listeners:{"file-input.change":"imageUploadTap"},_itemChanged:function(e,t){t&&this.debounce("item-change",function(){var t=e?e.description:"";this.$.desc.innerHTML=this._unescapeText(t),this.$.quantitySelect.value="1",this.$.sizeSelect.value="M",this.fire("change-section",{category:e.category,title:e.title})})},_unescapeText:function(e){var t=document.createElement("textarea");return t.innerHTML=e,t.textContent},_formatPrice:function(e){return e?"$"+e.toFixed(2):""},_addToCart:function(){this.fire("add-cart-item",{item:this.item,quantity:parseInt(this.$.quantitySelect.value,10),size:this.$.sizeSelect.value})},_isDefined:function(e){return null!=e},imageUploadTap:function(e){var t=e.target.files[0],i=firebase.storage().ref("image/"+t.name),s=i.put(t),a=this.shopName;console.log(a),s.on("state_changed",function(e){e.bytesTransferred/e.totalBytes*100},function(e){},function(){var e=firebase.database().ref().child("imageDraft/").push().key,t=firebase.auth().currentUser,i=s.snapshot.downloadURL,n={},r={url:i,user:t.uid,shop:a};n["/imageDraft/"+t.uid+"/"+e]=r,n["/users/"+t.uid+"/image/"+e]=r,console.log(i),firebase.database().ref().update(n)})},_uploadShopClick:function(e){var t=firebase.auth().currentUser,i=this.shopName,s=this.itemName,a=this.theme,n=this.itemPrice,r=this.shopTags,o=firebase.database().ref().child("items").push().key;null==t||null==this.itemName&&null==this.shopName&&null==this.theme&&null==this.itemPrice&&null==this.shopTags||(this.itemName="",this.shopName="",this.theme="",this.itemPrice="",this.shopTags=""),null!=t&&null!=this.items&&(console.log("it's clicked"),this.items.forEach(function(e){var t=e.url,l=(e.user,{}),h={url:t,user:e.user,shopName:i,itemName:s,price:n,theme:a,shopsTags:r,itemid:o};l["/items/"+o]=h,console.log(l),firebase.database().ref().update(l),firebase.database().ref().child("imageDraft").remove()}))},computeFilter:function(e){return e?(e=e.toLowerCase(),function(t){var i=t.title.toLowerCase(),s=t.name.toLowerCase();return i.indexOf(e)!=-1||s.indexOf(e)!=-1}):null},toggleSelection:function(e){console.log("it's selected");var t=this.$.categories.itemForElement(e.target);this.$.selector.select(t.title),this.theme=t.name}});</script>
+
+</dom-module>
+</body></html>
