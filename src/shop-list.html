@@ -97,14 +97,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         failure="{{failure}}">
     </shop-category-data>
 
-        <firebase-query id="query"
-          path="/items"
-          data="{{itemList}}"
-          order-by-child="/theme"
-          start-at="[[category.title}}"
-          end-at="[[category.title]]"
-          >
-        </firebase-query>
+    <firebase-query id="query"
+      path="/items"
+      data="{{itemList}}"
+      order-by-child="/theme"
+      start-at="[[category.title}}"
+      end-at="[[category.title]]"
+      >
+    </firebase-query>
 
     <shop-image
         alt="[[category.title]]"
@@ -128,7 +128,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       shop-network-warning shows a warning message when the items can't be rendered due
       to network conditions.
     -->
-    
+
 
   </template>
 

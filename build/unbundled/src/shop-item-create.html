@@ -3,9 +3,16 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/file-input/file-input.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/iron-icons/image-icons.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+
 <link rel="import" href="shop-button.html">
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-image.html">
@@ -50,6 +57,19 @@
         transition: opacity 0.4s;
         opacity: 1;
       }
+      .pre {
+            white-space: pre;
+            unicode-bidi: embed;
+        }
+
+    FILE-INPUT { position: relative; margin: 64px 32px;
+    width: 30%;
+    max-width:4600px;
+    width: 50px;
+    height: 50px;
+    padding: 16px 0 16px 0;
+    width: calc(99.66% - 8px);
+    margin: 8px auto;}
 
       h1 {
         font-size: 24px;
@@ -58,7 +78,7 @@
         margin: 0;
       }
 
-      paper-icon-button.giant {
+      .giant {
         margin: 64px 32px;
         width: 50%;
         max-width: 600px;
@@ -118,10 +138,6 @@
           margin: 0;
           width: 80%;
         }
-        input {
-          @apply(--paper-font-body2);
-          display: none;
-        }
 
         .detail {
           box-sizing: border-box;
@@ -156,6 +172,8 @@
 
     <firebase-query id="query" path="/imageDraft/[[user.uid]]" data="{{items}}" limit-to-last="1">
     </firebase-query>
+
+
 
 
     <div id="content" hidden$="[[failure]]">
@@ -193,19 +211,13 @@
         <shop-button responsive="">
           <button on-tap="_uploadShopClick" aria-label="update item description">Update Item Description</button>
         </shop-button>
-
         <div class="centered">
-          <label for="file-input">
-              <paper-icon-button type="file" icon="image:photo-camera" class="giant"> </paper-icon-button>
-          </label>
-        </div>
-        <div class="horizontal justified">
-          <input id="file-input" type="file" style="display: none">
+          <file-input id="file-input">
+            <iron-icon icon="image:photo-camera" class="giant"></iron-icon>
+          </file-input>
         </div>
       </div>
     </div>
-
-
     
 
   </template>

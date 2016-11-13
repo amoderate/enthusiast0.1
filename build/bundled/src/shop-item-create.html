@@ -982,6 +982,38 @@ this.currentTarget=t,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
 
   <script>!function(){"use strict";Polymer({is:"paper-dropdown-menu",behaviors:[Polymer.IronButtonState,Polymer.IronControlState,Polymer.IronFormElementBehavior,Polymer.IronValidatableBehavior],properties:{selectedItemLabel:{type:String,notify:!0,readOnly:!0},selectedItem:{type:Object,notify:!0,readOnly:!0},value:{type:String,notify:!0,readOnly:!0},label:{type:String},placeholder:{type:String},errorMessage:{type:String},opened:{type:Boolean,notify:!0,value:!1,observer:"_openedChanged"},allowOutsideScroll:{type:Boolean,value:!1},noLabelFloat:{type:Boolean,value:!1,reflectToAttribute:!0},alwaysFloatLabel:{type:Boolean,value:!1},noAnimations:{type:Boolean,value:!1},horizontalAlign:{type:String,value:"right"},verticalAlign:{type:String,value:"top"},dynamicAlign:{type:Boolean}},listeners:{tap:"_onTap"},keyBindings:{"up down":"open",esc:"close"},hostAttributes:{role:"combobox","aria-autocomplete":"none","aria-haspopup":"true"},observers:["_selectedItemChanged(selectedItem)"],attached:function(){var e=this.contentElement;e&&e.selectedItem&&this._setSelectedItem(e.selectedItem)},get contentElement(){return Polymer.dom(this.$.content).getDistributedNodes()[0]},open:function(){this.$.menuButton.open()},close:function(){this.$.menuButton.close()},_onIronSelect:function(e){this._setSelectedItem(e.detail.item)},_onIronDeselect:function(e){this._setSelectedItem(null)},_onTap:function(e){Polymer.Gestures.findOriginalTarget(e)===this&&this.open()},_selectedItemChanged:function(e){var t="";t=e?e.label||e.getAttribute("label")||e.textContent.trim():"",this._setValue(t),this._setSelectedItemLabel(t)},_computeMenuVerticalOffset:function(e){return e?-4:8},_getValidity:function(e){return this.disabled||!this.required||this.required&&!!this.value},_openedChanged:function(){var e=this.opened?"true":"false",t=this.contentElement;t&&t.setAttribute("aria-expanded",e)}})}();</script>
 </dom-module>
+<script>var fileInput=function(){var e,t=function(){"use strict";var e;return e=(document._currentScript||document.currentScript).ownerDocument,function(t,i){var n=e.getElementById(i),r=document.importNode(n.content,!0);t.appendChild(r)}}(),i=function(){"use strict";function e(e,t){switch(t){case Number:return parseFloat(e||0,10);case Boolean:return null!==e;case Object:case Array:return JSON.parse(e);case Date:return new Date(e);default:return e||""}}function t(e){return e.replace(/([A-Z])/g,"-$1").toLowerCase()}function i(e){return e.split("-").map(function(e,t){return 0===t?e:e[0].toUpperCase()+e.slice(1)}).join("")}var n={};return n.serialize=function(e){return"string"==typeof e?e:"number"==typeof e||e instanceof Date?e.toString():JSON.stringify(e)},n.syncProperty=function(t,n,r,a){var o,l=i(r);n[l]&&(o=n[l].type||n[l],t[l]=e(a,o))},n.init=function(i,r){Object.defineProperty(i,"props",{enumerable:!1,configurable:!0,value:{}}),Object.keys(r).forEach(function(a){var o,l,u=t(a);o=r[a].type?r[a]:{type:r[a]},l="function"==typeof o.value?o.value():o.value,i.props[a]=i[a]||l,null===i.getAttribute(u)?o.reflectToAttribute&&i.setAttribute(u,n.serialize(i.props[a])):i.props[a]=e(i.getAttribute(u),o.type),Object.defineProperty(i,a,{get:function(){return i.props[a]||e(i.getAttribute(u),o.type)},set:function(e){var t=i.props[a];i.props[a]=e,o.reflectToAttribute&&(o.type===Boolean?e?i.setAttribute(u,""):i.removeAttribute(u):i.setAttribute(u,n.serialize(e))),"function"==typeof i[o.observer]&&i[o.observer](e,t)}})})},n}(),n=function(e){return Array.prototype.slice.call(e)},r=function(e){var t=e.lastIndexOf(".")+1;if(t>0)return e.substr(t,e.length-t).toLowerCase()},a=function(e,t){return e>0&&e<t.length?{invalid:t.slice(e,t.length),valid:t.slice(0,e)}:{invalid:[],valid:t}},o=function(e,t){if(e){var i="!"===e.charAt(0),n=JSON.parse(e.toLowerCase().substr(i?1:0)),a={invalid:[],valid:[]};return t.forEach(function(e){var t=r(e.name);n.indexOf(t)>=0?a[i?"invalid":"valid"].push(e):a[i?"valid":"invalid"].push(e)}),a}return{invalid:[],valid:t}},l=function(e,t,i){if(!e&&!t)return{tooBig:[],tooSmall:[],valid:i};var n=[],r=[],a=[];return i.forEach(function(i){e&&i.size<e?a.push(i):t&&i.size>t?r.push(i):n.push(i)}),{tooBig:r,tooSmall:a,valid:n}},u=function(){return navigator.userAgent.indexOf("iPad")!==-1||navigator.userAgent.indexOf("iPod")!==-1||navigator.userAgent.indexOf("iPhone")!==-1},c=function(e){var t=document.createElement("form"),i=e.querySelector(".fileInput"),n=document.createElement("button");n.setAttribute("type","reset"),n.style.display="none",t.appendChild(n),i.parentNode.insertBefore(t,i),t.appendChild(i),n.click(),t.parentNode.appendChild(i),t.parentNode.removeChild(t),e.files=[],e.invalid={count:0},e.valid=[],p(e)},s=function(t){e=document.createElement("input"),e.setAttribute("tabindex","-1"),e.setAttribute("type","text"),e.style.padding="1px",e.style.margin="-1px",e.style.border=0,e.style.height=0,e.style.opacity=0,e.style.width=0,e.className="fileInputDelegate",e.customElementRef=t,t.parentNode.insertBefore(e,t),p(t)},p=function(t){e&&(t.files.length?e.setCustomValidity(""):e.setCustomValidity(t.invalidText))},d={accept:{type:String,observer:"setAccept"},camera:Boolean,directory:{type:Boolean,value:!1,observer:"setDirectory"},extensions:{type:String},maxFiles:{type:Number,value:0,observer:"setMaxFiles"},maxSize:{type:Number,value:0},minSize:{type:Number,value:0},required:{type:Boolean,value:!1}},f=Object.create(HTMLElement.prototype);return f.changeHandler=function(e){e.stopPropagation();var t=this,i=t.querySelector(".fileInput"),r=n(i.files),u={count:0},c=[];if(r.length){var s=l(t.minSize,t.maxSize,r),d=o(t.extensions,s.valid),f=a(t.maxFiles,d.valid);s.tooBig.length&&(u.tooBig=s.tooBig,u.count+=s.tooBig.length),s.tooSmall.length&&(u.tooSmall=s.tooSmall,u.count+=s.tooSmall.length),d.invalid.length&&(u.badExtension=d.invalid,u.count+=d.invalid.length),f.invalid.length&&(u.tooMany=f.invalid,u.count+=f.invalid.length),c=f.valid,t.invalid=u,t.files=c,p(t),t.dispatchEvent(new CustomEvent("change",{detail:{invalid:u,valid:c}}))}},f.invalidText="No valid files selected.",f.setAccept=function(e){var t=this.querySelector(".fileInput");t.setAttribute("accept",e)},f.setDirectory=function(e){var t=this.querySelector(".fileInput");e&&void 0!==t.webkitdirectory?t.setAttribute("webkitdirectory",""):t.removeAttribute("webkitdirectory")},f.setMaxFiles=function(e){var t=this.querySelector(".fileInput");1!==e?t.setAttribute("multiple",""):t.removeAttribute("multiple")},f.attributeChangedCallback=function(e,t,n){i.syncProperty(this,d,e,n)},f.createdCallback=function(){var e,n=this;if(t(this,"file-input"),i.init(this,d),this.setAccept(this.accept),e=n.querySelector(".fileInput"),e.addEventListener("change",this.changeHandler.bind(this)),n.files=[],n.invalid={count:0},n.camera&&u()){n.maxFiles=1;var r="image/*;capture=camera";n.accept&&n.accept.length.trim().length>0?n.accept+=","+r:n.accept=r}this.setMaxFiles(n.maxFiles),this.setDirectory(n.directory),n.required&&s(n)},f.reset=function(){var e=this;c(e)},f}();</script>
+
+
+
+<template id="file-input">
+
+    <style>
+        :host {
+            position: relative;
+        }
+
+        .fileInput {
+            bottom: 0;
+            height: 100%;
+            left: 0;
+            margin: 0;
+            opacity: 0;
+            padding: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 100%;
+        }
+    </style>
+
+    <content></content>
+
+    <input class="fileInput" type="file">
+
+</template>
+
+<script>document.registerElement("file-input",{prototype:fileInput});</script>
 <script>Polymer.IronMenuBehaviorImpl={properties:{focusedItem:{observer:"_focusedItemChanged",readOnly:!0,type:Object},attrForItemTitle:{type:String}},_SEARCH_RESET_TIMEOUT_MS:1e3,hostAttributes:{role:"menu",tabindex:"0"},observers:["_updateMultiselectable(multi)"],listeners:{focus:"_onFocus",keydown:"_onKeydown","iron-items-changed":"_onIronItemsChanged"},keyBindings:{up:"_onUpKey",down:"_onDownKey",esc:"_onEscKey","shift+tab:keydown":"_onShiftTabDown"},attached:function(){this._resetTabindices()},select:function(e){this._defaultFocusAsync&&(this.cancelAsync(this._defaultFocusAsync),this._defaultFocusAsync=null);var t=this._valueToItem(e);t&&t.hasAttribute("disabled")||(this._setFocusedItem(t),Polymer.IronMultiSelectableBehaviorImpl.select.apply(this,arguments))},_resetTabindices:function(){var e=this.multi?this.selectedItems&&this.selectedItems[0]:this.selectedItem;this.items.forEach(function(t){t.setAttribute("tabindex",t===e?"0":"-1")},this)},_updateMultiselectable:function(e){e?this.setAttribute("aria-multiselectable","true"):this.removeAttribute("aria-multiselectable")},_focusWithKeyboardEvent:function(e){this.cancelDebouncer("_clearSearchText");var t=this._searchText||"",s=e.key&&1==e.key.length?e.key:String.fromCharCode(e.keyCode);t+=s.toLocaleLowerCase();for(var i,o=t.length,n=0;i=this.items[n];n++)if(!i.hasAttribute("disabled")){var r=this.attrForItemTitle||"textContent",a=(i[r]||i.getAttribute(r)||"").trim();if(!(a.length<o)&&a.slice(0,o).toLocaleLowerCase()==t){this._setFocusedItem(i);break}}this._searchText=t,this.debounce("_clearSearchText",this._clearSearchText,this._SEARCH_RESET_TIMEOUT_MS)},_clearSearchText:function(){this._searchText=""},_focusPrevious:function(){for(var e=this.items.length,t=Number(this.indexOf(this.focusedItem)),s=1;s<e+1;s++){var i=this.items[(t-s+e)%e];if(!i.hasAttribute("disabled")){var o=Polymer.dom(i).getOwnerRoot()||document;if(this._setFocusedItem(i),Polymer.dom(o).activeElement==i)return}}},_focusNext:function(){for(var e=this.items.length,t=Number(this.indexOf(this.focusedItem)),s=1;s<e+1;s++){var i=this.items[(t+s)%e];if(!i.hasAttribute("disabled")){var o=Polymer.dom(i).getOwnerRoot()||document;if(this._setFocusedItem(i),Polymer.dom(o).activeElement==i)return}}},_applySelection:function(e,t){t?e.setAttribute("aria-selected","true"):e.removeAttribute("aria-selected"),Polymer.IronSelectableBehavior._applySelection.apply(this,arguments)},_focusedItemChanged:function(e,t){t&&t.setAttribute("tabindex","-1"),e&&(e.setAttribute("tabindex","0"),e.focus())},_onIronItemsChanged:function(e){e.detail.addedNodes.length&&this._resetTabindices()},_onShiftTabDown:function(e){var t=this.getAttribute("tabindex");Polymer.IronMenuBehaviorImpl._shiftTabPressed=!0,this._setFocusedItem(null),this.setAttribute("tabindex","-1"),this.async(function(){this.setAttribute("tabindex",t),Polymer.IronMenuBehaviorImpl._shiftTabPressed=!1},1)},_onFocus:function(e){if(!Polymer.IronMenuBehaviorImpl._shiftTabPressed){var t=Polymer.dom(e).rootTarget;(t===this||"undefined"==typeof t.tabIndex||this.isLightDescendant(t))&&(this._defaultFocusAsync=this.async(function(){var e=this.multi?this.selectedItems&&this.selectedItems[0]:this.selectedItem;this._setFocusedItem(null),e?this._setFocusedItem(e):this.items[0]&&this._focusNext()}))}},_onUpKey:function(e){this._focusPrevious(),e.detail.keyboardEvent.preventDefault()},_onDownKey:function(e){this._focusNext(),e.detail.keyboardEvent.preventDefault()},_onEscKey:function(e){this.focusedItem.blur()},_onKeydown:function(e){this.keyboardEventMatchesKeys(e,"up down esc")||this._focusWithKeyboardEvent(e),e.stopPropagation()},_activateHandler:function(e){Polymer.IronSelectableBehavior._activateHandler.call(this,e),e.stopPropagation()}},Polymer.IronMenuBehaviorImpl._shiftTabPressed=!1,Polymer.IronMenuBehavior=[Polymer.IronMultiSelectableBehavior,Polymer.IronA11yKeysBehavior,Polymer.IronMenuBehaviorImpl];</script>
 <script>Polymer.IronMenubarBehaviorImpl={hostAttributes:{role:"menubar"},keyBindings:{left:"_onLeftKey",right:"_onRightKey"},_onUpKey:function(e){this.focusedItem.click(),e.detail.keyboardEvent.preventDefault()},_onDownKey:function(e){this.focusedItem.click(),e.detail.keyboardEvent.preventDefault()},get _isRTL(){return"rtl"===window.getComputedStyle(this).direction},_onLeftKey:function(e){this._isRTL?this._focusNext():this._focusPrevious(),e.detail.keyboardEvent.preventDefault()},_onRightKey:function(e){this._isRTL?this._focusPrevious():this._focusNext(),e.detail.keyboardEvent.preventDefault()},_onKeydown:function(e){this.keyboardEventMatchesKeys(e,"up down left right esc")||this._focusWithKeyboardEvent(e)}},Polymer.IronMenubarBehavior=[Polymer.IronMenuBehavior,Polymer.IronMenubarBehaviorImpl];</script>
 <iron-iconset-svg name="paper-tabs" size="24">
@@ -1494,6 +1526,19 @@ this.currentTarget=t,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
         transition: opacity 0.4s;
         opacity: 1;
       }
+      .pre {
+            white-space: pre;
+            unicode-bidi: embed;
+        }
+
+    FILE-INPUT { position: relative; margin: 64px 32px;
+    width: 30%;
+    max-width:4600px;
+    width: 50px;
+    height: 50px;
+    padding: 16px 0 16px 0;
+    width: calc(99.66% - 8px);
+    margin: 8px auto;}
 
       h1 {
         font-size: 24px;
@@ -1502,7 +1547,7 @@ this.currentTarget=t,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
         margin: 0;
       }
 
-      paper-icon-button.giant {
+      .giant {
         margin: 64px 32px;
         width: 50%;
         max-width: 600px;
@@ -1562,10 +1607,6 @@ this.currentTarget=t,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
           margin: 0;
           width: 80%;
         }
-        input {
-          @apply(--paper-font-body2);
-          display: none;
-        }
 
         .detail {
           box-sizing: border-box;
@@ -1600,6 +1641,8 @@ this.currentTarget=t,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
 
     <firebase-query id="query" path="/imageDraft/[[user.uid]]" data="{{items}}" limit-to-last="1">
     </firebase-query>
+
+
 
 
     <div id="content" hidden$="[[failure]]">
@@ -1637,19 +1680,13 @@ this.currentTarget=t,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
         <shop-button responsive="">
           <button on-tap="_uploadShopClick" aria-label="update item description">Update Item Description</button>
         </shop-button>
-
         <div class="centered">
-          <label for="file-input">
-              <paper-icon-button type="file" icon="image:photo-camera" class="giant"> </paper-icon-button>
-          </label>
-        </div>
-        <div class="horizontal justified">
-          <input id="file-input" type="file" style="display: none">
+          <file-input id="file-input">
+            <iron-icon icon="image:photo-camera" class="giant"></iron-icon>
+          </file-input>
         </div>
       </div>
     </div>
-
-
     
 
   </template>

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Firebase Storage API.
- * Version: 3.5.2
+ * Version: 3.6.0
  *
  * Copyright 2016 Google Inc. All Rights Reserved.
  *

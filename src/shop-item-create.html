@@ -15,6 +15,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/file-input/file-input.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/iron-icons/image-icons.html">
@@ -64,6 +67,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         transition: opacity 0.4s;
         opacity: 1;
       }
+      .pre {
+            white-space: pre;
+            unicode-bidi: embed;
+        }
+
+    FILE-INPUT { position: relative; margin: 64px 32px;
+    width: 30%;
+    max-width:4600px;
+    width: 50px;
+    height: 50px;
+    padding: 16px 0 16px 0;
+    width: calc(99.66% - 8px);
+    margin: 8px auto;}
 
       h1 {
         font-size: 24px;
@@ -72,7 +88,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin: 0;
       }
 
-      paper-icon-button.giant {
+      .giant {
         margin: 64px 32px;
         width: 50%;
         max-width: 600px;
@@ -131,25 +147,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         shop-image {
           margin: 0;
           width: 80%;
-        }
-        input {
-          @apply(--paper-font-body2);
-        }
-
-        .fileUpload {
-            position: relative;
-            overflow: hidden;
-            margin: 10px;
-        }
-        .fileUpload input.upload {
-            position: absolute;
-            top: 0;
-            right: 0;
-            margin: 0;
-            padding: 0;
-            font-size: 10px;
-            cursor: pointer;
-
         }
 
         .detail {
@@ -237,18 +234,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <shop-button responsive>
           <button on-tap="_uploadShopClick" aria-label="update item description">Update Item Description</button>
         </shop-button>
-
         <div class="centered">
-            <file-input  id="file-input" camera>
-              <paper-icon-button type="file" icon="image:photo-camera" class="giant"> </paper-icon-button>
-            </file-input>
-
-          </label>
-          </div>
-          <div class="horizontal justified">
-          </div>
-          </div>
+          <file-input id="file-input" >
+            <iron-icon icon="image:photo-camera" class="giant" ></iron-icon>
+          </file-input>
         </div>
+      </div>
+    </div>
     <!--
       shop-network-warning shows a warning message when the items can't be rendered due
       to network conditions.

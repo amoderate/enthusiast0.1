@@ -116,8 +116,8 @@
     <shop-category-data id="categoryData" category-name="[[routeData.category]]" category="{{category}}" failure="{{failure}}">
     </shop-category-data>
 
-        <firebase-query id="query" path="/items" data="{{itemList}}" order-by-child="/theme" start-at="[[category.title}}" end-at="[[category.title]]">
-        </firebase-query>
+    <firebase-query id="query" path="/items" data="{{itemList}}" order-by-child="/theme" start-at="[[category.title}}" end-at="[[category.title]]">
+    </firebase-query>
 
     <shop-image alt="[[category.title]]" src="[[category.image]]" placeholder-img="[[category.placeholder]]" class="hero-image"></shop-image>
 
@@ -135,7 +135,7 @@
     </ul>
 
     
-    
+
 
   </template>
 

@@ -89,7 +89,7 @@
 
   </template>
 
-  <script>Polymer({is:"shop-listgold",properties:{shop:Object,route:Object,routeData:Object,visible:Boolean,offline:{type:Boolean,observer:"_offlineChanged"},failure:Boolean},observers:["_shopChanged(shop, visible)"],_getItemHref:function(e){return e.itemName?["/detail",e.shopName,e.itemName].join("/"):null},_getPluralizedQuantity:function(e){if(!e)return"";var o=1===e?"item":"items";return"("+e+" "+o+")"},_shopChanged:function(e,o){o&&this.debounce("change-section",function(){this.fire("change-section",{shop:e.shopName,shopTitle:e.shopTitle})})},_offlineChanged:function(e){}});</script>
+  <script>Polymer({is:"shop-listgold",properties:{shop:Object,route:Object,routeData:Object,visible:Boolean,offline:{type:Boolean,observer:"_offlineChanged"},failure:Boolean},observers:["_shopChanged(shop, visible)"],_getItemHref:function(e){return e.itemName?["/detail",e.shopName,e.itemName,e.itemid].join("/"):null},_getPluralizedQuantity:function(e){if(!e)return"";var o=1===e?"item":"items";return"("+e+" "+o+")"},_shopChanged:function(e,o){o&&this.debounce("change-section",function(){this.fire("change-section",{shop:e.shopName,shopTitle:e.shopTitle})})},_offlineChanged:function(e){}});</script>
 
 </dom-module>
 </body></html>
