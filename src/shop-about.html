@@ -14,11 +14,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-image.html">
 <link rel="import" href="shop-gold-data.html">
-<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
-<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 
 
-<dom-module id="shop-listgold">
+<dom-module id="shop-about">
 
   <template>
 
@@ -115,32 +113,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       shop-category-data provides the shop data for a given shop name.
     -->
 
-
-    <header>
-      <h1>Welcome to [[routeData.shop]]!</h1>
-
-      <shop-tabs
-          selected="menu_all"
-          attr-for-selected="name">
-        <template is="dom-repeat" items="{{gold_categories}}" as="goldcats" initial-count="4">
-          <shop-tab name="[[goldcats.name]]">
-            <a href="[[goldcats.name]]">[[goldcats.title]]</a>
-          </shop-tab>
-        </template>
-      </shop-tabs>
-
-    </header>
+    <firebase-query 
+      id="query"
+      path="/shops"
+      data="{{shops}}"
+      order-by-child="/shopName"
+      start-at="[[route]]"
+      end-at="[[route]]"
+      >
+    </firebase-query>
 
 
-    <iron-pages
-        selected="[[page]]"
-        attr-for-selected="name"
-        role="main">
-      <shop-menu_all name="menu_all" route="[[routeData.shop]]"></shop-menu_all>
-      <shop-about name="about" route="[[routeData.shop]]"></shop-about>
-      <shop-location name="location" route="[[routeData.shop]]"></shop-location>
-      <shop-chat name="chat" route="[[routeData.shop]]"></shop-chat>
-    </iron-pages>        
+
+    
+    ABOUT
+    
+    <ul class="grid" hidden$="[[failure]]">
+      <template is="dom-repeat" items="[[shops]]" as="item" initial-count="4">
+        [[item.shopAbout]]
+      </template>
+    </ul>
+
+
+
 
 
 
@@ -159,29 +154,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     Polymer({
 
-      is: 'shop-listgold',
+      is: 'shop-about',
 
       ready: function() {
-        document.title = this.routeData.shop + ' - SHOP';
-
-        this.gold_categories = [
-          {
-            name: 'menu_all',
-            title: 'Our Offerings'
-          },
-          {
-            name: 'about',
-            title: 'About Us'
-          },
-          {
-            name: 'location',
-            title: 'Our Location'            
-          },
-          {
-            name: 'chat',
-            title: 'Chat with Us'            
-          }
-        ];
+        document.title = this.route + ' - SHOP';
       },
 
       properties: {
@@ -264,16 +240,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               }, null, true);
           }
         }
-      },    
+      },   
 
       _pageLoaded: function(shouldResetLayout) {
         this._ensureLazyLoaded();
         if (shouldResetLayout) {
           // The size of the header depends on the page (e.g. on some pages the tabs
           // do not appear), so reset the header's layout only when switching pages.
-          //this.async(function() {
-          //  this.$.header.resetLayout();
-          //}, 1);
+          this.async(function() {
+            this.$.header.resetLayout();
+          }, 1);
         }
       },      
 

@@ -172,11 +172,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div class="detail" has-content$="[[_isDefined(item)]]">
         <div class="description">
           <h2>Description</h2>
-            <h1>[[item.itemName]]</h1>
+            <h1>[[item.itemName]] by [[item.shopName]]</h1>
         </div>
         <shop-button>
           <button on-tap="_goToShopPage" aria-label="Visit Shop">
-            <a href$="/listgold/[[routeData.shop]]"> Jump to [[routeData.shop]]</a>
+            <a href$="/listgold/[[routeData.shop]]/menu_all"> Jump to [[routeData.shop]]</a>
           </button>
         </shop-button>
 
