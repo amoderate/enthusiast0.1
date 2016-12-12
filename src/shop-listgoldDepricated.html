@@ -11,6 +11,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-category-data.html">
+<link rel="import" href="shop-menu.html">
+
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-image.html">
 <link rel="import" href="shop-gold-data.html">
@@ -98,7 +100,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         font-weight: 500;
         text-decoration: none;
         color: var(--app-primary-color);
-      }      
+      }
 
     </style>
 
@@ -114,13 +116,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <!--
       shop-category-data provides the shop data for a given shop name.
     -->
-
-
     <header>
       <h1>Welcome to [[routeData.shop]]!</h1>
 
       <shop-tabs
-          selected="menu_all"
+          selected="menu"
           attr-for-selected="name">
         <template is="dom-repeat" items="{{gold_categories}}" as="goldcats" initial-count="4">
           <shop-tab name="[[goldcats.name]]">
@@ -136,16 +136,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         selected="[[page]]"
         attr-for-selected="name"
         role="main">
-      <shop-menu_all name="menu_all" route="[[routeData.shop]]"></shop-menu_all>
+      <shop-menu name="menu" route="[[routeData.shop]]"></shop-menu>
       <shop-about name="about" route="[[routeData.shop]]"></shop-about>
       <shop-location name="location" route="[[routeData.shop]]"></shop-location>
       <shop-chat name="chat" route="[[routeData.shop]]"></shop-chat>
-    </iron-pages>        
-
-
-
-
-
+    </iron-pages>
 
 
     <!--
@@ -166,7 +161,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         this.gold_categories = [
           {
-            name: 'menu_all',
+            name: 'menu',
             title: 'Our Offerings'
           },
           {
@@ -175,11 +170,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           },
           {
             name: 'location',
-            title: 'Our Location'            
+            title: 'Our Location'
           },
           {
             name: 'chat',
-            title: 'Chat with Us'            
+            title: 'Chat with Us'
           }
         ];
       },
@@ -210,8 +205,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       observers: [
-        '_shopChanged(shop, visible)',
-        '_routePageChanged(routeData.page)'
+        '_shopChanged(shop, visible)'
       ],
 
 
@@ -240,59 +234,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
         }
       },
-
-      _routePageChanged: function(page) {
-        this.page = page || 'home';
-        // Scroll to the top of the page on every *route* change. Use `Polymer.AppLayout.scroll`
-        // with `behavior: 'silent'` to disable header scroll effects during the scroll.
-        Polymer.AppLayout.scroll({ top: 0, behavior: 'silent' });
-        // Close the drawer - in case the *route* change came from a link in the drawer.
-        this.drawerOpened = false;
-      },
-
-      _pageChanged: function(page, oldPage) {
-        if (page != null) {
-          // home route is eagerly loaded
-          if (page == 'home') {
-            this._pageLoaded(Boolean(oldPage));
-          // other routes are lazy loaded
-          } else {
-            this.importHref(
-              this.resolveUrl('shop-' + page + '.html'),
-              function() {
-                this._pageLoaded(Boolean(oldPage));
-              }, null, true);
-          }
-        }
-      },    
-
-      _pageLoaded: function(shouldResetLayout) {
-        this._ensureLazyLoaded();
-        if (shouldResetLayout) {
-          // The size of the header depends on the page (e.g. on some pages the tabs
-          // do not appear), so reset the header's layout only when switching pages.
-          //this.async(function() {
-          //  this.$.header.resetLayout();
-          //}, 1);
-        }
-      },      
-
-      _ensureLazyLoaded: function() {
-        // load lazy resources after render and set `loadComplete` when done.
-        if (!this.loadComplete) {
-          Polymer.RenderStatus.afterNextRender(this, function() {
-            this.importHref(this.resolveUrl('lazy-resources.html'), function() {
-              // Register service worker if supported.
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/service-worker.js');
-              }
-              //this._notifyNetworkStatus();
-              this.loadComplete = true;
-            });
-          });
-        }
-      },
-
 
       _offlineChanged: function(offline) {
         if (!offline) {

@@ -8,6 +8,9 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <link rel="import" href="../bower_components/polymer/polymer.html">
+
+
+
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-category-data.html">
@@ -16,7 +19,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="shop-gold-data.html">
 
 
-<dom-module id="shop-menu_all">
+
+<dom-module id="shop-shop-menu">
 
   <template>
 
@@ -74,75 +78,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-      shop-tabs, shop-tab {
-        --shop-tab-overlay: {
-          border-bottom: 2px solid var(--app-accent-color);
-        };
-      }
-
-      shop-tabs {
-        height: 100%;
-      }
-
-      shop-tab {
-        margin: 0 10px;
-      }
-
-      shop-tab a {
-        display: inline-block;
-        outline: none;
-        padding: 9px 5px;
-        font-size: 13px;
-        font-weight: 500;
-        text-decoration: none;
-        color: var(--app-primary-color);
-      }      
-
     </style>
 
     <!--
       app-route provides the name of the shop.
     -->
-    <app-route
-        route="[[route]]"
-        pattern="/:shop/:page"
-        data="{{routeData}}">
-    </app-route>
-
     <!--
       shop-category-data provides the shop data for a given shop name.
     -->
-
-    <firebase-query 
+    <firebase-query
       id="query"
       path="/items"
       data="{{items}}"
       order-by-child="/shopName"
-      start-at="[[route]]"
-      end-at="[[route]]"
+      start-at="[[shop]]"
+      end-at="[[shop]]"
       >
     </firebase-query>
-
- 
-
-  
-    MENU
 
     <ul class="grid" hidden$="[[failure]]">
       <template is="dom-repeat" items="[[items]]" as="item" initial-count="4">
         <li>
+          [[item.tittle]]
           <a href$="[[_getItemHref(item)]]"><shop-list-item item="[[item]]"></shop-list-item></a>
         </li>
       </template>
     </ul>
-
-
-
-
-
-
-
-
 
     <!--
       shop-network-warning shows a warning message when the items can't be rendered due
@@ -155,15 +116,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     Polymer({
 
-      is: 'shop-menu_all',
-
-      ready: function() {
-        document.title = this.route + ' - SHOP';
-      },
+      is: 'shop-shop-menu',
 
       properties: {
 
-        shop: Object,
+        shop: String,
 
         route: Object,
 
@@ -173,8 +130,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         page: {
           type: String,
-          reflectToAttribute: true,
-          observer: '_pageChanged'
+          reflectToAttribute: true
+        },
+
+        name: {
+          type: String
         },
 
         offline: {
@@ -187,8 +147,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       observers: [
-        '_shopChanged(shop, visible)',
-        '_routePageChanged(routeData.page)'
+
       ],
 
 
@@ -208,11 +167,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _shopChanged: function(shop, visible) {
         if (visible) {
+            console.log(this.shop);
           this.debounce('change-section', function() {
             // Notify the shop and the page's shopTitle
             this.fire('change-section', {
-              shop: shop.shopName,
-              shopTitle: shop.shopTitle
+
+              shop: this.shop,
+              shopTitle: this.shop
             });
           });
         }
@@ -227,21 +188,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.drawerOpened = false;
       },
 
-      _pageChanged: function(page, oldPage) {
-        if (page != null) {
-          // home route is eagerly loaded
-          if (page == 'home') {
-            this._pageLoaded(Boolean(oldPage));
-          // other routes are lazy loaded
-          } else {
-            this.importHref(
-              this.resolveUrl('shop-' + page + '.html'),
-              function() {
-                this._pageLoaded(Boolean(oldPage));
-              }, null, true);
-          }
-        }
-      },   
 
       _pageLoaded: function(shouldResetLayout) {
         this._ensureLazyLoaded();
@@ -252,7 +198,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.$.header.resetLayout();
           }, 1);
         }
-      },      
+      },
 
       _ensureLazyLoaded: function() {
         // load lazy resources after render and set `loadComplete` when done.

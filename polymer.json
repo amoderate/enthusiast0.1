@@ -5,6 +5,7 @@
     "src/shop-list.html",
     "src/shop-detail.html",
     "src/shop-item-create.html",
+    "src/shop-shop-create.html",
     "src/shop-listgold.html",
     "src/lazy-resources.html"
   ],

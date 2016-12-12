@@ -1,0 +1,845 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/file-input/file-input.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/google-apis/google-maps-api.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+
+
+
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+
+
+
+
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/google-map/google-map.html">
+
+<link rel="import" href="shop-button.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-select.html">
+
+
+<dom-module id="shop-shop-create">
+
+  <template>
+
+    <style include="shop-common-styles shop-button shop-select">
+
+      :host {
+        display: block;
+      }
+
+      #content {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+      shop-image {
+        position: relative;
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 600px;
+        --shop-image-img: {
+          @apply(--layout-fit);
+        };
+      }
+
+      shop-image::before {
+        content: "";
+        display: block;
+        padding-top: 100%;
+      }
+
+      .detail {
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 400px;
+        transition: opacity 0.4s;
+        opacity: 1;
+      }
+      .pre {
+            white-space: pre;
+            unicode-bidi: embed;
+        }
+
+    FILE-INPUT { position: relative; margin: 64px 32px;
+    width: 30%;
+    max-width:4600px;
+    width: 50px;
+    height: 50px;
+    padding: 16px 0 16px 0;
+    width: calc(99.66% - 8px);
+    margin: 8px auto;}
+
+      h1 {
+        font-size: 24px;
+        font-weight: 500;
+        line-height: 28px;
+        margin: 0;
+      }
+
+      .giant {
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 600px;
+        width: 100px;
+        height: 100px;
+        padding: 16px 0 16px 0;
+        width: calc(99.66% - 8px);
+        margin: 8px auto;
+        background: white;
+      }
+      .price {
+        margin: 16px 0 40px;
+        font-size: 16px;
+        color: var(--app-secondary-color);
+      }
+
+      .description {
+        margin: 32px 0;
+      }
+
+      .description > h2 {
+        margin: 16px 0;
+        font-size: 13px;
+      }
+
+      .description > p {
+        margin: 0;
+        color: var(--app-secondary-color);
+      }
+
+      .pickers {
+        @apply(--layout-vertical);
+        border-top: 1px solid #ccc;
+      }
+
+      .centered{
+        height: 100%;
+        padding: 16px 0 16px 0;
+        width: calc(99.66% - 8px);
+        margin: 8px auto;
+        background: white;
+      }
+
+      shop-select > select {
+        font-size: 16px;
+        padding: 16px 24px 16px 70px;
+      }
+
+      @media (max-width: 767px) {
+
+        #content {
+          @apply(--layout-vertical);
+          @apply(--layout-center);
+        }
+
+        shop-image {
+          margin: 0;
+          width: 80%;
+        }
+
+        .detail {
+          box-sizing: border-box;
+          margin: 32px 0;
+          padding: 0 24px;
+          width: 100%;
+          max-width: 600px;
+        }
+
+        h1 {
+          font-size: 20px;
+          line-height: 24px;
+        }
+
+        .price {
+          font-size: inherit;
+          margin: 12px 0 32px;
+        }
+
+      }
+
+    </style>
+
+    <!--
+      app-route provides the name of the category and the item.
+    -->
+    <app-route
+        route="[[route]]"
+        pattern="/:category/:item"
+        data="{{routeData}}">
+    </app-route>
+
+    <shop-category-data categories="{{categories}}"></shop-category-data>
+
+    <firebase-auth id="auth"
+      user="{{user}}"
+      provider="google"
+      on-error="showError"
+      >
+    </firebase-auth>
+
+    <firebase-query id="query"
+      path="/imageDraft/[[user.uid]]"
+      data="{{items}}"
+      limit-to-last="1"
+      >
+    </firebase-query>
+
+
+
+
+    <div id="content" hidden$="[[failure]]">
+
+      <template is="dom-repeat" items="{{items}}" as="item" hidden$="[[failure]]">
+        <shop-image alt="[[item.shopName]]" src="[[item.url]]"></shop-image>
+
+      </template>
+      <div class="detail">
+        <google-maps-api id="maps" api-key="AIzaSyDp_5oAA4F35biRBtx0nyWAfSSv61OjKnM" libraries="places" on-api-load="on_api_load"></google-maps-api>
+
+        <paper-input id="input" placeholder="" label="Shop Name ショップ名" class="input" type="text" value="{{shopName}}">
+        </paper-input>
+
+        <paper-input label="Address  場所" value="{{value}}">
+        </paper-input>
+
+        <paper-input label="Phone  電話番号" value="{{phone}}">
+        </paper-input>
+
+          <paper-menu>
+            <paper-icon-item>
+              <div item-icon>日</div>
+              <paper-input label="am open" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM"  value="{{sundayAmOpen}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="close" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM"  value="{{sundayAmClose}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="pm open" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM"  value="{{sundayPmOpen}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="close" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM"   value="{{sundayPmClose}}">>
+              </paper-input>
+
+            </paper-icon-item>
+            <paper-icon-item>
+              <div item-icon>月</div>
+              <paper-input label="am open" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM"  value="{{mondayAmOpen}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="close" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{mondayAmClose}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="pm open" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{mondayPmOpen}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="close" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{mondayPmClose}}">
+              </paper-input>
+            </paper-icon-item>
+            <paper-icon-item>
+              <div item-icon>火</div>
+              <paper-input label="am open" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{tuesdayAmOpen}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="close" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{tuesdayAmClose}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="pm open" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{tuesdayPmOpen}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="close" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{tuesdayPmClose}}">
+              </paper-input>
+            </paper-icon-item>
+            <paper-icon-item>
+              <div item-icon>水</div>
+              <paper-input label="am open" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{wednesdayAmOpen}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="close" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{wednesdayAmClose}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="pm open" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{wednesdayPmOpen}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="close" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{wednesdayPmClose}}">
+              </paper-input>
+            </paper-icon-item>
+
+            <paper-icon-item>
+              <div item-icon>木</div>
+              <paper-input label="am open" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{thursdayAmOpen}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="close" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{thursdayAmClose}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="pm open" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{thursdayPmOpen}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="close" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{thursdayPmClose}}">
+              </paper-input>
+            </paper-icon-item>
+
+            <paper-icon-item>
+              <div item-icon>金</div>
+              <paper-input label="am open" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{fridayAmOpen}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="close" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{fridayAmClose}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="pm open" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{fridayPmOpen}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="close" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{fridayPmClose}}">
+              </paper-input>
+            </paper-icon-item>
+
+            <paper-icon-item>
+              <div item-icon>土</div>
+              <paper-input label="am open" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{saturdayAmOpen}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="close" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{saturdayAmClose}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="pm open" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{saturdayPmOpen}}">
+              </paper-input>
+                &nbsp   &nbsp
+              <paper-input label="close" auto-validate pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{saturdayPmClose}}">
+              </paper-input>
+            </paper-icon-item>
+        </paper-menu>
+
+
+      <paper-textarea label="About your shop" value="{{about}}">
+      </paper-textarea>
+
+      <paper-input label="Theme" value="{{theme}}">
+      </paper-input>
+
+      <paper-tabs  scrollable  selected="{{theme}}" attr-for-selected="label">
+        <template is="dom-repeat" items="[[categories]]" as="category" initial-count="4" filter="{{computeFilter(theme)}}">
+          <paper-tab label="{{category.title}}">
+            {{category.title}}
+          </paper-tab>
+        </template>
+
+        </paper-tabs>
+
+        <paper-input label="#Tags" value="{{shopTags}}">
+        </paper-input>
+
+        <shop-button responsive>
+          <button on-tap="_uploadShopClick" aria-label="Add your shop">Add your shop</button>
+        </shop-button>
+        <div class="centered">
+          <file-input id="file-input" >
+            <iron-icon icon="image:photo-camera" class="giant" ></iron-icon>
+          </file-input>
+        </div>
+      </div>
+    </div>
+    <!--
+      shop-network-warning shows a warning message when the items can't be rendered due
+      to network conditions.
+    -->
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'shop-shop-create',
+
+      properties: {
+
+        item: Object,
+
+        route: Object,
+
+        routeData: Object,
+
+        visible: Boolean,
+
+        value: {
+          type: String,
+          notify: true
+        },
+
+        options: {
+          type: Object,
+          value: function () { return {}; }
+        },
+        place: {
+          type: Object,
+          value: function () { return {}; },
+          notify: true
+        },
+
+        phone: {
+          type: String,
+          notify: true
+        },
+
+        sundayAmOpen: {
+          type: String,
+          notify: true
+        },
+
+        sundayAmClose: {
+          type: String,
+          notify: true
+        },
+
+        sundayPmOpen: {
+          type: String,
+          notify: true
+        },
+
+        sundayPmClose: {
+          type: String,
+          notify: true
+        },
+
+        mondayAmOpen: {
+          type: String,
+          notify: true
+        },
+
+        mondayAmClose: {
+          type: String,
+          notify: true
+        },
+
+        mondayPmOpen: {
+          type: String,
+          notify: true
+        },
+
+        mondayPmClose: {
+          type: String,
+          notify: true
+        },
+
+        tuesdayAmOpen: {
+          type: String,
+          notify: true
+        },
+
+        tuesdayAmClose: {
+          type: String,
+          notify: true
+        },
+
+        tuesdayPmOpen: {
+          type: String,
+          notify: true
+        },
+
+        tuesdayPmClose: {
+          type: String,
+          notify: true
+        },
+        wednesdayAmOpen: {
+          type: String,
+          notify: true
+        },
+
+        wednesdayAmClose: {
+          type: String,
+          notify: true
+        },
+
+        wednesdayPmOpen: {
+          type: String,
+          notify: true
+        },
+
+        wednesdayPmClose: {
+          type: String,
+          notify: true
+        },
+
+        thursdayAmOpen: {
+          type: String,
+          notify: true
+        },
+
+        thursdayAmClose: {
+          type: String,
+          notify: true
+        },
+
+        thursdayPmOpen: {
+          type: String,
+          notify: true
+        },
+
+        thursdayPmClose: {
+          type: String,
+          notify: true
+        },
+
+        fridayAmOpen: {
+          type: String,
+          notify: true
+        },
+
+        fridayAmClose: {
+          type: String,
+          notify: true
+        },
+
+        fridayPmOpen: {
+          type: String,
+          notify: true
+        },
+
+        fridayPmClose: {
+          type: String,
+          notify: true
+        },
+
+        saturdayAmOpen: {
+          type: String,
+          notify: true
+        },
+
+        saturdayAmClose: {
+          type: String,
+          notify: true
+        },
+
+        saturdayPmOpen: {
+          type: String,
+          notify: true
+        },
+
+        saturdayPmClose: {
+          type: String,
+          notify: true
+        },
+
+        offline: {
+          type: Boolean,
+          observer: '_offlineChanged'
+        },
+        items: {
+          type: Object,
+          notify: true
+        },
+
+        shopName: {
+          type: String,
+          notify: true
+
+        },
+        itemName: {
+          type: String,
+          notify: true
+
+        },
+        theme:{
+          type: String,
+          notify: true
+        },
+
+        about:{
+          type: String,
+          notify: true
+        },
+        itemPrice:{
+          type: String,
+          value:'',
+          notify: true
+        },
+
+        shopTags:{
+          type: String,
+          value:'',
+          notify: true
+        },
+
+        place: {
+          type: Object,
+          notify: true
+        },
+
+        tokens: {
+          type: Array,
+          notify: true
+        },
+
+        shoptypes:{
+          type: String,
+          notify: true
+        },
+
+        searchString: {
+          type: String,
+          value: 'For the love of beer',
+          notify: true
+        },
+
+        failure: Boolean
+
+      },
+
+      listeners: {
+      'file-input.change': 'imageUploadTap'
+      },
+
+      _unescapeText: function(text) {
+        var elem = document.createElement('textarea');
+        elem.innerHTML = text;
+        return elem.textContent;
+      },
+
+      _formatPrice: function(price) {
+        return price ? '$' + price.toFixed(2) : '';
+      },
+
+      _addToCart: function() {
+        // This event will be handled by shop-app.
+        this.fire('add-cart-item', {
+          item: this.item,
+          quantity: parseInt(this.$.quantitySelect.value, 10),
+          size: this.$.sizeSelect.value
+        });
+      },
+
+      _isDefined: function(item) {
+        return item != null;
+      },
+
+
+      imageUploadTap: function(e) {
+        var file = e.target.files[0];
+        var storageRef = firebase.storage().ref('image/' + file.name);
+        var uploadTask = storageRef.put(file);
+        var shopName = this.shopName;
+        console.log(shopName);
+
+        uploadTask.on('state_changed', function progress(snapshot){
+          var precentage = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+
+        },
+        function error(err){
+
+        },
+        function (){
+
+          var newImageKey = firebase.database().ref().child('imageDraft/').push().key;
+          var user = firebase.auth().currentUser;
+          var downloadURL = uploadTask.snapshot.downloadURL;
+          var updates = {};
+          var imageData = {
+            url: downloadURL,
+            user: user.uid,
+            shop: shopName
+          };
+          updates['/imageDraft/'+ user.uid + '/' + newImageKey] = imageData;
+          updates['/users/' + user.uid + "/image/" + newImageKey] = imageData;
+          console.log(downloadURL)
+          firebase.database().ref().update(updates);
+
+        })
+     },
+     _uploadShopClick: function(e) {
+       var user = firebase.auth().currentUser;
+       var shopNames= this.shopName;
+       var values = this.value;
+       var phones = this.phone;
+       var abouts = this.about;
+
+       var sundayAmOpens = this.sundayAmOpen;
+       var sundayAmCloses = this.sundayAmClose;
+       var sundayPmOpens = this.sundayPmOpen;
+       var sundayPmCloses = this.sundayPmClose;
+       var mondayAmOpens = this.mondayAmOpen;
+       var mondayAmCloses = this.mondayAmClose;
+       var mondayPmOpens = this.mondayPmOpen;
+       var mondayPmCloses = this.mondayPmClose;
+       var tuesdayAmOpens = this.tuesdayAmOpen;
+       var tuesdayAmCloses = this.tuesdayAmClose;
+       var tuesdayPmOpens = this.tuesdayPmOpen;
+       var tuesdayPmCloses = this.tuesdayPmClose;
+       var wednesdayAmOpens = this.wednesdayAmOpen;
+       var wednesdayAmCloses = this.wednesdayAmClose;
+       var wednesdayPmOpens = this.wednesdayPmOpen;
+       var wednesdayPmCloses = this.wednesdayPmClose;
+       var thursdayAmOpens = this.thursdayAmOpen;
+       var thursdayAmCloses = this.thursdayAmClose;
+       var thursdayPmOpens = this.thursdayPmOpen;
+       var thursdayPmCloses = this.thursdayPmClose;
+       var fridayAmOpens = this.fridayAmOpen;
+       var fridayAmCloses = this.fridayAmClose;
+       var fridayPmOpens = this.fridayPmOpen;
+       var fridayPmCloses = this.fridayPmClose;
+       var saturdayAmOpens = this.saturdayAmOpen;
+       var saturdayAmCloses = this.saturdayAmClose;
+       var saturdayPmOpens = this.saturdayPmOpen;
+       var saturdayPmCloses = this.saturdayPmClose;
+
+       var shopTags = this.shopTags;
+
+       var themes = this.theme;
+       var newShopKey = firebase.database().ref().child('shops').push().key;
+       if (user != null && (this.value != null || this.shopName  != null ||  this.phone != null)) {
+       this.shopName = '';
+       this.value = '';
+       this.phone = '';
+       this.theme = '';
+       this.about = '';
+       this.shopTags = '';
+       this.sundayAmOpen = '';
+       this.sundayAmClose = '';
+        this.sundayPmOpen = '';
+        this.sundayPmClose = '';
+        this.mondayAmOpen = '';
+        this.mondayAmClose = '';
+        this.mondayPmOpen = '';
+        this.mondayPmClose = '';
+        this.tuesdayAmOpen = '';
+        this.tuesdayAmClose = '';
+        this.tuesdayPmOpen = '';
+        this.tuesdayPmClose = '';
+        this.wednesdayAmOpen = '';
+        this.wednesdayAmClose = '';
+        this.wednesdayPmOpen = '';
+        this.wednesdayPmClose = '';
+        this.thursdayAmOpen = '';
+        this.thursdayAmClose = '';
+        this.thursdayPmOpen = '';
+        this.thursdayPmClose = '';
+        this.fridayAmOpen = '';
+        this.fridayAmClose = '';
+        this.fridayPmOpen = '';
+        this.fridayPmClose = '';
+        this.saturdayAmOpen = '';
+        this.saturdayAmClose = '';
+        this.saturdayPmOpen = '';
+        this.saturdayPmClose = '';
+     }
+
+       if (user != null && this.shopName != null) {
+          console.log("it's clicked");
+           this.items.forEach(function (post) {
+             var urls = post.url;
+             var users = post.user;
+             var updates = {};
+             var shopData = {
+               url: urls,
+               user: post.user,
+               shopName: shopNames,
+               phone: phones,
+               address: values,
+               theme: themes,
+               about: abouts,
+               shopTags: shopTagss,
+               sundayAmClose: sundayAmCloses,
+               sundayPmOpen: sundayPmOpens,
+               sundayPmClose: sundayPmCloses,
+               mondayAmOpen: mondayAmOpens,
+               mondayAmClose: mondayAmCloses,
+               mondayPmOpen: mondayPmOpens,
+               mondayPmClose: mondayPmCloses,
+               tuesdayAmOpen: tuesdayAmOpens,
+               tuesdayAmClose: tuesdayAmCloses,
+               tuesdayPmOpen: tuesdayPmOpens,
+               tuesdayPmClose: tuesdayPmCloses,
+               wednesdayAmOpen: wednesdayAmOpens,
+               wednesdayAmClose: wednesdayAmCloses,
+               wednesdayPmOpen: wednesdayPmOpens,
+               wednesdayPmClose: wednesdayPmCloses,
+               thursdayAmOpen: thursdayAmOpens,
+               thursdayAmClose: thursdayAmCloses,
+               thursdayPmOpen: thursdayPmOpens,
+               thursdayPmClose: thursdayPmCloses,
+               fridayAmOpen: fridayAmOpens,
+               fridayAmClose: fridayAmCloses,
+               fridayPmOpen: fridayPmOpens,
+               fridayPmClose: fridayPmCloses,
+               saturdayAmOpen: saturdayAmOpens,
+               saturdayAmClose: saturdayAmCloses,
+               saturdayPmOpen: saturdayPmOpens,
+               saturdayPmClose: saturdayPmCloses,
+               shopid: newShopKey
+              };
+              updates['/shops/' + newShopKey] = shopData;
+              console.log(updates);
+              firebase.database().ref().update(updates);
+              firebase.database().ref().child('imageDraft').remove();
+
+           });
+         }
+       },
+       computeFilter: function(string) {
+       if (!string) {
+         // set filter to null to disable filtering
+         return null;
+       } else {
+         // return a filter function for the current search string
+         string = string.toLowerCase();
+         return function(item) {
+           var japanese_name = item.title.toLowerCase();
+           var english_name = item.name.toLowerCase();
+           return (japanese_name.indexOf(string) != -1 ||
+               english_name.indexOf(string) != -1);
+         };
+       }
+     },
+
+     on_api_load: function () {
+       this.autocomplete = new google.maps.places.Autocomplete(this.$.input, this.options);
+       google.maps.event.addListener(this.autocomplete, 'place_changed', this.on_change_place.bind(this));
+     },
+
+     on_change_place: function () {
+       this.place = this.autocomplete.getPlace();
+       if (!this.place.address_components) {
+         return;
+       }
+       this.value = this.place.formatted_address;
+       this.phone = this.place.formatted_phone_number;
+       this.shopName = this.place.name;
+       console.log(this.place);
+     },
+
+     toggleSelection: function(e) {
+       console.log("it's selected")
+      var item = this.$.categories.itemForElement(e.target);
+      this.$.selector.select(item.title)
+      this.theme = item.name
+    }
+    });
+
+</script>
+
+</dom-module>

@@ -24,6 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icons/maps-icons.html">
 <link rel="import" href="shop-category-data.html">
 <!-- Since 'home' is the default route, eagerly load it. -->
 <link rel="import" href="shop-home.html">
@@ -37,7 +38,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         display: block;
         position: relative;
-        padding-top: 130px;
+        padding-top: 64px;
         padding-bottom: 64px;
         min-height: 100vh;
         --app-primary-color: #202020;
@@ -67,7 +68,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .logo {
         text-align: center;
-        padding-left: 67px;
+        padding-left: 115px;
       }
 
       .logo a {
@@ -213,6 +214,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         >
     </firebase-app>
 
+
     <firebase-auth
       id="auth"
       user="{{user}}"
@@ -246,16 +248,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     -->
     <shop-category-data categories="{{categories}}"></shop-category-data>
 
-
     <app-header role="navigation" id="header" effects="waterfall" condenses reveals>
       <app-toolbar>
         <div class="left-bar-item">
-          <paper-icon-button
-              class="menu-btn"
-              icon="menu"
-              on-click="_toggleDrawer"
-              aria-label="Categories">
-          </paper-icon-button>
+
           <a class="back-btn" href="/list/[[categoryName]]" tabindex="-1">
             <paper-icon-button icon="arrow-back" aria-label="Go back"></paper-icon-button>
           </a>
@@ -268,25 +264,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
 
         <div>
+          <a href="/shop-create" tabindex="-1">
+            <paper-icon-button icon="maps:add-location"></paper-icon-button>
+          </a>
+        </div>
+
+        <div>
         <paper-button hidden$="[[user]]" on-tap="signInWithGoogle">sign in</paper-button>
         <paper-button hidden$="[[!user]]" on-tap="signOut">sign out</paper-button>
         </div>
       </app-toolbar>
 
       <!-- Lazy-create the tabs for larger screen sizes. -->
-      <div id="tabContainer" sticky$="[[_shouldShowTabs]]" hidden$="[[!_shouldShowTabs]]">
-        <template is="dom-if" if="[[_shouldRenderTabs]]">
-          <shop-tabs
-              selected="[[categoryName]]"
-              attr-for-selected="name">
-            <template is="dom-repeat" items="[[categories]]" as="category" initial-count="4">
-              <shop-tab name="[[category.name]]">
-                <a href="/list/[[category.name]]">[[category.title]]</a>
-              </shop-tab>
-            </template>
-          </shop-tabs>
-        </template>
-      </div>
+
     </app-header>
 
     <!-- Lazy-create the drawer for small screen sizes. -->
@@ -307,11 +297,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <!-- list view of items in a category -->
       <shop-list name="list" route="[[subroute]]" offline="[[offline]]"></shop-list>
       <!-- list view of items in a shop page -->
-      <shop-listgold name="listgold" route="[[subroute]]" offline="[[offline]]"></shop-listgold>
+      <shop-list-item name="list-item" route="[[subroute]]" offline="[[offline]]"></shop-list-item>
       <!-- detail view of one item -->
       <shop-detail name="detail" route="[[subroute]]" offline="[[offline]]"></shop-detail>
       <!-- create an item -->
       <shop-item-create name="item-create"></shop-item-create>
+      <!-- detail view of one item -->
+      <shop-shop-home name="shop-home" route="[[subroute]]" offline="[[offline]]"></shop-shop-home>
+      <!--create a shop --->
+      <shop-shop-create name="shop-create"></shop-shop-create>
 
     </iron-pages>
 
@@ -455,6 +449,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Elements in the app can notify section changes.
       // Response by a11y announcing the section and syncronizing the category.
       _onChangeSection: function(event) {
+        console.log(event)
         var detail = event.detail;
         this.categoryName = detail.category || '';
         // Announce the page's title
