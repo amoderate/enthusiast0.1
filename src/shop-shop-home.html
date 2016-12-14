@@ -139,18 +139,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           About
         </div>
         <div>
-        <google-map-search map="[[map]]" query="Pizza" results="{{results}}">
-        </google-map-search>
-          <google-map map="{{map}}" latitude="37.779"
-          longitude="-122.3892"  api-key="AIzaSyD3E1D9b-Z7ekrT3tbhl_dy8DCXuIuDDRc">
-          <template is="dom-repeat" items="{{results}}" as="marker">
-            <google-map-marker latitude="{{marker.latitude}}"
-              longitude="{{marker.longitude}}">
-              <h2>{{marker.name}}</h2>
-                <span>{{marker.formatted_address}}</span>
-            </google-map-marker>
-          </template>
-        </google-map>
+          <google-map latitude="37.77493" longitude="-122.41942">
+  <google-map-marker latitude="37.779" longitude="-122.3892"
+      title="Go Giants!"></google-map-marker>
+</google-map>
       </div>
       </iron-pages>
 

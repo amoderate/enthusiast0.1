@@ -1,12 +1,17 @@
 <html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+
+
+
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-category-data.html">
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-image.html">
-<link rel="import" href="shop-list-item.html">
+<link rel="import" href="shop-gold-data.html">
 
-</head><body><dom-module id="shop-list">
+
+
+</head><body><dom-module id="shop-shop-menu">
 
   <template>
 
@@ -53,9 +58,9 @@
       }
 
       @media (max-width: 767px) {
-        .hero-image {
+/*        .hero-image {
           display: none;
-        }
+        }*/
 
         .grid  li {
           -webkit-flex-basis: 50%;
@@ -67,28 +72,14 @@
     </style>
 
     
-    <app-route route="[[route]]" pattern="/:category" data="{{routeData}}">
-    </app-route>
-
-
-
     
-    <shop-category-data id="categoryData" category-name="[[routeData.category]]" category="{{category}}" failure="{{failure}}">
-    </shop-category-data>
-
-    <firebase-query id="query" path="/items" data="{{itemList}}" order-by-child="/theme" start-at="[[category.title]]" end-at="[[category.title]]">
+    <firebase-query id="query" path="/items" data="{{items}}" order-by-child="/shopName" start-at="[[shop]]" end-at="[[shop]]">
     </firebase-query>
 
-    <shop-image alt="[[category.title]]" src="[[category.image]]" placeholder-img="[[category.placeholder]]" class="hero-image"></shop-image>
-
-    <header>
-      <h1>[[category.title]]</h1>
-      <span>[[_getPluralizedQuantity(itemList.length)]]</span>
-    </header>
-
     <ul class="grid" hidden$="[[failure]]">
-      <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
+      <template is="dom-repeat" items="[[items]]" as="item" initial-count="4">
         <li>
+          [[item.tittle]]
           <a href$="[[_getItemHref(item)]]"><shop-list-item item="[[item]]"></shop-list-item></a>
         </li>
       </template>
@@ -96,10 +87,9 @@
 
     
 
-
   </template>
 
-  <script>Polymer({is:"shop-list",properties:{category:Object,route:Object,routeData:Object,visible:Boolean,offline:{type:Boolean,observer:"_offlineChanged"},failure:Boolean},observers:["_categoryChanged(category, visible)"],_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(e){return console.log(e),e.shopName?["/detail",e.shopName,e.itemName,e.itemid].join("/"):null},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_categoryChanged:function(e,t){t&&this.debounce("change-section",function(){this.fire("change-section",{category:e.name,title:e.title})})},_tryReconnect:function(){this.$.categoryData.refresh()},_offlineChanged:function(e){e||this._tryReconnect()}});</script>
+  <script>Polymer({is:"shop-shop-menu",properties:{shop:String,route:Object,routeData:Object,visible:Boolean,page:{type:String,reflectToAttribute:!0},name:{type:String},offline:{type:Boolean,observer:"_offlineChanged"},failure:Boolean},observers:[],_getItemHref:function(e){return e.itemName?["/detail",e.shopName,e.itemName,e.itemid].join("/"):null},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_shopChanged:function(e,t){t&&(console.log(this.shop),this.debounce("change-section",function(){this.fire("change-section",{shop:this.shop,shopTitle:this.shop})}))},_routePageChanged:function(e){this.page=e||"home",Polymer.AppLayout.scroll({top:0,behavior:"silent"}),this.drawerOpened=!1},_pageLoaded:function(e){this._ensureLazyLoaded(),e&&this.async(function(){this.$.header.resetLayout()},1)},_ensureLazyLoaded:function(){this.loadComplete||Polymer.RenderStatus.afterNextRender(this,function(){this.importHref(this.resolveUrl("lazy-resources.html"),function(){"serviceWorker"in navigator&&navigator.serviceWorker.register("/service-worker.js"),this.loadComplete=!0})})},_offlineChanged:function(e){}});</script>
 
 </dom-module>
 </body></html>
