@@ -17,6 +17,9 @@
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-icons/maps-icons.html">
 
+
+
+
 <link rel="import" href="shop-category-data.html">
 
 <link rel="import" href="shop-home.html">
@@ -192,6 +195,12 @@
         :host([page=detail]) .menu-btn {
           display: none;
         }
+
+        .logo {
+          text-align: justify;
+          @apply(--layout-center);
+          padding-left: 7px;
+        }
       }
 
     </style>
@@ -240,8 +249,8 @@
         </div>
 
         <div>
-        <paper-button hidden$="[[user]]" on-tap="signInWithGoogle">sign in</paper-button>
-        <paper-button hidden$="[[!user]]" on-tap="signOut">sign out</paper-button>
+        <paper-button hidden$="[[user]]" on-tap="signInWithGoogle"><iron-icon icon="icons:lock-open"></iron-icon></paper-button>
+        <paper-button toggles="" raised="" hidden$="[[!user]]" on-tap="signOut"><iron-icon icon="icons:lock-outline"></iron-icon></paper-button>
         </div>
       </app-toolbar>
 
