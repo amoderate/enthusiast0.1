@@ -18,6 +18,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-list-menu.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 
 
 
@@ -98,6 +99,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <firebase-query id="query" path="/items" data="{{items}}" order-by-child="/shopName" start-at="{{routeData.shop}}" end-at="{{routeData.shop}}">
     </firebase-query>
 
+
+
+    <firebase-query 
+      id="queryAddress"
+      path="/shops"         
+      order-by-child="/shopName"
+      equal-to="[[routeData.shop]]"
+      data="{{addressQueryResult}}"
+      >
+    </firebase-query>
+
+    <iron-ajax
+      id="queryGPS"
+      url="http://maps.google.com/maps/api/geocode/json?address=[[shopAddress]]"        
+      handle-as="json"
+      on-response="handleAjaxGPSresponse"
+      debounce-duration="300">
+    </iron-ajax>
+
+
+
       <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
           <h1>Welcome to [[routeData.shop]]!</h1>
         <paper-tabs selected="{{selected}}">
@@ -111,23 +133,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <iron-pages selected="{{selected}}">
         <div>
           <ul class="grid">
-          <template is="dom-repeat" items="[[items]]" as="item">
-            <li>
-              <a href$="[[_getItemHref(item)]]">
+            <template is="dom-repeat" items="[[items]]" as="item">
+              <li>
+                <a href$="[[_getItemHref(item)]]">
+                  <shop-list-menu item="[[item]]"></shop-list-menu></a>
+              </li>
+            </template>
+          </ul>
+        </div>
 
-                <shop-list-menu item="[[item]]"></shop-list-menu></a>
-            </li>
-          </template>
-        </ul>
-        </div>
         <div>
-          About
+          [[shopAbout]]
         </div>
+
         <div>
-          <google-map latitude="37.77493" longitude="-122.41942" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E">
-          <google-map-marker latitude="37.779" longitude="-122.3892" title="Go Giants!"></google-map-marker>
-        </google-map>
-      </div>
+          <google-map latitude="[[shopLat]]" longitude="[[shopLong]]" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E">
+            <google-map-marker latitude="[[shopLat]]" longitude="[[shopLong]]" title="[[routeData.shop]]"></google-map-marker>
+          </google-map>
+        </div>
       </iron-pages>
 
   </template>
@@ -148,8 +171,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         item: Object,
 
-        menuTitles : Object
+        menuTitles : Object,
+
+        addressQueryResult: {
+          type: Array,
+          notify: true,          
+        },
+        
+        shopAbout: {
+          type: String,
+          notify: true,          
+        },
+
+        shopAddress: {
+          type: Number,
+          notify: true,          
+        },
+
+        shopLat: {
+          type: Number,
+          notify: true,          
+        },
+
+        shopLong: {
+          type: Number,
+          notify: true,          
+        },        
       },
+
+      observers: [
+        '_addressQueryResultChanged(addressQueryResult.splices)'
+      ],  
+
       ready: function() {
         document.title = this.routeData.shop + ' - SHOP';
 
@@ -171,9 +224,42 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             title: 'Chat with Us'
           }
         ];
+
+        console.log("aaa" + this.routeData.shop);
+
       },
 
+      _addressQueryResultChanged: function(changeRecord) {
+        if (changeRecord) {            
+            console.log(changeRecord);
+            changeRecord.indexSplices.forEach(function(s) {
+                s.object.forEach(function(shop) {
+                  //console.log(shop.$key);
+                  //console.log(shop.about);
+                  //console.log(shop.address);
+                  this.shopAbout = shop.about;
+                  this.shopAddress = shop.address;
+                  this.$.queryGPS.generateRequest();
+                }.bind(this));                
+            }.bind(this));
+        }
+      },
 
+      handleAjaxGPSresponse: function(request) {
+        console.log(request.detail.response);
+        //console.log(this.$.queryGPS.lastResponse);
+        var response = request.detail.response;
+        response.results.forEach(function(s) {
+            //s.object.forEach(function(shop) {
+              //console.log(s.geometry);
+              //console.log(s.geometry.location);
+              //console.log(s.geometry.location.lat);
+              //console.log(s.geometry.location.lng);
+              this.shopLat = s.geometry.location.lat;
+              this.shopLong = s.geometry.location.lng;
+            //}.bind(this));                
+        }.bind(this));
+      },
 
       _getListItems: function(items) {
         // Return placeholder items when the items haven't loaded yet.
@@ -183,7 +269,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _getItemHref: function(item) {
         // By returning null when `itemId` is undefined, the href attribute won't be set and
         // the link will be disabled.
-        console.log(this.routeData.shop);
+        // console.log(this.routeData.shop);
         return item.shopName ? ['/detail', item.shopName, item.itemName, item.itemid].join('/') : null;
       },
 

@@ -37,7 +37,8 @@
     "google-apis": "GoogleWebComponents/google-apis#^1.1.7",
     "google-map": "GoogleWebComponents/google-map#^1.1.14",
     "moment-element": "abdonrd/moment-element#^0.4.3",
-    "paper-menu": "PolymerElements/paper-menu#^1.2.2"
+    "paper-menu": "PolymerElements/paper-menu#^1.2.2",
+    "iron-ajax": "PolymerElements/iron-ajax#^1.4.3"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"

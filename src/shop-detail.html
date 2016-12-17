@@ -238,7 +238,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _getItemHref: function(item) {
         // By returning null when `itemId` is undefined, the href attribute won't be set and
         // the link will be disabled.
-        console.log(['/base', item.shopName].join('/'))
+        //console.log(['/base', item.shopName].join('/'))
         return item.shopName ? ['/base', item.shopName].join('/') : null;
       },
 
@@ -249,8 +249,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _goToShopPage: function() {
-        console.log("SHOP PAGE: " + this.routeData.shopName);
-        console.log(this.routeData.shop)
+        //console.log("SHOP PAGE: " + this.routeData.shopName);
+        //console.log(this.routeData.shop)
       },
 
 
