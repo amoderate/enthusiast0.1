@@ -101,7 +101,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       path="/items"
       data="{{itemList}}"
       order-by-child="/theme"
-      start-at="[[category.title}}"
+      start-at="[[category.title]]"
       end-at="[[category.title]]"
       >
     </firebase-query>
@@ -171,7 +171,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // the link will be disabled.
         console.log(item)
         return item.shopName ? ['/detail', item.shopName, item.itemName, item.itemid].join('/') : null;
-
       },
 
       _getPluralizedQuantity: function(quantity) {

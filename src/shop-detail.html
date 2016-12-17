@@ -15,6 +15,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-image.html">
 <link rel="import" href="shop-select.html">
+<link rel="import" href="shop-list-item-detail.html">
+
+
 
 <dom-module id="shop-detail">
 
@@ -172,11 +175,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div class="detail" has-content$="[[_isDefined(item)]]">
         <div class="description">
           <h2>Description</h2>
-            <h1>[[item.itemName]]</h1>
+            <h1>[[item.itemName]] by [[item.shopName]]</h1>
         </div>
         <shop-button>
           <button on-tap="_goToShopPage" aria-label="Visit Shop">
-            <a href$="/base/[[routeData.shop]]"> Jump to [[routeData.shop]]</a>
+            <a href$="[[_getItemHref(item)]]"><shop-list-item-detail item="[[item]]" ></shop-list-item-detail> Visit [[routeData.shop]]</a>
           </button>
         </shop-button>
 
@@ -232,13 +235,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       },
 
+      _getItemHref: function(item) {
+        // By returning null when `itemId` is undefined, the href attribute won't be set and
+        // the link will be disabled.
+        console.log(['/base', item.shopName].join('/'))
+        return item.shopName ? ['/base', item.shopName].join('/') : null;
+      },
+
+
+
       _isDefined: function(item) {
         return item != null;
       },
 
       _goToShopPage: function() {
-        console.log("SHOP PAGE: " + this.routeData.item);
-        console.log(this.routeData.item)
+        console.log("SHOP PAGE: " + this.routeData.shopName);
+        console.log(this.routeData.shop)
       },
 
 

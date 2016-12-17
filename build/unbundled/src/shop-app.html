@@ -16,7 +16,10 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-icons/maps-icons.html">
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
 <link rel="import" href="shop-category-data.html">
 
 <link rel="import" href="shop-home.html">
@@ -30,7 +33,7 @@
       :host {
         display: block;
         position: relative;
-        padding-top: 130px;
+        padding-top: 64px;
         padding-bottom: 64px;
         min-height: 100vh;
         --app-primary-color: #202020;
@@ -60,7 +63,7 @@
 
       .logo {
         text-align: center;
-        padding-left: 67px;
+        padding-left: 115px;
       }
 
       .logo a {
@@ -196,10 +199,11 @@
 
     </style>
 
-    <shop-analytics key="UA-39334307-16"></shop-analytics>
+    
 
     <firebase-app api-key="AIzaSyBYmC4Xe-kENDLjRKLSXDPkK2t8p6AOdI8" auth-domain="obsessed-tokyo.firebaseapp.com" database-url="https://obsessed-tokyo.firebaseio.com" storage-bucket="obsessed-tokyo.appspot.com">
     </firebase-app>
+
 
     <firebase-auth id="auth" user="{{user}}" provider="google" on-error="showError">
     </firebase-auth>
@@ -218,12 +222,10 @@
     
     <shop-category-data categories="{{categories}}"></shop-category-data>
 
-
     <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
       <app-toolbar>
         <div class="left-bar-item">
-          <paper-icon-button class="menu-btn" icon="menu" on-click="_toggleDrawer" aria-label="Categories">
-          </paper-icon-button>
+
           <a class="back-btn" href="/list/[[categoryName]]" tabindex="-1">
             <paper-icon-button icon="arrow-back" aria-label="Go back"></paper-icon-button>
           </a>
@@ -240,23 +242,19 @@
           </a>
         </div>
         <div>
+          <a href="/shop-create" tabindex="-1">
+            <paper-icon-button icon="maps:add-location"></paper-icon-button>
+          </a>
+        </div>
+
+        <div>
         <paper-button hidden$="[[user]]" on-tap="signInWithGoogle">sign in</paper-button>
         <paper-button hidden$="[[!user]]" on-tap="signOut">sign out</paper-button>
         </div>
       </app-toolbar>
 
       
-      <div id="tabContainer" sticky$="[[_shouldShowTabs]]" hidden$="[[!_shouldShowTabs]]">
-        <template is="dom-if" if="[[_shouldRenderTabs]]">
-          <shop-tabs selected="[[categoryName]]" attr-for-selected="name">
-            <template is="dom-repeat" items="[[categories]]" as="category" initial-count="4">
-              <shop-tab name="[[category.name]]">
-                <a href="/list/[[category.name]]">[[category.title]]</a>
-              </shop-tab>
-            </template>
-          </shop-tabs>
-        </template>
-      </div>
+
     </app-header>
 
     
@@ -276,15 +274,27 @@
       <shop-home name="home" categories="[[categories]]"></shop-home>
       
       <shop-list name="list" route="[[subroute]]" offline="[[offline]]"></shop-list>
+<<<<<<< HEAD
 \      
+=======
+      
+      <shop-list-item name="list-item" route="[[subroute]]" offline="[[offline]]"></shop-list-item>
+      
+>>>>>>> master
       <shop-detail name="detail" route="[[subroute]]" offline="[[offline]]"></shop-detail>
       
       <shop-item-create name="item-create"></shop-item-create>
       
+<<<<<<< HEAD
       <shop-shop-create name="shop-create"></shop-shop-create>
       
       <shop-base name="base"></shop-base>
 
+=======
+      <shop-shop-home name="shop-home" route="[[subroute]]" offline="[[offline]]"></shop-shop-home>
+      
+      <shop-shop-create name="shop-create"></shop-shop-create>
+>>>>>>> master
 
     </iron-pages>
 
@@ -294,7 +304,7 @@
 
   </template>
 
-  <script>window.performance&&performance.mark&&performance.mark("shop-app - before register"),Polymer({is:"shop-app",properties:{page:{type:String,reflectToAttribute:!0,observer:"_pageChanged"},numItems:{type:Number,value:0},_shouldShowTabs:{computed:"_computeShouldShowTabs(page, smallScreen)"},_shouldRenderTabs:{computed:"_computeShouldRenderTabs(_shouldShowTabs, loadComplete)"},_shouldRenderDrawer:{computed:"_computeShouldRenderDrawer(smallScreen, loadComplete)"}},observers:["_routePageChanged(routeData.page)"],listeners:{"change-section":"_onChangeSection",announce:"_onAnnounce","dom-change":"_domChange"},created:function(){window.performance&&performance.mark&&performance.mark("shop-app.created"),this.removeAttribute("unresolved")},ready:function(){Polymer.RenderStatus.afterNextRender(this,function(){this.listen(window,"online","_notifyNetworkStatus"),this.listen(window,"offline","_notifyNetworkStatus")})},_routePageChanged:function(e){this.page=e||"home",Polymer.AppLayout.scroll({top:0,behavior:"silent"}),this.drawerOpened=!1},_pageChanged:function(e,o){null!=e&&("home"==e?this._pageLoaded(Boolean(o)):this.importHref(this.resolveUrl("shop-"+e+".html"),function(){this._pageLoaded(Boolean(o))},null,!0))},_pageLoaded:function(e){this._ensureLazyLoaded(),e&&this.async(function(){this.$.header.resetLayout()},1)},_ensureLazyLoaded:function(){this.loadComplete||Polymer.RenderStatus.afterNextRender(this,function(){this.importHref(this.resolveUrl("lazy-resources.html"),function(){"serviceWorker"in navigator&&navigator.serviceWorker.register("/service-worker.js"),this._notifyNetworkStatus(),this.loadComplete=!0})})},_notifyNetworkStatus:function(){var e=this.offline;this.offline=!navigator.onLine,(this.offline||!this.offline&&e===!0)&&(this._networkSnackbar||(this._networkSnackbar=document.createElement("shop-snackbar"),Polymer.dom(this.root).appendChild(this._networkSnackbar)),Polymer.dom(this._networkSnackbar).innerHTML=this.offline?"You are offline":"You are online",this._networkSnackbar.open())},_toggleDrawer:function(){this.drawerOpened=!this.drawerOpened},_onChangeSection:function(e){var o=e.detail;this.categoryName=o.category||"",o.title&&(document.title=o.title+" - SHOP",this._announce(o.title+", loaded"))},_onAnnounce:function(e){this._announce(e.detail)},_announce:function(e){this._a11yLabel="",this.debounce("_a11yAnnouncer",function(){this._a11yLabel=e},100)},_domChange:function(e){if(window.performance&&performance.mark&&!this.__loggedDomChange){var o=Polymer.dom(e).rootTarget;o.domHost.is.match(this.page)&&(this.__loggedDomChange=!0,performance.mark(o.domHost.is+".domChange"))}},_computeShouldShowTabs:function(e,o){return("home"===e||"list"===e||"detail"===e)&&!o},_computeShouldRenderTabs:function(e,o){return e&&o},_computeShouldRenderDrawer:function(e,o){return e&&o},_computePluralizedQuantity:function(e){return e+" "+(1===e?"item":"items")},signInWithGoogle:function(){this.error=null,this.$.auth.signInWithPopup()},signOut:function(){this.error=null,this.$.auth.signOut()}});</script>
+  <script>window.performance&&performance.mark&&performance.mark("shop-app - before register"),Polymer({is:"shop-app",properties:{page:{type:String,reflectToAttribute:!0,observer:"_pageChanged"},numItems:{type:Number,value:0},_shouldShowTabs:{computed:"_computeShouldShowTabs(page, smallScreen)"},_shouldRenderTabs:{computed:"_computeShouldRenderTabs(_shouldShowTabs, loadComplete)"},_shouldRenderDrawer:{computed:"_computeShouldRenderDrawer(smallScreen, loadComplete)"}},observers:["_routePageChanged(routeData.page)"],listeners:{"change-section":"_onChangeSection",announce:"_onAnnounce","dom-change":"_domChange"},created:function(){window.performance&&performance.mark&&performance.mark("shop-app.created"),this.removeAttribute("unresolved")},ready:function(){Polymer.RenderStatus.afterNextRender(this,function(){this.listen(window,"online","_notifyNetworkStatus"),this.listen(window,"offline","_notifyNetworkStatus")})},_routePageChanged:function(e){this.page=e||"home",Polymer.AppLayout.scroll({top:0,behavior:"silent"}),this.drawerOpened=!1},_pageChanged:function(e,o){null!=e&&("home"==e?this._pageLoaded(Boolean(o)):this.importHref(this.resolveUrl("shop-"+e+".html"),function(){this._pageLoaded(Boolean(o))},null,!0))},_pageLoaded:function(e){this._ensureLazyLoaded(),e&&this.async(function(){this.$.header.resetLayout()},1)},_ensureLazyLoaded:function(){this.loadComplete||Polymer.RenderStatus.afterNextRender(this,function(){this.importHref(this.resolveUrl("lazy-resources.html"),function(){"serviceWorker"in navigator&&navigator.serviceWorker.register("/service-worker.js"),this._notifyNetworkStatus(),this.loadComplete=!0})})},_notifyNetworkStatus:function(){var e=this.offline;this.offline=!navigator.onLine,(this.offline||!this.offline&&e===!0)&&(this._networkSnackbar||(this._networkSnackbar=document.createElement("shop-snackbar"),Polymer.dom(this.root).appendChild(this._networkSnackbar)),Polymer.dom(this._networkSnackbar).innerHTML=this.offline?"You are offline":"You are online",this._networkSnackbar.open())},_toggleDrawer:function(){this.drawerOpened=!this.drawerOpened},_onChangeSection:function(e){console.log(e);var o=e.detail;this.categoryName=o.category||"",o.title&&(document.title=o.title+" - SHOP",this._announce(o.title+", loaded"))},_onAnnounce:function(e){this._announce(e.detail)},_announce:function(e){this._a11yLabel="",this.debounce("_a11yAnnouncer",function(){this._a11yLabel=e},100)},_domChange:function(e){if(window.performance&&performance.mark&&!this.__loggedDomChange){var o=Polymer.dom(e).rootTarget;o.domHost.is.match(this.page)&&(this.__loggedDomChange=!0,performance.mark(o.domHost.is+".domChange"))}},_computeShouldShowTabs:function(e,o){return("home"===e||"list"===e||"detail"===e)&&!o},_computeShouldRenderTabs:function(e,o){return e&&o},_computeShouldRenderDrawer:function(e,o){return e&&o},_computePluralizedQuantity:function(e){return e+" "+(1===e?"item":"items")},signInWithGoogle:function(){this.error=null,this.$.auth.signInWithPopup()},signOut:function(){this.error=null,this.$.auth.signOut()}});</script>
 
 </dom-module>
 </body></html>

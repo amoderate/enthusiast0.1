@@ -1,0 +1,282 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="shop-category-data.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-gold-data.html">
+
+
+<dom-module id="shop-location">
+
+  <template>
+
+    <style include="shop-common-styles">
+
+      .hero-image {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        margin-bottom: 32px;
+      }
+
+      .hero-image {
+        --shop-image-img: {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+        };
+      }
+
+      .grid {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-justified);
+        margin: 0 10px 32px 10px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .grid li {
+        -webkit-flex: 1 1;
+        flex: 1 1;
+        -webkit-flex-basis: 33%;
+        flex-basis: 33%;
+        max-width: 33%;
+      }
+
+      .grid a {
+        display:block;
+        text-decoration: none;
+      }
+
+      @media (max-width: 767px) {
+/*        .hero-image {
+          display: none;
+        }*/
+
+        .grid  li {
+          -webkit-flex-basis: 50%;
+          flex-basis: 50%;
+          max-width: 50%;
+        }
+      }
+
+      shop-tabs, shop-tab {
+        --shop-tab-overlay: {
+          border-bottom: 2px solid var(--app-accent-color);
+        };
+      }
+
+      shop-tabs {
+        height: 100%;
+      }
+
+      shop-tab {
+        margin: 0 10px;
+      }
+
+      shop-tab a {
+        display: inline-block;
+        outline: none;
+        padding: 9px 5px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        color: var(--app-primary-color);
+      }      
+
+    </style>
+
+    <!--
+      app-route provides the name of the shop.
+    -->
+    <app-route
+        route="[[route]]"
+        pattern="/:shop/:page"
+        data="{{routeData}}">
+    </app-route>
+
+    <!--
+      shop-category-data provides the shop data for a given shop name.
+    -->
+
+    <firebase-query 
+      id="query"
+      path="/shops"
+      data="{{shops}}"
+      order-by-child="/shopName"
+      start-at="[[route]]"
+      end-at="[[route]]"
+      >
+    </firebase-query>
+
+
+
+    
+    LOCATION
+    
+    <ul class="grid" hidden$="[[failure]]">
+      <template is="dom-repeat" items="[[shops]]" as="item" initial-count="4">
+        [[item.shopLocation]]
+      </template>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <!--
+      shop-network-warning shows a warning message when the items can't be rendered due
+      to network conditions.
+    -->
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'shop-location',
+
+      ready: function() {
+        document.title = this.route + ' - SHOP';
+      },
+
+      properties: {
+
+        shop: Object,
+
+        route: Object,
+
+        routeData: Object,
+
+        visible: Boolean,
+
+        page: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_pageChanged'
+        },
+
+        offline: {
+          type: Boolean,
+          observer: '_offlineChanged'
+        },
+
+        failure: Boolean
+
+      },
+
+      observers: [
+        '_shopChanged(shop, visible)',
+        '_routePageChanged(routeData.page)'
+      ],
+
+
+      _getItemHref: function(item) {
+        // By returning null when `itemId` is undefined, the href attribute won't be set and
+        // the link will be disabled.
+        return item.itemName ? ['/detail', item.shopName, item.itemName, item.itemid].join('/') : null;
+      },
+
+      _getPluralizedQuantity: function(quantity) {
+        if (!quantity) {
+          return '';
+        }
+        var pluralizedQ = quantity === 1 ? 'item' : 'items';
+        return  '(' + quantity + ' ' + pluralizedQ + ')';
+      },
+
+      _shopChanged: function(shop, visible) {
+        if (visible) {
+          this.debounce('change-section', function() {
+            // Notify the shop and the page's shopTitle
+            this.fire('change-section', {
+              shop: shop.shopName,
+              shopTitle: shop.shopTitle
+            });
+          });
+        }
+      },
+
+      _routePageChanged: function(page) {
+        this.page = page || 'home';
+        // Scroll to the top of the page on every *route* change. Use `Polymer.AppLayout.scroll`
+        // with `behavior: 'silent'` to disable header scroll effects during the scroll.
+        Polymer.AppLayout.scroll({ top: 0, behavior: 'silent' });
+        // Close the drawer - in case the *route* change came from a link in the drawer.
+        this.drawerOpened = false;
+      },
+
+      _pageChanged: function(page, oldPage) {
+        if (page != null) {
+          // home route is eagerly loaded
+          if (page == 'home') {
+            this._pageLoaded(Boolean(oldPage));
+          // other routes are lazy loaded
+          } else {
+            this.importHref(
+              this.resolveUrl('shop-' + page + '.html'),
+              function() {
+                this._pageLoaded(Boolean(oldPage));
+              }, null, true);
+          }
+        }
+      },   
+
+      _pageLoaded: function(shouldResetLayout) {
+        this._ensureLazyLoaded();
+        if (shouldResetLayout) {
+          // The size of the header depends on the page (e.g. on some pages the tabs
+          // do not appear), so reset the header's layout only when switching pages.
+          this.async(function() {
+            this.$.header.resetLayout();
+          }, 1);
+        }
+      },      
+
+      _ensureLazyLoaded: function() {
+        // load lazy resources after render and set `loadComplete` when done.
+        if (!this.loadComplete) {
+          Polymer.RenderStatus.afterNextRender(this, function() {
+            this.importHref(this.resolveUrl('lazy-resources.html'), function() {
+              // Register service worker if supported.
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/service-worker.js');
+              }
+              //this._notifyNetworkStatus();
+              this.loadComplete = true;
+            });
+          });
+        }
+      },
+
+
+      _offlineChanged: function(offline) {
+        if (!offline) {
+
+        }
+      }
+
+    });
+
+  </script>
+
+</dom-module>

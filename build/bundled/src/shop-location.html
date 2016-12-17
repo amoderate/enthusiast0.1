@@ -1,0 +1,129 @@
+<html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="shop-category-data.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-gold-data.html">
+
+
+</head><body><dom-module id="shop-location">
+
+  <template>
+
+    <style include="shop-common-styles">
+
+      .hero-image {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        margin-bottom: 32px;
+      }
+
+      .hero-image {
+        --shop-image-img: {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+        };
+      }
+
+      .grid {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-justified);
+        margin: 0 10px 32px 10px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .grid li {
+        -webkit-flex: 1 1;
+        flex: 1 1;
+        -webkit-flex-basis: 33%;
+        flex-basis: 33%;
+        max-width: 33%;
+      }
+
+      .grid a {
+        display:block;
+        text-decoration: none;
+      }
+
+      @media (max-width: 767px) {
+/*        .hero-image {
+          display: none;
+        }*/
+
+        .grid  li {
+          -webkit-flex-basis: 50%;
+          flex-basis: 50%;
+          max-width: 50%;
+        }
+      }
+
+      shop-tabs, shop-tab {
+        --shop-tab-overlay: {
+          border-bottom: 2px solid var(--app-accent-color);
+        };
+      }
+
+      shop-tabs {
+        height: 100%;
+      }
+
+      shop-tab {
+        margin: 0 10px;
+      }
+
+      shop-tab a {
+        display: inline-block;
+        outline: none;
+        padding: 9px 5px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        color: var(--app-primary-color);
+      }      
+
+    </style>
+
+    
+    <app-route route="[[route]]" pattern="/:shop/:page" data="{{routeData}}">
+    </app-route>
+
+    
+
+    <firebase-query id="query" path="/shops" data="{{shops}}" order-by-child="/shopName" start-at="[[route]]" end-at="[[route]]">
+    </firebase-query>
+
+
+
+    
+    LOCATION
+    
+    <ul class="grid" hidden$="[[failure]]">
+      <template is="dom-repeat" items="[[shops]]" as="item" initial-count="4">
+        [[item.shopLocation]]
+      </template>
+    </ul>
+
+
+
+
+
+
+
+
+
+    
+
+  </template>
+
+  <script>Polymer({is:"shop-location",ready:function(){document.title=this.route+" - SHOP"},properties:{shop:Object,route:Object,routeData:Object,visible:Boolean,page:{type:String,reflectToAttribute:!0,observer:"_pageChanged"},offline:{type:Boolean,observer:"_offlineChanged"},failure:Boolean},observers:["_shopChanged(shop, visible)","_routePageChanged(routeData.page)"],_getItemHref:function(e){return e.itemName?["/detail",e.shopName,e.itemName,e.itemid].join("/"):null},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_shopChanged:function(e,t){t&&this.debounce("change-section",function(){this.fire("change-section",{shop:e.shopName,shopTitle:e.shopTitle})})},_routePageChanged:function(e){this.page=e||"home",Polymer.AppLayout.scroll({top:0,behavior:"silent"}),this.drawerOpened=!1},_pageChanged:function(e,t){null!=e&&("home"==e?this._pageLoaded(Boolean(t)):this.importHref(this.resolveUrl("shop-"+e+".html"),function(){this._pageLoaded(Boolean(t))},null,!0))},_pageLoaded:function(e){this._ensureLazyLoaded(),e&&this.async(function(){this.$.header.resetLayout()},1)},_ensureLazyLoaded:function(){this.loadComplete||Polymer.RenderStatus.afterNextRender(this,function(){this.importHref(this.resolveUrl("lazy-resources.html"),function(){"serviceWorker"in navigator&&navigator.serviceWorker.register("/service-worker.js"),this.loadComplete=!0})})},_offlineChanged:function(e){}});</script>
+
+</dom-module>
+</body></html>
