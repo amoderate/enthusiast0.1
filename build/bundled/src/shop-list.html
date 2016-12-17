@@ -48,11 +48,15 @@
         .hero-image {
           display: none;
         }
+        .grid{
+          @apply(--layout-vertical);
+          @apply(--layout-center);
+        }
 
         .grid  li {
-          -webkit-flex-basis: 50%;
-          flex-basis: 50%;
-          max-width: 50%;
+          -webkit-flex-basis: 100%;
+          flex-basis: 100%;
+          max-width: 100%;
         }
       }
 
@@ -81,7 +85,7 @@
     <ul class="grid" hidden$="[[failure]]">
       <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
         <li>
-          <a href$="[[_getItemHref(item)]]"><shop-list-item item="[[item]]"></shop-list-item></a>
+          <a href$="[[_getItemHref(item)]]"><shop-list-menu item="[[item]]"></shop-list-menu></a>
         </li>
       </template>
     </ul>
