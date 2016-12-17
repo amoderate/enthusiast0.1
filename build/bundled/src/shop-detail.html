@@ -1,4 +1,51 @@
-<html><head><meta charset="UTF-8"><link rel="import" href="shop-app.html"></head><body><dom-module id="shop-detail">
+<html><head><meta charset="UTF-8"><link rel="import" href="shop-app.html"></head><body><div hidden="" by-vulcanize=""><dom-module id="shop-list-item-detail" assetpath="/">
+
+  <template>
+
+    <style>
+
+      :host {
+        @apply(--layout-vertical);
+        @apply(--layout-center-justified);
+        text-align: center;
+        margin: 0 48px;
+      }
+
+      shop-image {
+        margin: 32px 0 16px;
+      }
+
+      shop-image::before {
+        content: "";
+        display: block;
+        padding-top: 100%;
+      }
+
+      .title {
+        color: var(--app-primary-color);
+        font-weight: bold;
+      }
+
+      .price {
+        color: var(--app-secondary-color);
+      }
+
+      @media (max-width: 767px) {
+        :host {
+          margin: 0 12px;
+        }
+      }
+
+    </style>
+
+     <div class="title">[[item.itemName]] by [[item.shopName]]</div>
+
+  </template>
+
+  <script>Polymer({is:"shop-list-item-detail",properties:{item:Object},_formatPrice:function(e){return e?"$"+e.toFixed(2):""}});</script>
+
+</dom-module>
+</div><dom-module id="shop-detail">
 
   <template>
 
@@ -141,11 +188,11 @@
       <div class="detail" has-content$="[[_isDefined(item)]]">
         <div class="description">
           <h2>Description</h2>
-            <h1>[[item.itemName]]</h1>
+            <h1>[[item.itemName]] by [[item.shopName]]</h1>
         </div>
         <shop-button>
           <button on-tap="_goToShopPage" aria-label="Visit Shop">
-            <a href$="/base/[[routeData.shop]]"> Jump to [[routeData.shop]]</a>
+            <a href$="[[_getItemHref(item)]]"><shop-list-item-detail item="[[item]]"></shop-list-item-detail> Visit [[routeData.shop]]</a>
           </button>
         </shop-button>
 
@@ -156,7 +203,7 @@
 
   </template>
 
-  <script>Polymer({is:"shop-detail",properties:{item:Object,route:Object,routeData:Object,visible:Boolean,failure:Boolean},observers:[],_unescapeText:function(e){var t=document.createElement("textarea");return t.innerHTML=e,t.textContent},_formatPrice:function(e){return e?"$"+e.toFixed(2):""},_addToCart:function(){this.fire("add-cart-item",{item:this.items,quantity:parseInt(this.$.quantitySelect.value,10),size:this.$.sizeSelect.value})},_isDefined:function(e){return null!=e},_goToShopPage:function(){console.log("SHOP PAGE: "+this.routeData.item),console.log(this.routeData.item)}});</script>
+  <script>Polymer({is:"shop-detail",properties:{item:Object,route:Object,routeData:Object,visible:Boolean,failure:Boolean},observers:[],_unescapeText:function(e){var t=document.createElement("textarea");return t.innerHTML=e,t.textContent},_formatPrice:function(e){return e?"$"+e.toFixed(2):""},_addToCart:function(){this.fire("add-cart-item",{item:this.items,quantity:parseInt(this.$.quantitySelect.value,10),size:this.$.sizeSelect.value})},_getItemHref:function(e){return console.log(["/base",e.shopName].join("/")),e.shopName?["/base",e.shopName].join("/"):null},_isDefined:function(e){return null!=e},_goToShopPage:function(){console.log("SHOP PAGE: "+this.routeData.shopName),console.log(this.routeData.shop)}});</script>
 
 </dom-module>
 </body></html>

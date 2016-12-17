@@ -7,7 +7,8 @@
 <link rel="import" href="../bower_components/google-map/google-map-directions.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-common-styles.html">
-<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-list-item.html">
+
 
 
 
@@ -73,12 +74,12 @@
       }
     </style>
 
-    
+
 
     <app-route route="[[route]]" pattern="/:shop" data="{{routeData}}" tail="{{subroute}}">
     </app-route>
 
-    
+
 
     <firebase-query id="query" path="/items" data="{{items}}" order-by-child="/shopName" start-at="{{routeData.shop}}" end-at="{{routeData.shop}}">
     </firebase-query>
@@ -95,10 +96,9 @@
 
       <iron-pages selected="{{selected}}">
         <div>
-          <ul class="grid" hidden$="[[failure]]">
-          <template is="dom-repeat" items="[[items]]" as="item" initial-count="4">
+          <ul class="grid">
+          <template is="dom-repeat" items="[[items]]" as="item">
             <li>
-              [[item.tittle]]
               <a href$="[[_getItemHref(item)]]"><shop-list-item item="[[item]]"></shop-list-item></a>
             </li>
           </template>
@@ -108,16 +108,15 @@
           About
         </div>
         <div>
-          <google-map latitude="37.77493" longitude="-122.41942">
-  <google-map-marker latitude="37.779" longitude="-122.3892" title="Go Giants!"></google-map-marker>
-</google-map>
+          <google-map latitude="37.77493" longitude="-122.41942" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E">
+          <google-map-marker latitude="37.779" longitude="-122.3892" title="Go Giants!"></google-map-marker>
+        </google-map>
       </div>
       </iron-pages>
 
-
   </template>
 
-  <script>Polymer({is:"shop-base",properties:{category:Object,route:Object,routeData:Object,item:Object,menuTitles:Object,visible:Boolean,page:{type:String,reflectToAttribute:!0,observer:"_pageChanged"},_shouldShowTabs:{computed:"_computeShouldShowTabs(page, smallScreen)"},failure:Boolean},listeners:{announce:"_onAnnounce"},ready:function(){document.title=this.routeData.shop+" - SHOP",this.menuTitles=[{name:"menu",title:"Our Offerings"},{name:"about",title:"About Us"},{name:"location",title:"Our Location"},{name:"chat",title:"Chat with Us"}]},_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(e){return console.log(e),e.shopName?["/detail",e.shopName,e.itemName,e.itemid].join("/"):null},_getMenuHref:function(e){return console.log(e),this.routeData.shop?["/shop-home",this.routeData.shop,e.name].join("/"):null},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_tryReconnect:function(){this.$.categoryData.refresh()},_pageLoaded:function(e){this._ensureLazyLoaded(),e&&this.async(function(){this.$.header.resetLayout()},1)},_notifyNetworkStatus:function(){var e=this.offline;this.offline=!navigator.onLine,(this.offline||!this.offline&&e===!0)&&(this._networkSnackbar||(this._networkSnackbar=document.createElement("shop-snackbar"),Polymer.dom(this.root).appendChild(this._networkSnackbar)),Polymer.dom(this._networkSnackbar).innerHTML=this.offline?"You are offline":"You are online",this._networkSnackbar.open())},_toggleDrawer:function(){this.drawerOpened=!this.drawerOpened},_onAnnounce:function(e){this._announce(e.detail)},_announce:function(e){this._a11yLabel="",this.debounce("_a11yAnnouncer",function(){this._a11yLabel=e},100)}});</script>
+  <script>Polymer({is:"shop-base",properties:{category:Object,route:Object,routeData:Object,item:Object,menuTitles:Object},ready:function(){document.title=this.routeData.shop+" - SHOP",this.menuTitles=[{name:"menu",title:"Our Offerings"},{name:"about",title:"About Us"},{name:"location",title:"Our Location"},{name:"chat",title:"Chat with Us"}]},_getListItems:function(t){return t||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(t){return console.log(this.routeData.shop),t.shopName?["/detail",t.shopName,t.itemName,t.itemid].join("/"):null},_getPluralizedQuantity:function(t){if(!t)return"";var e=1===t?"item":"items";return"("+t+" "+e+")"},_notifyNetworkStatus:function(){var t=this.offline;this.offline=!navigator.onLine,(this.offline||!this.offline&&t===!0)&&(this._networkSnackbar||(this._networkSnackbar=document.createElement("shop-snackbar"),Polymer.dom(this.root).appendChild(this._networkSnackbar)),Polymer.dom(this._networkSnackbar).innerHTML=this.offline?"You are offline":"You are online",this._networkSnackbar.open())},_toggleDrawer:function(){this.drawerOpened=!this.drawerOpened}});</script>
 
 </dom-module>
 </body></html>

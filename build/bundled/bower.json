@@ -34,13 +34,9 @@
     "paper-listbox": "PolymerElements/paper-listbox#^1.1.2",
     "paper-tabs": "PolymerElements/paper-tabs#^1.7.0",
     "file-input": "^2.0.0",
-<<<<<<< HEAD
     "google-apis": "GoogleWebComponents/google-apis#^1.1.7",
     "google-map": "GoogleWebComponents/google-map#^1.1.14",
-=======
-    "google-map": "GoogleWebComponents/google-map#^1.1.14",
     "moment-element": "abdonrd/moment-element#^0.4.3",
->>>>>>> master
     "paper-menu": "PolymerElements/paper-menu#^1.2.2"
   },
   "devDependencies": {
