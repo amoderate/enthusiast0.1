@@ -17,7 +17,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/google-map/google-map-directions.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="shop-common-styles.html">
-<link rel="import" href="shop-list-item.html">
+<link rel="import" href="shop-list-menu.html">
 
 
 
@@ -109,7 +109,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <ul class="grid">
           <template is="dom-repeat" items="[[items]]" as="item">
             <li>
-              <a href$="[[_getItemHref(item)]]"><shop-list-item item="[[item]]"></shop-list-item></a>
+              <a href$="[[_getItemHref(item)]]">
+
+                <shop-list-menu item="[[item]]"></shop-list-menu></a>
             </li>
           </template>
         </ul>

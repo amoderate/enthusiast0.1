@@ -14,7 +14,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="shop-category-data.html">
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-image.html">
-<link rel="import" href="shop-list-item.html">
+<link rel="import" href="shop-list-menu.html">
 
 <dom-module id="shop-list">
 
@@ -119,7 +119,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <ul class="grid" hidden$="[[failure]]">
       <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
         <li>
-          <a href$="[[_getItemHref(item)]]"><shop-list-item item="[[item]]" ></shop-list-item></a>
+          <a href$="[[_getItemHref(item)]]"><shop-list-menu item="[[item]]" ></shop-list-menu></a>
         </li>
       </template>
     </ul>
