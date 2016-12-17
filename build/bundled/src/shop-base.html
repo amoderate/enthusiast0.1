@@ -1,0 +1,121 @@
+<html><head><meta charset="UTF-8"><link rel="import" href="shop-app.html"></head><body><div hidden="" by-vulcanize=""><dom-module id="google-map-directions" assetpath="../bower_components/google-map/">
+  <style>
+    :host {
+      display: none;
+    }
+  </style>
+  <template>
+    <google-maps-api api-key="[[apiKey]]" language="[[language]]" on-api-load="_mapApiLoaded" maps-url="[[mapsUrl]]"></google-maps-api>
+  </template>
+</dom-module>
+
+<script>Polymer({is:"google-map-directions",properties:{apiKey:String,mapsUrl:{type:String},map:{type:Object,observer:"_mapChanged"},startAddress:{type:String,value:null},endAddress:{type:String,value:null},travelMode:{type:String,value:"DRIVING"},waypoints:{type:Array,value:function(){return[]}},language:{type:String,value:null},rendererOptions:{type:Object,value:function(){return{}}},response:{type:Object,observer:"_responseChanged",notify:!0}},observers:["_route(startAddress, endAddress, travelMode, waypoints.*)"],_mapApiLoaded:function(){this._route()},_responseChanged:function(){this.directionsRenderer&&this.response&&this.directionsRenderer.setDirections(this.response)},_mapChanged:function(){this.map&&this.map instanceof google.maps.Map?(this.directionsRenderer||(this.directionsRenderer=new google.maps.DirectionsRenderer(this.rendererOptions)),this.directionsRenderer.setMap(this.map),this._responseChanged()):this.directionsRenderer&&(this.directionsRenderer.setMap(null),this.directionsRenderer=null)},_route:function(){if("undefined"!=typeof google&&"undefined"!=typeof google.maps&&this.startAddress&&this.endAddress){this.directionsService||(this.directionsService=new google.maps.DirectionsService);var e={origin:this.startAddress,destination:this.endAddress,travelMode:this.travelMode,waypoints:this.waypoints};this.directionsService.route(e,function(e,s){s==google.maps.DirectionsStatus.OK&&(this.response=e,this.fire("google-map-response",{response:e}))}.bind(this))}}});</script>
+</div><dom-module id="shop-base">
+  <template>
+    <style include="shop-common-styles">
+
+      .hero-image {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        margin-bottom: 32px;
+      }
+
+      google-map {
+        height: 600px;
+      }
+
+      .hero-image {
+        --shop-image-img: {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+        };
+      }
+
+      .grid {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-justified);
+        margin: 0 10px 32px 10px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .grid li {
+        -webkit-flex: 1 1;
+        flex: 1 1;
+        -webkit-flex-basis: 33%;
+        flex-basis: 33%;
+        max-width: 33%;
+      }
+
+      .grid a {
+        display:block;
+        text-decoration: none;
+      }
+
+      @media (max-width: 767px) {
+        .hero-image {
+          display: none;
+        }
+
+        .grid  li {
+          -webkit-flex-basis: 50%;
+          flex-basis: 50%;
+          max-width: 50%;
+        }
+      }
+    </style>
+
+    
+
+    <app-route route="[[route]]" pattern="/:shop" data="{{routeData}}" tail="{{subroute}}">
+    </app-route>
+
+    
+
+    <firebase-query id="query" path="/items" data="{{items}}" order-by-child="/shopName" start-at="{{routeData.shop}}" end-at="{{routeData.shop}}">
+    </firebase-query>
+
+      <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
+          <h1>Welcome to [[routeData.shop]]!</h1>
+        <paper-tabs selected="{{selected}}">
+          <paper-tab>Menu</paper-tab>
+          <paper-tab>About</paper-tab>
+          <paper-tab>Maps</paper-tab>
+        </paper-tabs>
+
+      </app-header>
+
+      <iron-pages selected="{{selected}}">
+        <div>
+          <ul class="grid" hidden$="[[failure]]">
+          <template is="dom-repeat" items="[[items]]" as="item" initial-count="4">
+            <li>
+              [[item.tittle]]
+              <a href$="[[_getItemHref(item)]]"><shop-list-item item="[[item]]"></shop-list-item></a>
+            </li>
+          </template>
+        </ul>
+        </div>
+        <div>
+          About
+        </div>
+        <div>
+          <google-map latitude="37.77493" longitude="-122.41942">
+  <google-map-marker latitude="37.779" longitude="-122.3892" title="Go Giants!"></google-map-marker>
+</google-map>
+      </div>
+      </iron-pages>
+
+
+  </template>
+
+  <script>Polymer({is:"shop-base",properties:{category:Object,route:Object,routeData:Object,item:Object,menuTitles:Object,visible:Boolean,page:{type:String,reflectToAttribute:!0,observer:"_pageChanged"},_shouldShowTabs:{computed:"_computeShouldShowTabs(page, smallScreen)"},failure:Boolean},listeners:{announce:"_onAnnounce"},ready:function(){document.title=this.routeData.shop+" - SHOP",this.menuTitles=[{name:"menu",title:"Our Offerings"},{name:"about",title:"About Us"},{name:"location",title:"Our Location"},{name:"chat",title:"Chat with Us"}]},_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(e){return console.log(e),e.shopName?["/detail",e.shopName,e.itemName,e.itemid].join("/"):null},_getMenuHref:function(e){return console.log(e),this.routeData.shop?["/shop-home",this.routeData.shop,e.name].join("/"):null},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_tryReconnect:function(){this.$.categoryData.refresh()},_pageLoaded:function(e){this._ensureLazyLoaded(),e&&this.async(function(){this.$.header.resetLayout()},1)},_notifyNetworkStatus:function(){var e=this.offline;this.offline=!navigator.onLine,(this.offline||!this.offline&&e===!0)&&(this._networkSnackbar||(this._networkSnackbar=document.createElement("shop-snackbar"),Polymer.dom(this.root).appendChild(this._networkSnackbar)),Polymer.dom(this._networkSnackbar).innerHTML=this.offline?"You are offline":"You are online",this._networkSnackbar.open())},_toggleDrawer:function(){this.drawerOpened=!this.drawerOpened},_onAnnounce:function(e){this._announce(e.detail)},_announce:function(e){this._a11yLabel="",this.debounce("_a11yAnnouncer",function(){this._a11yLabel=e},100)}});</script>
+
+</dom-module>
+</body></html>

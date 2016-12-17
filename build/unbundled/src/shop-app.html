@@ -15,6 +15,8 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icons/maps-icons.html">
+
 <link rel="import" href="shop-category-data.html">
 
 <link rel="import" href="shop-home.html">
@@ -232,7 +234,11 @@
             <paper-icon-button icon="icons:create"></paper-icon-button>
           </a>
         </div>
-
+        <div>
+          <a href="/shop-create" tabindex="-1">
+            <paper-icon-button icon="maps:add-location"></paper-icon-button>
+          </a>
+        </div>
         <div>
         <paper-button hidden$="[[user]]" on-tap="signInWithGoogle">sign in</paper-button>
         <paper-button hidden$="[[!user]]" on-tap="signOut">sign out</paper-button>
@@ -270,12 +276,15 @@
       <shop-home name="home" categories="[[categories]]"></shop-home>
       
       <shop-list name="list" route="[[subroute]]" offline="[[offline]]"></shop-list>
-      
-      <shop-listgold name="listgold" route="[[subroute]]" offline="[[offline]]"></shop-listgold>
-      
+\      
       <shop-detail name="detail" route="[[subroute]]" offline="[[offline]]"></shop-detail>
       
       <shop-item-create name="item-create"></shop-item-create>
+      
+      <shop-shop-create name="shop-create"></shop-shop-create>
+      
+      <shop-base name="base"></shop-base>
+
 
     </iron-pages>
 

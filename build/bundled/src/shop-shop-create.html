@@ -1,0 +1,480 @@
+<html><head><meta charset="UTF-8"><link rel="import" href="shop-app.html"></head><body><div hidden="" by-vulcanize=""><script>Polymer.PaperItemBehaviorImpl={hostAttributes:{role:"option",tabindex:"0"}},Polymer.PaperItemBehavior=[Polymer.IronButtonState,Polymer.IronControlState,Polymer.PaperItemBehaviorImpl];</script>
+<dom-module id="paper-item-shared-styles" assetpath="../bower_components/paper-item/">
+  <template>
+    <style>
+      :host, .paper-item {
+        display: block;
+        position: relative;
+        min-height: var(--paper-item-min-height, 48px);
+        padding: 0px 16px;
+      }
+
+      .paper-item {
+        @apply(--paper-font-subhead);
+        border:none;
+        outline: none;
+        background: white;
+        width: 100%;
+        text-align: left;
+      }
+
+      :host([hidden]), .paper-item[hidden] {
+        display: none !important;
+      }
+
+      :host(.iron-selected), .paper-item.iron-selected {
+        font-weight: var(--paper-item-selected-weight, bold);
+
+        @apply(--paper-item-selected);
+      }
+
+      :host([disabled]), .paper-item[disabled] {
+        color: var(--paper-item-disabled-color, --disabled-text-color);
+
+        @apply(--paper-item-disabled);
+      }
+
+      :host(:focus), .paper-item:focus {
+        position: relative;
+        outline: 0;
+
+        @apply(--paper-item-focused);
+      }
+
+      :host(:focus):before, .paper-item:focus:before {
+        @apply(--layout-fit);
+
+        background: currentColor;
+        content: '';
+        opacity: var(--dark-divider-opacity);
+        pointer-events: none;
+
+        @apply(--paper-item-focused-before);
+      }
+    </style>
+  </template>
+</dom-module>
+<dom-module id="paper-item" assetpath="../bower_components/paper-item/">
+  <template>
+    <style include="paper-item-shared-styles"></style>
+    <style>
+      :host {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        @apply(--paper-font-subhead);
+
+        @apply(--paper-item);
+      }
+    </style>
+
+    <content></content>
+  </template>
+
+  <script>Polymer({is:"paper-item",behaviors:[Polymer.PaperItemBehavior]});</script>
+</dom-module>
+<dom-module id="paper-icon-item" assetpath="../bower_components/paper-item/">
+  <template>
+    <style include="paper-item-shared-styles"></style>
+    <style>
+      :host {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        @apply(--paper-font-subhead);
+
+        @apply(--paper-item);
+        @apply(--paper-icon-item);
+      }
+
+      .content-icon {
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+
+        width: var(--paper-item-icon-width, 56px);
+        @apply(--paper-item-icon);
+      }
+    </style>
+
+    <div id="contentIcon" class="content-icon">
+      <content select="[item-icon]"></content>
+    </div>
+    <content></content>
+  </template>
+
+  <script>Polymer({is:"paper-icon-item",behaviors:[Polymer.PaperItemBehavior]});</script>
+</dom-module>
+<dom-module id="paper-menu-shared-styles" assetpath="../bower_components/paper-menu/">
+  <template>
+    <style>
+      /* need a wrapper element to make this higher specificity than the :host rule in paper-item */
+      .selectable-content > ::content > .iron-selected {
+        font-weight: bold;
+
+        @apply(--paper-menu-selected-item);
+      }
+
+      .selectable-content > ::content > [disabled] {
+        color: var(--paper-menu-disabled-color, --disabled-text-color);
+      }
+
+      .selectable-content > ::content > *:focus {
+        position: relative;
+        outline: 0;
+
+        @apply(--paper-menu-focused-item);
+      }
+
+      .selectable-content > ::content > *:focus:after {
+        @apply(--layout-fit);
+        background: currentColor;
+        opacity: var(--dark-divider-opacity);
+        content: '';
+        pointer-events: none;
+
+        @apply(--paper-menu-focused-item-after);
+      }
+
+      .selectable-content > ::content > *[colored]:focus:after {
+        opacity: 0.26;
+      }
+    </style>
+  </template>
+</dom-module>
+<dom-module id="paper-menu" assetpath="../bower_components/paper-menu/">
+  <template>
+    <style include="paper-menu-shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+        padding: 8px 0;
+
+        background: var(--paper-menu-background-color, --primary-background-color);
+        color: var(--paper-menu-color, --primary-text-color);
+
+        @apply(--paper-menu);
+      }
+    </style>
+
+    <div class="selectable-content">
+      <content></content>
+    </div>
+  </template>
+
+  <script>!function(){Polymer({is:"paper-menu",behaviors:[Polymer.IronMenuBehavior]})}();</script>
+</dom-module>
+</div><dom-module id="shop-shop-create">
+
+  <template>
+
+    <style include="shop-common-styles shop-button shop-select">
+
+      :host {
+        display: block;
+      }
+
+      #content {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+      shop-image {
+        position: relative;
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 600px;
+        --shop-image-img: {
+          @apply(--layout-fit);
+        };
+      }
+
+      shop-image::before {
+        content: "";
+        display: block;
+        padding-top: 100%;
+      }
+
+      .detail {
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 400px;
+        transition: opacity 0.4s;
+        opacity: 1;
+      }
+      .pre {
+            white-space: pre;
+            unicode-bidi: embed;
+        }
+
+    FILE-INPUT { position: relative; margin: 64px 32px;
+    width: 30%;
+    max-width:4600px;
+    width: 50px;
+    height: 50px;
+    padding: 16px 0 16px 0;
+    width: calc(99.66% - 8px);
+    margin: 8px auto;}
+
+      h1 {
+        font-size: 24px;
+        font-weight: 500;
+        line-height: 28px;
+        margin: 0;
+      }
+
+      .giant {
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 600px;
+        width: 100px;
+        height: 100px;
+        padding: 16px 0 16px 0;
+        width: calc(99.66% - 8px);
+        margin: 8px auto;
+        background: white;
+      }
+      .price {
+        margin: 16px 0 40px;
+        font-size: 16px;
+        color: var(--app-secondary-color);
+      }
+
+      .description {
+        margin: 32px 0;
+      }
+
+      .description > h2 {
+        margin: 16px 0;
+        font-size: 13px;
+      }
+
+      .description > p {
+        margin: 0;
+        color: var(--app-secondary-color);
+      }
+
+      .pickers {
+        @apply(--layout-vertical);
+        border-top: 1px solid #ccc;
+      }
+
+      .centered{
+        height: 100%;
+        padding: 16px 0 16px 0;
+        width: calc(99.66% - 8px);
+        margin: 8px auto;
+        background: white;
+      }
+
+      shop-select > select {
+        font-size: 16px;
+        padding: 16px 24px 16px 70px;
+      }
+
+      @media (max-width: 767px) {
+
+        #content {
+          @apply(--layout-vertical);
+          @apply(--layout-center);
+        }
+
+        shop-image {
+          margin: 0;
+          width: 80%;
+        }
+
+        .detail {
+          box-sizing: border-box;
+          margin: 32px 0;
+          padding: 0 24px;
+          width: 100%;
+          max-width: 600px;
+        }
+
+        h1 {
+          font-size: 20px;
+          line-height: 24px;
+        }
+
+        .price {
+          font-size: inherit;
+          margin: 12px 0 32px;
+        }
+
+      }
+
+    </style>
+
+    
+    <app-route route="[[route]]" pattern="/:category/:item" data="{{routeData}}">
+    </app-route>
+
+    <shop-category-data categories="{{categories}}"></shop-category-data>
+
+    <firebase-auth id="auth" user="{{user}}" provider="google" on-error="showError">
+    </firebase-auth>
+
+    <firebase-query id="query" path="/imageDraft/[[user.uid]]" data="{{items}}" limit-to-last="1">
+    </firebase-query>
+
+
+
+
+    <div id="content" hidden$="[[failure]]">
+
+      <template is="dom-repeat" items="{{items}}" as="item" hidden$="[[failure]]">
+        <shop-image alt="[[item.shopName]]" src="[[item.url]]"></shop-image>
+
+      </template>
+      <div class="detail">
+        <google-maps-api id="maps" api-key="AIzaSyDp_5oAA4F35biRBtx0nyWAfSSv61OjKnM" libraries="places" on-api-load="on_api_load"></google-maps-api>
+
+        <paper-input id="input" placeholder="" label="Shop Name ショップ名" class="input" type="text" value="{{shopName}}">
+        </paper-input>
+
+        <paper-input label="Address  場所" value="{{value}}">
+        </paper-input>
+
+        <paper-input label="Phone  電話番号" value="{{phone}}">
+        </paper-input>
+
+          <paper-menu>
+            <paper-icon-item>
+              <div item-icon="">日</div>
+              <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{sundayAmOpen}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{sundayAmClose}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{sundayPmOpen}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{sundayPmClose}}">&gt;
+              </paper-input>
+
+            </paper-icon-item>
+            <paper-icon-item>
+              <div item-icon="">月</div>
+              <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{mondayAmOpen}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{mondayAmClose}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{mondayPmOpen}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{mondayPmClose}}">
+              </paper-input>
+            </paper-icon-item>
+            <paper-icon-item>
+              <div item-icon="">火</div>
+              <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{tuesdayAmOpen}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{tuesdayAmClose}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{tuesdayPmOpen}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{tuesdayPmClose}}">
+              </paper-input>
+            </paper-icon-item>
+            <paper-icon-item>
+              <div item-icon="">水</div>
+              <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{wednesdayAmOpen}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{wednesdayAmClose}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{wednesdayPmOpen}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{wednesdayPmClose}}">
+              </paper-input>
+            </paper-icon-item>
+
+            <paper-icon-item>
+              <div item-icon="">木</div>
+              <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{thursdayAmOpen}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{thursdayAmClose}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{thursdayPmOpen}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{thursdayPmClose}}">
+              </paper-input>
+            </paper-icon-item>
+
+            <paper-icon-item>
+              <div item-icon="">金</div>
+              <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{fridayAmOpen}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{fridayAmClose}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{fridayPmOpen}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{fridayPmClose}}">
+              </paper-input>
+            </paper-icon-item>
+
+            <paper-icon-item>
+              <div item-icon="">土</div>
+              <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{saturdayAmOpen}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{saturdayAmClose}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{saturdayPmOpen}}">
+              </paper-input>
+                &nbsp;   &nbsp;
+              <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{saturdayPmClose}}">
+              </paper-input>
+            </paper-icon-item>
+        </paper-menu>
+
+
+      <paper-textarea label="About your shop" value="{{about}}">
+      </paper-textarea>
+
+      <paper-input label="Theme" value="{{theme}}">
+      </paper-input>
+
+      <paper-tabs scrollable="" selected="{{theme}}" attr-for-selected="label">
+        <template is="dom-repeat" items="[[categories]]" as="category" initial-count="4" filter="{{computeFilter(theme)}}">
+          <paper-tab label="{{category.title}}">
+            {{category.title}}
+          </paper-tab>
+        </template>
+
+        </paper-tabs>
+
+        <paper-input label="#Tags" value="{{shopTags}}">
+        </paper-input>
+
+        <shop-button responsive="">
+          <button on-tap="_uploadShopClick" aria-label="Add your shop">Add your shop</button>
+        </shop-button>
+        <div class="centered">
+          <file-input id="file-input">
+            <iron-icon icon="image:photo-camera" class="giant"></iron-icon>
+          </file-input>
+        </div>
+      </div>
+    </div>
+    
+
+  </template>
+
+  <script>Polymer({is:"shop-shop-create",properties:{item:Object,route:Object,routeData:Object,visible:Boolean,value:{type:String,notify:!0},options:{type:Object,value:function(){return{}}},place:{type:Object,value:function(){return{}},notify:!0},phone:{type:String,notify:!0},sundayAmOpen:{type:String,notify:!0},sundayAmClose:{type:String,notify:!0},sundayPmOpen:{type:String,notify:!0},sundayPmClose:{type:String,notify:!0},mondayAmOpen:{type:String,notify:!0},mondayAmClose:{type:String,notify:!0},mondayPmOpen:{type:String,notify:!0},mondayPmClose:{type:String,notify:!0},tuesdayAmOpen:{type:String,notify:!0},tuesdayAmClose:{type:String,notify:!0},tuesdayPmOpen:{type:String,notify:!0},tuesdayPmClose:{type:String,notify:!0},wednesdayAmOpen:{type:String,notify:!0},wednesdayAmClose:{type:String,notify:!0},wednesdayPmOpen:{type:String,notify:!0},wednesdayPmClose:{type:String,notify:!0},thursdayAmOpen:{type:String,notify:!0},thursdayAmClose:{type:String,notify:!0},thursdayPmOpen:{type:String,notify:!0},thursdayPmClose:{type:String,notify:!0},fridayAmOpen:{type:String,notify:!0},fridayAmClose:{type:String,notify:!0},fridayPmOpen:{type:String,notify:!0},fridayPmClose:{type:String,notify:!0},saturdayAmOpen:{type:String,notify:!0},saturdayAmClose:{type:String,notify:!0},saturdayPmOpen:{type:String,notify:!0},saturdayPmClose:{type:String,notify:!0},offline:{type:Boolean,observer:"_offlineChanged"},items:{type:Object,notify:!0},shopName:{type:String,notify:!0},itemName:{type:String,notify:!0},theme:{type:String,notify:!0},about:{type:String,notify:!0},itemPrice:{type:String,value:"",notify:!0},shopTags:{type:String,value:"",notify:!0},place:{type:Object,notify:!0},tokens:{type:Array,notify:!0},shoptypes:{type:String,notify:!0},searchString:{type:String,value:"For the love of beer",notify:!0},failure:Boolean},listeners:{"file-input.change":"imageUploadTap"},_unescapeText:function(e){var t=document.createElement("textarea");return t.innerHTML=e,t.textContent},_formatPrice:function(e){return e?"$"+e.toFixed(2):""},_addToCart:function(){this.fire("add-cart-item",{item:this.item,quantity:parseInt(this.$.quantitySelect.value,10),size:this.$.sizeSelect.value})},_isDefined:function(e){return null!=e},imageUploadTap:function(e){var t=e.target.files[0],s=firebase.storage().ref("image/"+t.name),n=s.put(t),i=this.shopName;console.log(i),n.on("state_changed",function(e){e.bytesTransferred/e.totalBytes*100},function(e){},function(){var e=firebase.database().ref().child("imageDraft/").push().key,t=firebase.auth().currentUser,s=n.snapshot.downloadURL,a={},o={url:s,user:t.uid,shop:i};a["/imageDraft/"+t.uid+"/"+e]=o,a["/users/"+t.uid+"/image/"+e]=o,console.log(s),firebase.database().ref().update(a)})},_uploadShopClick:function(e){var t=firebase.auth().currentUser,s=this.shopName,n=this.value,i=this.phone,a=this.about,o=(this.sundayAmOpen,this.sundayAmClose),y=this.sundayPmOpen,r=this.sundayPmClose,m=this.mondayAmOpen,d=this.mondayAmClose,p=this.mondayPmOpen,h=this.mondayPmClose,l=this.tuesdayAmOpen,u=this.tuesdayAmClose,f=this.tuesdayPmOpen,c=this.tuesdayPmClose,g=this.wednesdayAmOpen,O=this.wednesdayAmClose,C=this.wednesdayPmOpen,P=this.wednesdayPmClose,A=this.thursdayAmOpen,S=this.thursdayAmClose,b=this.thursdayPmOpen,v=this.thursdayPmClose,w=this.fridayAmOpen,_=this.fridayAmClose,T=this.fridayPmOpen,N=this.fridayPmClose,j=this.saturdayAmOpen,x=this.saturdayAmClose,L=this.saturdayPmOpen,$=this.saturdayPmClose,k=(this.shopTags,this.theme),D=firebase.database().ref().child("shops").push().key;null==t||null==this.value&&null==this.shopName&&null==this.phone||(this.shopName="",this.value="",this.phone="",this.theme="",this.about="",this.shopTags="",this.sundayAmOpen="",this.sundayAmClose="",this.sundayPmOpen="",this.sundayPmClose="",this.mondayAmOpen="",this.mondayAmClose="",this.mondayPmOpen="",this.mondayPmClose="",this.tuesdayAmOpen="",this.tuesdayAmClose="",this.tuesdayPmOpen="",this.tuesdayPmClose="",this.wednesdayAmOpen="",this.wednesdayAmClose="",this.wednesdayPmOpen="",this.wednesdayPmClose="",this.thursdayAmOpen="",this.thursdayAmClose="",this.thursdayPmOpen="",this.thursdayPmClose="",this.fridayAmOpen="",this.fridayAmClose="",this.fridayPmOpen="",this.fridayPmClose="",this.saturdayAmOpen="",this.saturdayAmClose="",this.saturdayPmOpen="",this.saturdayPmClose=""),null!=t&&null!=this.shopName&&(console.log("it's clicked"),this.items.forEach(function(e){var t=e.url,U=(e.user,{}),B={url:t,user:e.user,shopName:s,phone:i,address:n,theme:k,about:a,shopTags:shopTagss,sundayAmClose:o,sundayPmOpen:y,sundayPmClose:r,mondayAmOpen:m,mondayAmClose:d,mondayPmOpen:p,mondayPmClose:h,tuesdayAmOpen:l,tuesdayAmClose:u,tuesdayPmOpen:f,tuesdayPmClose:c,wednesdayAmOpen:g,wednesdayAmClose:O,wednesdayPmOpen:C,wednesdayPmClose:P,thursdayAmOpen:A,thursdayAmClose:S,thursdayPmOpen:b,thursdayPmClose:v,fridayAmOpen:w,fridayAmClose:_,fridayPmOpen:T,fridayPmClose:N,saturdayAmOpen:j,saturdayAmClose:x,saturdayPmOpen:L,saturdayPmClose:$,shopid:D};U["/shops/"+D]=B,console.log(U),firebase.database().ref().update(U),firebase.database().ref().child("imageDraft").remove()}))},computeFilter:function(e){return e?(e=e.toLowerCase(),function(t){var s=t.title.toLowerCase(),n=t.name.toLowerCase();return s.indexOf(e)!=-1||n.indexOf(e)!=-1}):null},on_api_load:function(){this.autocomplete=new google.maps.places.Autocomplete(this.$.input,this.options),google.maps.event.addListener(this.autocomplete,"place_changed",this.on_change_place.bind(this))},on_change_place:function(){this.place=this.autocomplete.getPlace(),this.place.address_components&&(this.value=this.place.formatted_address,this.phone=this.place.formatted_phone_number,this.shopName=this.place.name,console.log(this.place))},toggleSelection:function(e){console.log("it's selected");var t=this.$.categories.itemForElement(e.target);this.$.selector.select(t.title),this.theme=t.name}});</script>
+
+</dom-module>
+</body></html>

@@ -196,9 +196,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       >
     </firebase-query>
 
-
-
-
     <div id="content" hidden$="[[failure]]">
 
       <template is="dom-repeat" items="{{items}}" as="item" hidden$="[[failure]]">
@@ -206,8 +203,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       </template>
       <div class="detail">
-        <paper-input label="Shop Name" value="{{shopName}}">
+
+        <google-maps-api id="maps" api-key="AIzaSyDp_5oAA4F35biRBtx0nyWAfSSv61OjKnM" libraries="places" on-api-load="on_api_load"></google-maps-api>
+
+        <paper-input id="input" placeholder="" label="Shop Name ショップ名" class="input" type="text" value="{{shopName}}">
         </paper-input>
+
 
         <paper-textarea label="Item" value="{{itemName}}">
         </paper-textarea>
@@ -461,6 +462,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                english_name.indexOf(string) != -1);
          };
        }
+     },
+
+     on_api_load: function () {
+       this.autocomplete = new google.maps.places.Autocomplete(this.$.input, this.options);
+       google.maps.event.addListener(this.autocomplete, 'place_changed', this.on_change_place.bind(this));
+     },
+
+     on_change_place: function () {
+       this.place = this.autocomplete.getPlace();
+       if (!this.place.address_components) {
+         return;
+       }
+       this.value = this.place.formatted_address;
+       this.phone = this.place.formatted_phone_number;
+       this.shopName = this.place.name;
+       console.log(this.place);
      },
 
      toggleSelection: function(e) {

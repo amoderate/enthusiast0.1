@@ -1,0 +1,216 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/google-map/google-map-directions.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-list-item.html">
+
+
+
+
+
+</head><body><dom-module id="shop-base">
+  <template>
+    <style include="shop-common-styles">
+
+      .hero-image {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        margin-bottom: 32px;
+      }
+
+      google-map {
+        height: 600px;
+      }
+
+      .hero-image {
+        --shop-image-img: {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+        };
+      }
+
+      .grid {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-justified);
+        margin: 0 10px 32px 10px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .grid li {
+        -webkit-flex: 1 1;
+        flex: 1 1;
+        -webkit-flex-basis: 33%;
+        flex-basis: 33%;
+        max-width: 33%;
+      }
+
+      .grid a {
+        display:block;
+        text-decoration: none;
+      }
+
+      @media (max-width: 767px) {
+        .hero-image {
+          display: none;
+        }
+
+        .grid  li {
+          -webkit-flex-basis: 50%;
+          flex-basis: 50%;
+          max-width: 50%;
+        }
+      }
+    </style>
+
+
+
+    <app-route route="[[route]]" pattern="/:shop" data="{{routeData}}" tail="{{subroute}}">
+    </app-route>
+
+
+
+    <firebase-query id="query" path="/items" data="{{items}}" order-by-child="/shopName" start-at="{{routeData.shop}}" end-at="{{routeData.shop}}">
+    </firebase-query>
+
+      <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
+          <h1>Welcome to [[routeData.shop]]!</h1>
+        <paper-tabs selected="{{selected}}">
+          <paper-tab>Menu</paper-tab>
+          <paper-tab>About</paper-tab>
+          <paper-tab>Maps</paper-tab>
+        </paper-tabs>
+
+      </app-header>
+
+      <iron-pages selected="{{selected}}">
+        <div>
+          <ul class="grid">
+          <template is="dom-repeat" items="[[items]]" as="item">
+            <li>
+              <a href$="[[_getItemHref(item)]]"><shop-list-item item="[[item]]"></shop-list-item></a>
+            </li>
+          </template>
+        </ul>
+        </div>
+        <div>
+          About
+        </div>
+        <div>
+          <google-map latitude="37.77493" longitude="-122.41942" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E">
+          <google-map-marker latitude="37.779" longitude="-122.3892" title="Go Giants!"></google-map-marker>
+        </google-map>
+      </div>
+      </iron-pages>
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'shop-base',
+
+      properties: {
+
+        category: Object,
+
+        route: Object,
+
+        routeData: Object,
+
+        item: Object,
+
+        menuTitles : Object
+      },
+      ready: function() {
+        document.title = this.routeData.shop + ' - SHOP';
+
+        this.menuTitles = [
+          {
+            name: 'menu',
+            title: 'Our Offerings'
+          },
+          {
+            name: 'about',
+            title: 'About Us'
+          },
+          {
+            name: 'location',
+            title: 'Our Location'
+          },
+          {
+            name: 'chat',
+            title: 'Chat with Us'
+          }
+        ];
+      },
+
+
+
+      _getListItems: function(items) {
+        // Return placeholder items when the items haven't loaded yet.
+        return items || [{},{},{},{},{},{},{},{},{},{}];
+      },
+
+      _getItemHref: function(item) {
+        // By returning null when `itemId` is undefined, the href attribute won't be set and
+        // the link will be disabled.
+        console.log(this.routeData.shop);
+        return item.shopName ? ['/detail', item.shopName, item.itemName, item.itemid].join('/') : null;
+      },
+
+      _getPluralizedQuantity: function(quantity) {
+        if (!quantity) {
+          return '';
+        }
+        var pluralizedQ = quantity === 1 ? 'item' : 'items';
+        return  '(' + quantity + ' ' + pluralizedQ + ')';
+      },
+
+      _notifyNetworkStatus: function() {
+        var oldOffline = this.offline;
+        this.offline =  !navigator.onLine;
+        // Show the snackbar if the user is offline when starting a new session
+        // or if the network status changed.
+        if (this.offline || (!this.offline && oldOffline === true)) {
+          if (!this._networkSnackbar) {
+            this._networkSnackbar = document.createElement('shop-snackbar');
+            Polymer.dom(this.root).appendChild(this._networkSnackbar);
+          }
+          Polymer.dom(this._networkSnackbar).innerHTML = this.offline ?
+              'You are offline' : 'You are online';
+          this._networkSnackbar.open();
+        }
+      },
+
+      _toggleDrawer: function() {
+        this.drawerOpened = !this.drawerOpened;
+      }
+
+    });
+
+  </script>
+
+</dom-module>
