@@ -23,19 +23,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         @apply(--layout-vertical);
         @apply(--layout-center-justified);
         text-align: center;
-        margin: 0 48px;
+        margin: 0 52px;
       }
       #img {
         width: 250px;
+
       }
       iron-image {
           width:100%; height:250px; background-color: lightgray;
           margin: 32px 0 16px;
+          overflow: hidden;
       }
         iron-image::content img {
           width: 100%;
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
       }
-
 
       .title {
         color: var(--app-primary-color);
@@ -51,11 +58,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           margin: 0 12px;
         }
         #img {
-          width: 322px;
+          width: auto;
         }
         iron-image {
-            width:100%; height:322px; background-color: lightgray;
-            margin: 32px 0 16px;
+            width:100%; height:250px; background-color: lightgray;
+            margin: 0px 0 0px;
         }
           iron-image::content img {
             width: 100%;

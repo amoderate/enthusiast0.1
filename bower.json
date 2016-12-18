@@ -38,7 +38,8 @@
     "google-map": "GoogleWebComponents/google-map#^1.1.14",
     "moment-element": "abdonrd/moment-element#^0.4.3",
     "paper-menu": "PolymerElements/paper-menu#^1.2.2",
-    "iron-ajax": "PolymerElements/iron-ajax#^1.4.3"
+    "iron-ajax": "PolymerElements/iron-ajax#^1.4.3",
+    "paper-chip": "bendavis78/paper-chip#^1.1.2"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
