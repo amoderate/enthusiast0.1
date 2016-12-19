@@ -126,7 +126,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </iron-ajax>
 
       <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
-          <h1>Welcome to [[routeData.shop]]!</h1>
         <paper-tabs selected="{{selected}}">
           <paper-tab>Menu</paper-tab>
           <paper-tab>About</paper-tab>
@@ -158,10 +157,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </google-map>
         </div>
 
-        <div id="firechatwrapper">          
+        <div id="firechatwrapper">
           <!-- <paper-button raised on-tap="initChat">Start Chat</paper-button> -->
           <!-- <fchat-main></fchat-main> -->
-        </div>        
+        </div>
       </iron-pages>
 
   </template>
@@ -175,11 +174,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       properties: {
 
         selected: {
-          type: Number,                
+          type: Number,
           value: 0
-        },        
+        },
 
         category: Object,
+
+        shopName: String,
+
+        visible: Boolean,
 
         route: Object,
 
@@ -216,11 +219,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       observers: [
-        '_addressQueryResultChanged(addressQueryResult.splices)'
+        '_addressQueryResultChanged(addressQueryResult.splices)',
+        '_shopChanged(routeData.shop)'
       ],
+
 
       ready: function() {
         document.title = this.routeData.shop + ' - SHOP';
+        shopName = this.routeData.shop;
 
         this.menuTitles = [
           {
@@ -297,6 +303,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return item.shopName ? ['/detail', item.shopName, item.itemName, item.itemid].join('/') : null;
       },
 
+      _shopChanged: function(shopName) {
+       console.log("changed shop")
+
+          this.debounce('change-shop', function() {
+            // Notify the category and the page's title
+            this.fire('change-shop', {
+              shopName: shopName
+            });
+          });
+
+      },
+
       _getPluralizedQuantity: function(quantity) {
         if (!quantity) {
           return '';
@@ -326,10 +344,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       initChat() {
+
         var user = firebase.auth().currentUser;
         var chatRef = firebase.database().ref("chat");
         var chat = new FirechatUI(chatRef, this.$.firechatwrapper);
-        chat.setUser(user.uid, user.displayName);
+        if (user != null) {
+            chat.setUser(user.uid, user.displayName);
+        }
+
       }
 
     });
