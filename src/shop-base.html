@@ -22,6 +22,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<!-- Firechat -->
+<link rel="stylesheet" href="../bower_components/firechat/dist/firechat.min.css" />
+<script src="../bower_components/firechat/dist/firechat.min.js"></script>
+
+<!-- <link rel="import" href="fchat-main.html"> -->
+
+
 
 </head><body><dom-module id="shop-base">
   <template>
@@ -118,6 +131,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <paper-tab>Menu</paper-tab>
           <paper-tab>About</paper-tab>
           <paper-tab>Maps</paper-tab>
+          <paper-tab>Chat</paper-tab>
         </paper-tabs>
       </app-header>
 
@@ -143,6 +157,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <google-map-marker latitude="[[shopLat]]" longitude="[[shopLong]]" title="[[routeData.shop]]"></google-map-marker>
           </google-map>
         </div>
+
+        <div id="firechatwrapper">          
+          <!-- <paper-button raised on-tap="initChat">Start Chat</paper-button> -->
+          <!-- <fchat-main></fchat-main> -->
+        </div>        
       </iron-pages>
 
   </template>
@@ -154,6 +173,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       is: 'shop-base',
 
       properties: {
+
+        selected: {
+          type: Number,                
+          value: 0
+        },        
 
         category: Object,
 
@@ -217,13 +241,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
         ];
 
-        console.log("aaa" + this.routeData.shop);
+        //console.log("aaa" + this.routeData.shop);
+
+        this.initChat();
 
       },
 
       _addressQueryResultChanged: function(changeRecord) {
+        this.selected = 0;
+        this.shopAbout = "About";
+        this.shopAddress = "";
+        this.shopLat = "0";
+        this.shopLong = "0";
+
         if (changeRecord) {
-            console.log(changeRecord);
+            //console.log(changeRecord);
             changeRecord.indexSplices.forEach(function(s) {
                 s.object.forEach(function(shop) {
                   //console.log(shop.$key);
@@ -238,7 +270,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       handleAjaxGPSresponse: function(request) {
-        console.log(request.detail.response);
+        //console.log(request.detail.response);
         //console.log(this.$.queryGPS.lastResponse);
         var response = request.detail.response;
         response.results.forEach(function(s) {
@@ -291,6 +323,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _toggleDrawer: function() {
         this.drawerOpened = !this.drawerOpened;
+      },
+
+      initChat() {
+        var user = firebase.auth().currentUser;
+        var chatRef = firebase.database().ref("chat");
+        var chat = new FirechatUI(chatRef, this.$.firechatwrapper);
+        chat.setUser(user.uid, user.displayName);
       }
 
     });

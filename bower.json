@@ -39,7 +39,8 @@
     "moment-element": "abdonrd/moment-element#^0.4.3",
     "paper-menu": "PolymerElements/paper-menu#^1.2.2",
     "iron-ajax": "PolymerElements/iron-ajax#^1.4.3",
-    "paper-chip": "bendavis78/paper-chip#^1.1.2"
+    "paper-chip": "bendavis78/paper-chip#^1.1.2",
+    "firechat": "^3.0.1"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
