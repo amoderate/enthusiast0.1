@@ -119,7 +119,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <iron-ajax
       id="queryGPS"
-      url="http://maps.google.com/maps/api/geocode/json?address=[[shopAddress]]"
+      url="https://maps.google.com/maps/api/geocode/json?address=[[shopAddress]]"
       handle-as="json"
       on-response="handleAjaxGPSresponse"
       debounce-duration="300">
@@ -254,6 +254,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _addressQueryResultChanged: function(changeRecord) {
+        console.log(changeRecord);
         this.selected = 0;
         this.shopAbout = "About";
         this.shopAddress = "";
@@ -261,12 +262,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.shopLong = "0";
 
         if (changeRecord) {
-            //console.log(changeRecord);
             changeRecord.indexSplices.forEach(function(s) {
                 s.object.forEach(function(shop) {
-                  //console.log(shop.$key);
-                  //console.log(shop.about);
-                  //console.log(shop.address);
                   this.shopAbout = shop.about;
                   this.shopAddress = shop.address;
                   this.$.queryGPS.generateRequest();
@@ -276,18 +273,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       handleAjaxGPSresponse: function(request) {
-        //console.log(request.detail.response);
-        //console.log(this.$.queryGPS.lastResponse);
+        console.log(request.detail.response);
+        console.log(this.$.queryGPS.lastResponse);
         var response = request.detail.response;
         response.results.forEach(function(s) {
-            //s.object.forEach(function(shop) {
-              //console.log(s.geometry);
-              //console.log(s.geometry.location);
-              //console.log(s.geometry.location.lat);
-              //console.log(s.geometry.location.lng);
               this.shopLat = s.geometry.location.lat;
               this.shopLong = s.geometry.location.lng;
-            //}.bind(this));
         }.bind(this));
       },
 

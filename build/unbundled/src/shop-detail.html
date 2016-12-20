@@ -168,7 +168,7 @@
 
   </template>
 
-  <script>Polymer({is:"shop-detail",properties:{item:Object,route:Object,routeData:Object,visible:Boolean,failure:Boolean},observers:[],_unescapeText:function(e){var t=document.createElement("textarea");return t.innerHTML=e,t.textContent},_formatPrice:function(e){return e?"$"+e.toFixed(2):""},_addToCart:function(){this.fire("add-cart-item",{item:this.items,quantity:parseInt(this.$.quantitySelect.value,10),size:this.$.sizeSelect.value})},_getItemHref:function(e){return console.log(["/base",e.shopName].join("/")),e.shopName?["/base",e.shopName].join("/"):null},_isDefined:function(e){return null!=e},_goToShopPage:function(){console.log("SHOP PAGE: "+this.routeData.shopName),console.log(this.routeData.shop)}});</script>
+  <script>Polymer({is:"shop-detail",properties:{item:Object,route:Object,routeData:Object,visible:Boolean,failure:Boolean},observers:[],_unescapeText:function(e){var t=document.createElement("textarea");return t.innerHTML=e,t.textContent},_formatPrice:function(e){return e?"$"+e.toFixed(2):""},_addToCart:function(){this.fire("add-cart-item",{item:this.items,quantity:parseInt(this.$.quantitySelect.value,10),size:this.$.sizeSelect.value})},_getItemHref:function(e){return e.shopName?["/base",e.shopName].join("/"):null},_isDefined:function(e){return null!=e},_goToShopPage:function(){}});</script>
 
 </dom-module>
 </body></html>
