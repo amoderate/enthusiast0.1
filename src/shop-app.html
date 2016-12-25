@@ -342,6 +342,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         pageTittle: {
           type: String,
+          value: "EXPLORE",
           notify: true
         },
 
@@ -365,13 +366,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       observers: [
         '_routePageChanged(routeData.page)'
+        ,'_modeChanged(routeData.page)'
       ],
 
       listeners: {
         'change-section': '_onChangeSection',
         'announce': '_onAnnounce',
         'dom-change': '_domChange',
-        'change-shop': '_onChangeShop'
+        'change-shop': '_onChangeShop',
+
+
       },
 
       created: function() {
@@ -396,6 +400,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // Close the drawer - in case the *route* change came from a link in the drawer.
         this.drawerOpened = false;
       },
+
+      _modeChanged: function(category) {
+       console.log("changed shop")
+
+          this.debounce('change-shop', function() {
+            // Notify the category and the page's title
+            this.fire('change-shop', {
+              shopName: 'EXPLORE'
+            });
+          });
+
+      },
+
 
       _pageChanged: function(page, oldPage) {
         if (page != null) {

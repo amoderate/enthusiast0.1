@@ -68,7 +68,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
         .grid{
           @apply(--layout-vertical);
-        
+
         }
 
         .grid  li {
@@ -163,7 +163,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       observers: [
         '_categoryChanged(category, visible)'
+        ,'_modeChanged(category)'
+
       ],
+
 
       _getListItems: function(items) {
         // Return placeholder items when the items haven't loaded yet.
@@ -195,6 +198,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             });
           });
         }
+      },
+
+      _modeChanged: function(category) {
+       console.log("changed shop")
+
+          this.debounce('change-shop', function() {
+            // Notify the category and the page's title
+            this.fire('change-shop', {
+              shopName: 'EXPLORE'
+            });
+          });
+
       },
 
       _tryReconnect: function() {

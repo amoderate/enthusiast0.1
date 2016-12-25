@@ -899,6 +899,21 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
         };
       }
 
+      paper-tabs {
+        @apply(--layout-center);
+        font-family: 'Roboto', 'Noto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        width: 35%;
+        text-transform: uppercase;
+        margin-bottom: 1px;
+      }
+
+      paper-tab.iron-selected {
+        color: #E57373;
+      }
+
+      --paper-tab-ink: #E57373;
+
       .grid {
         @apply(--layout-horizontal);
         @apply(--layout-wrap);
@@ -934,6 +949,14 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
           flex-basis: 100%;
           max-width: 100%;
         }
+        paper-tabs {
+          @apply(--layout-center);
+          font-family: 'Roboto', 'Noto', sans-serif;
+          -webkit-font-smoothing: antialiased;
+          width: 75%;
+          text-transform: uppercase;
+          margin-bottom: 1px;
+        }
       }
     </style>
 
@@ -952,26 +975,46 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
     </iron-ajax>
 
       <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
-        <paper-tabs selected="{{selected}}">
+        <div class="layout horizontal center-justified">
+        <paper-tabs selected="{{selected}}" no-bar="">
           <paper-tab>Menu</paper-tab>
           <paper-tab>About</paper-tab>
           <paper-tab>Maps</paper-tab>
           <paper-tab>Chat</paper-tab>
         </paper-tabs>
+      </div>
       </app-header>
 
       <iron-pages selected="{{selected}}">
         <div>
-
-          <ul class="grid">
-            <template is="dom-repeat" items="[[items]]" as="item">
-              <li>
-                <a href$="[[_getItemHref(item)]]">
-                  <shop-list-menu item="[[item]]"></shop-list-menu></a>
-              </li>
-            </template>
-          </ul>
+          <div class="layout horizontal center-justified">
+            <paper-tabs scrollable="" selected="{{menu}}" no-bar="">
+              <paper-tab>Salad</paper-tab>
+              <paper-tab>Drinks</paper-tab>
+              <paper-tab>Main</paper-tab>
+              <paper-tab>Desert</paper-tab>
+            </paper-tabs>
         </div>
+          <iron-pages selected="{{menu}}">
+          <div>
+            <ul class="grid">
+              <template is="dom-repeat" items="[[items]]" as="item">
+                <li>
+                  <a href$="[[_getItemHref(item)]]">
+                    <shop-list-menu item="[[item]]"></shop-list-menu></a>
+                </li>
+              </template>
+            </ul>
+          </div>
+          <div>
+          </div>
+          <div>
+          </div>
+          <div>
+          </div>
+          <iron-pages selected="{{selected}}">
+
+        </iron-pages></iron-pages></div>
 
         <div>
           [[shopAbout]]
@@ -1126,7 +1169,7 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
           this.debounce('change-shop', function() {
             // Notify the category and the page's title
             this.fire('change-shop', {
-              shopName: shopName
+              shopName: shopName.toUpperCase()
             });
           });
 
