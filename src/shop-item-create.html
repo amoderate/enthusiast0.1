@@ -196,6 +196,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       >
     </firebase-query>
 
+    <firebase-query id="queryTags"
+      path="/tags"
+      data="{{tags}}"
+      order-by-child="/tag"
+      start-at="[[shopTags]]"
+      end-at="[[shopTags]]"
+      limit-to-first=10
+    >
+    </firebase-query>
+
     <div id="content" hidden$="[[failure]]">
 
       <template is="dom-repeat" items="{{items}}" as="item" hidden$="[[failure]]">
@@ -221,7 +231,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
       <paper-tabs  scrollable  selected="{{theme}}" attr-for-selected="label">
-        <template is="dom-repeat" items="[[categories]]" as="category" initial-count="4" filter="{{computeFilter(theme)}}">
+        <template is="dom-repeat" items="[[categories]]" as="category" initial-count="10" filter="{{computeFilter(theme)}}">
           <paper-tab label="{{category.title}}">
             {{category.title}}
           </paper-tab>
@@ -231,6 +241,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <paper-input label="#Tags" value="{{shopTags}}">
         </paper-input>
+
+        <paper-tabs  scrollable  selected="{{shopTags}}" attr-for-selected="label">
+          <template is="dom-repeat" items="[[tags]]" as="tag" initial-count="10" filter="{{computeFilterTags(shopTags)}}">
+            <paper-tab label="{{tag.tag}}">
+              {{tag.tag}}
+            </paper-tab>
+          </template>
+
+          </paper-tabs>
 
         <shop-button responsive>
           <button on-tap="_uploadShopClick" aria-label="update item description">Update Item Description</button>
@@ -301,6 +320,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           notify: true
         },
 
+        tagInList:{
+          type: Boolean,
+          value: false,
+          notify: true
+        },
+
+        tags:{
+          type: Object,
+          notify: true
+        },
+
         tokens: {
           type: Array,
           notify: true
@@ -311,6 +341,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           notify: true
         },
 
+       tagsLocation: {
+         type: String,
+         value: 'https://obsessed-tokyo.firebaseio.com/tags',
+         notify: true
+       },
+
         searchString: {
           type: String,
           value: 'For the love of beer',
@@ -320,7 +356,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         failure: Boolean
 
       },
-
 
 
       observers: [
@@ -416,16 +451,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        var prices = this.itemPrice
        var shopsTagss = this.shopTags;
        var newItemKey = firebase.database().ref().child('items').push().key;
-       if (user != null && (this.itemName != null || this.shopName  != null ||  this.theme != null || this.itemPrice != null || this.shopTags != null)) {
-       this.itemName = '';
-       this.shopName = '';
-       this.theme = '';
-       this.itemPrice = '';
-       this.shopTags = '';
-     }
 
-       if (user != null && this.items != null) {
-          console.log("it's clicked");
+
+
+     if (this.tags.length > 0) {
+
+     } else {
+
+       if (user != null && !this.items == false && !this.shopName == false && !this.theme == false && !this.shopTags == false){
+        console.log(!this.theme);
+        console.log(!this.shopTags);
+        var newTagKey = firebase.database().ref().child('tags').push().key;
+        var updatesTags = {};
+        var tagData = {
+          tag: shopsTagss,
+          shopName: shopNames
+        };
+        updatesTags['/tags/' + newTagKey] = tagData;
+        firebase.database().ref().update(updatesTags);
+        this.itemName = '';
+        this.shopName = '';
+        this.theme = '';
+        this.itemPrice = '';
+        this.shopTags = '';
+        };
+
+      };
+
+       if (user != null && this.items != null && this.shopName != null && this.theme != null && this.shopTags != null) {
            this.items.forEach(function (post) {
              var urls = post.url;
              var users = post.user;
@@ -445,9 +498,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               firebase.database().ref().update(updates);
               firebase.database().ref().child('imageDraft').remove();
 
+
            });
          }
        },
+
        computeFilter: function(string) {
        if (!string) {
          // set filter to null to disable filtering
@@ -456,13 +511,40 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          // return a filter function for the current search string
          string = string.toLowerCase();
          return function(item) {
-           var japanese_name = item.title.toLowerCase();
-           var english_name = item.name.toLowerCase();
-           return (japanese_name.indexOf(string) != -1 ||
-               english_name.indexOf(string) != -1);
+           var japaneseName = item.title.toLowerCase();
+           var enghlishName = item.name.toLowerCase();
+           return (japaneseName.indexOf(string) != -1 ||
+               enghlishName.indexOf(string) != -1);
          };
        }
      },
+
+     checkIfTagExists: function(tag) {
+       var tagRef = firebase.database().ref('tags')
+       console.log(tagRef.tag);
+       tagRef.child(tag).once('value', function(snapshot) {
+         var exists = (snapshot.val() !== null);
+         console.log(exists);
+         return(exists)
+       });
+     },
+
+     computeFilterTags: function(string) {
+     if (!string) {
+       // set filter to null to disable filtering
+       return null;
+     } else {
+       // return a filter function for the current search string
+       string = string.toLowerCase();
+       return function(tag) {
+         var japanese_name = tag.tag.toLowerCase();
+         var english_name = tag.tag.toLowerCase();
+         return (japanese_name.indexOf(string) != -1 ||
+             english_name.indexOf(string) != -1);
+       };
+     }
+   },
+
 
      on_api_load: function () {
        this.autocomplete = new google.maps.places.Autocomplete(this.$.input, this.options);
@@ -481,7 +563,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      },
 
      toggleSelection: function(e) {
-       console.log("it's selected")
+       console.log("it's selected");
       var item = this.$.categories.itemForElement(e.target);
       this.$.selector.select(item.title)
       this.theme = item.name

@@ -901,15 +901,27 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
 
       paper-tabs {
         @apply(--layout-center);
+        --paper-tab-ink: #E57373;
         font-family: 'Roboto', 'Noto', sans-serif;
         -webkit-font-smoothing: antialiased;
         width: 35%;
         text-transform: uppercase;
         margin-bottom: 1px;
+
+      }
+
+      #menu {
+        background-color: #ECEFF1;
+
       }
 
       paper-tab.iron-selected {
         color: #E57373;
+        background-color: #ECEFF1;
+      }
+
+      paper-tab {
+      --paper-tab-ink: #E57373;
       }
 
       --paper-tab-ink: #E57373;
@@ -971,6 +983,10 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
     <firebase-query id="queryAddress" path="/shops" order-by-child="/shopName" equal-to="[[routeData.shop]]" data="{{addressQueryResult}}">
     </firebase-query>
 
+    <firebase-query id="menuTags" path="/tags" data="{{tags}}" order-by-child="/shopName" start-at="[[routeData.shop]]" end-at="[[routeData.shop]]" limit-to-first="10">
+    </firebase-query>
+
+
     <iron-ajax id="queryGPS" url="https://maps.google.com/maps/api/geocode/json?address=[[shopAddress]]" handle-as="json" on-response="handleAjaxGPSresponse" debounce-duration="300">
     </iron-ajax>
 
@@ -988,11 +1004,10 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
       <iron-pages selected="{{selected}}">
         <div>
           <div class="layout horizontal center-justified">
-            <paper-tabs scrollable="" selected="{{menu}}" no-bar="">
-              <paper-tab>Salad</paper-tab>
-              <paper-tab>Drinks</paper-tab>
-              <paper-tab>Main</paper-tab>
-              <paper-tab>Desert</paper-tab>
+            <paper-tabs id="menu" scrollable="" selected="{{menu}}" no-bar="">
+                <template is="dom-repeat" items="[[tags]]" as="tag">
+                  <paper-tab>[[tag.tag]]</paper-tab>
+                </template>
             </paper-tabs>
         </div>
           <iron-pages selected="{{menu}}">
@@ -1012,9 +1027,9 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
           </div>
           <div>
           </div>
-          <iron-pages selected="{{selected}}">
+        </iron-pages>
 
-        </iron-pages></iron-pages></div>
+        </div>
 
         <div>
           [[shopAbout]]

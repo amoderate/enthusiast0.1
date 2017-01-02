@@ -152,6 +152,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       >
     </firebase-query>
 
+    <firebase-query id="menuTags"
+      path="/tags"
+      data="{{tags}}"
+      order-by-child="/shopName"
+      start-at="[[routeData.shop]]"
+      end-at="[[routeData.shop]]"
+      limit-to-first=10
+    >
+    </firebase-query>
+
+
     <iron-ajax
       id="queryGPS"
       url="https://maps.google.com/maps/api/geocode/json?address=[[shopAddress]]"
@@ -162,7 +173,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
         <div class="layout horizontal center-justified">
-        <paper-tabs selected="{{selected}}" no-bar>
+        <paper-tabs selected="{{selected}}"  no-bar>
           <paper-tab>Menu</paper-tab>
           <paper-tab>About</paper-tab>
           <paper-tab>Maps</paper-tab>
@@ -175,10 +186,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div>
           <div class="layout horizontal center-justified">
             <paper-tabs id="menu" scrollable selected="{{menu}}" no-bar>
-              <paper-tab>Salad</paper-tab>
-              <paper-tab>Drinks</paper-tab>
-              <paper-tab>Main</paper-tab>
-              <paper-tab>Desert</paper-tab>
+                <template is="dom-repeat" items="[[tags]]" as="tag">
+                  <paper-tab>[[tag.tag]]</paper-tab>
+                </template>
             </paper-tabs>
         </div>
           <iron-pages selected="{{menu}}">
@@ -198,7 +208,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </div>
           <div>
           </div>
-          <iron-pages selected="{{selected}}">
+        </iron-pages>
 
         </div>
 
