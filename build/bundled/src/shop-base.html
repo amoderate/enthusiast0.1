@@ -1004,33 +1004,24 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
       <iron-pages selected="{{selected}}">
         <div>
           <div class="layout horizontal center-justified">
-            <paper-tabs id="menu" scrollable="" selected="{{menu}}" no-bar="">
+            <paper-tabs id="menu" scrollable="" selected="{{displayTag}}" no-bar="">
                 <template is="dom-repeat" items="[[tags]]" as="tag">
                   <paper-tab>[[tag.tag]]</paper-tab>
                 </template>
             </paper-tabs>
         </div>
-          <iron-pages selected="{{menu}}">
-          <div>
+          <iron-pages selected="{{displayTag}}">
             <ul class="grid">
-              <template is="dom-repeat" items="[[items]]" as="item">
+              <template is="dom-repeat" items="[[items]]" as="item" filter="{{computeFilterTags(displayTag)}}">
                 <li>
+                  [[item.name]]
                   <a href$="[[_getItemHref(item)]]">
                     <shop-list-menu item="[[item]]"></shop-list-menu></a>
                 </li>
               </template>
             </ul>
-          </div>
-          <div>
-          </div>
-          <div>
-          </div>
-          <div>
-          </div>
         </iron-pages>
-
-        </div>
-
+      </div>
         <div>
           [[shopAbout]]
         </div>
@@ -1213,6 +1204,25 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
           this._networkSnackbar.open();
         }
       },
+
+      computeFilterTags: function(string) {
+      if (!string) {
+        // set filter to null to disable filtering
+        return null;
+      } else {
+        // return a filter function for the current search string
+        string = string.toLowerCase();
+        return function(item) {
+          console.log(item)
+          console.log(string)
+          var japanese_name = item.shopsTags.toLowerCase();
+          var english_name = item.shopsTags.toLowerCase();
+          return (japanese_name.indexOf(string) != -1 ||
+              english_name.indexOf(string) != -1);
+
+        };
+      }
+    },
 
       _toggleDrawer: function() {
         this.drawerOpened = !this.drawerOpened;

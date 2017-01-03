@@ -519,21 +519,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        }
      },
 
-     checkIfTagExists: function(tag) {
-       var tagRef = firebase.database().ref('tags')
-       console.log(tagRef.tag);
-       tagRef.child(tag).once('value', function(snapshot) {
-         var exists = (snapshot.val() !== null);
-         console.log(exists);
-         return(exists)
-       });
-     },
-
      computeFilterTags: function(string) {
      if (!string) {
        // set filter to null to disable filtering
        return null;
      } else {
+
        // return a filter function for the current search string
        string = string.toLowerCase();
        return function(tag) {
@@ -544,7 +535,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        };
      }
    },
-
 
      on_api_load: function () {
        this.autocomplete = new google.maps.places.Autocomplete(this.$.input, this.options);
