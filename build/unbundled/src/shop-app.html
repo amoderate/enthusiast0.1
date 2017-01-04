@@ -244,30 +244,13 @@
             <paper-icon-button icon="icons:create"></paper-icon-button>
           </a>
         </div>
-        <div>
-          <a href="/shop-create" tabindex="-1">
-            <paper-icon-button icon="maps:add-location"></paper-icon-button>
-          </a>
-        </div>
-
+        
 
       </app-toolbar>
 
       
 
     </app-header>
-
-    
-    <template is="dom-if" if="[[_shouldRenderDrawer]]">
-      
-      <app-drawer opened="{{drawerOpened}}" swipe-open="" tabindex="0">
-        <iron-selector role="navigation" class="drawer-list" selected="[[categoryName]]" attr-for-selected="name">
-          <template is="dom-repeat" items="[[categories]]" as="category" initial-count="4">
-            <a name="[[category.name]]" href="/list/[[category.name]]">[[category.title]]</a>
-          </template>
-        </iron-selector>
-      </app-drawer>
-    </template>
 
     <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible">
       
@@ -281,7 +264,7 @@
       
       <shop-item-create name="item-create"></shop-item-create>
       
-      <shop-shop-create name="shop-create"></shop-shop-create>
+      
       
       <shop-base name="base" route="[[subroute]]"></shop-base>
 
@@ -293,7 +276,7 @@
 
   </template>
 
-  <script>window.performance&&performance.mark&&performance.mark("shop-app - before register"),Polymer({is:"shop-app",properties:{page:{type:String,reflectToAttribute:!0,observer:"_pageChanged"},pageTittle:{type:String,value:"EXPLORE",notify:!0},numItems:{type:Number,value:0},_shouldShowTabs:{computed:"_computeShouldShowTabs(page, smallScreen)"},_shouldRenderTabs:{computed:"_computeShouldRenderTabs(_shouldShowTabs, loadComplete)"},_shouldRenderDrawer:{computed:"_computeShouldRenderDrawer(smallScreen, loadComplete)"}},observers:["_routePageChanged(routeData.page)","_modeChanged(routeData.page)"],listeners:{"change-section":"_onChangeSection",announce:"_onAnnounce","dom-change":"_domChange","change-shop":"_onChangeShop"},created:function(){window.performance&&performance.mark&&performance.mark("shop-app.created"),this.removeAttribute("unresolved")},ready:function(){Polymer.RenderStatus.afterNextRender(this,function(){this.listen(window,"online","_notifyNetworkStatus"),this.listen(window,"offline","_notifyNetworkStatus")})},_routePageChanged:function(e){this.page=e||"home",Polymer.AppLayout.scroll({top:0,behavior:"silent"}),this.drawerOpened=!1},_modeChanged:function(e){console.log("changed shop"),this.debounce("change-shop",function(){this.fire("change-shop",{shopName:"EXPLORE"})})},_pageChanged:function(e,o){null!=e&&("home"==e?this._pageLoaded(Boolean(o)):this.importHref(this.resolveUrl("shop-"+e+".html"),function(){this._pageLoaded(Boolean(o))},null,!0))},_pageLoaded:function(e){this._ensureLazyLoaded(),e&&this.async(function(){this.$.header.resetLayout()},1)},_ensureLazyLoaded:function(){this.loadComplete||Polymer.RenderStatus.afterNextRender(this,function(){this.importHref(this.resolveUrl("lazy-resources.html"),function(){"serviceWorker"in navigator&&navigator.serviceWorker.register("/service-worker.js"),this._notifyNetworkStatus(),this.loadComplete=!0})})},_notifyNetworkStatus:function(){var e=this.offline;this.offline=!navigator.onLine,(this.offline||!this.offline&&e===!0)&&(this._networkSnackbar||(this._networkSnackbar=document.createElement("shop-snackbar"),Polymer.dom(this.root).appendChild(this._networkSnackbar)),Polymer.dom(this._networkSnackbar).innerHTML=this.offline?"You are offline":"You are online",this._networkSnackbar.open())},_toggleDrawer:function(){this.drawerOpened=!this.drawerOpened},_onChangeSection:function(e){console.log(e);var o=e.detail;this.categoryName=o.category||"",o.title&&(document.title=o.title+" - SHOP",this._announce(o.title+", loaded"))},_onChangeShop:function(e){console.log(e.detail.shopName),this.pageTittle=e.detail.shopName},_onAnnounce:function(e){this._announce(e.detail)},_announce:function(e){this._a11yLabel="",this.debounce("_a11yAnnouncer",function(){this._a11yLabel=e},100)},_domChange:function(e){if(window.performance&&performance.mark&&!this.__loggedDomChange){var o=Polymer.dom(e).rootTarget;o.domHost.is.match(this.page)&&(this.__loggedDomChange=!0,performance.mark(o.domHost.is+".domChange"))}},_computeShouldShowTabs:function(e,o){return("home"===e||"list"===e||"detail"===e)&&!o},_computeShouldRenderTabs:function(e,o){return e&&o},_computeShouldRenderDrawer:function(e,o){return e&&o},_computePluralizedQuantity:function(e){return e+" "+(1===e?"item":"items")},signInWithGoogle:function(){this.error=null,this.$.auth.signInWithPopup()},signOut:function(){this.error=null,this.$.auth.signOut()}});</script>
+  <script>window.performance&&performance.mark&&performance.mark("shop-app - before register"),Polymer({is:"shop-app",properties:{page:{type:String,reflectToAttribute:!0,observer:"_pageChanged"},pageTittle:{type:String,value:"EXPLORE",notify:!0},numItems:{type:Number,value:0},_shouldShowTabs:{computed:"_computeShouldShowTabs(page, smallScreen)"},_shouldRenderTabs:{computed:"_computeShouldRenderTabs(_shouldShowTabs, loadComplete)"},_shouldRenderDrawer:{computed:"_computeShouldRenderDrawer(smallScreen, loadComplete)"}},observers:["_routePageChanged(routeData.page)","_modeChanged(routeData.page)"],listeners:{"change-section":"_onChangeSection",announce:"_onAnnounce","dom-change":"_domChange","change-shop":"_onChangeShop"},created:function(){window.performance&&performance.mark&&performance.mark("shop-app.created"),this.removeAttribute("unresolved")},ready:function(){Polymer.RenderStatus.afterNextRender(this,function(){this.listen(window,"online","_notifyNetworkStatus"),this.listen(window,"offline","_notifyNetworkStatus")})},_routePageChanged:function(e){this.page=e||"home",Polymer.AppLayout.scroll({top:0,behavior:"silent"}),this.drawerOpened=!1},_modeChanged:function(e){console.log("changed shop"),this.debounce("change-shop",function(){this.fire("change-shop",{shopName:"EXPLORE"})})},_pageChanged:function(e,o){null!=e&&("home"==e?this._pageLoaded(Boolean(o)):this.importHref(this.resolveUrl("shop-"+e+".html"),function(){this._pageLoaded(Boolean(o))},null,!0))},_pageLoaded:function(e){this._ensureLazyLoaded(),e&&this.async(function(){this.$.header.resetLayout()},1)},_ensureLazyLoaded:function(){this.loadComplete||Polymer.RenderStatus.afterNextRender(this,function(){this.importHref(this.resolveUrl("lazy-resources.html"),function(){"serviceWorker"in navigator&&navigator.serviceWorker.register("/service-worker.js"),this._notifyNetworkStatus(),this.loadComplete=!0})})},_notifyNetworkStatus:function(){var e=this.offline;this.offline=!navigator.onLine,(this.offline||!this.offline&&e===!0)&&(this._networkSnackbar||(this._networkSnackbar=document.createElement("shop-snackbar"),Polymer.dom(this.root).appendChild(this._networkSnackbar)),Polymer.dom(this._networkSnackbar).innerHTML=this.offline?"You are offline":"You are online",this._networkSnackbar.open())},_toggleDrawer:function(){this.drawerOpened=!this.drawerOpened},_onChangeSection:function(e){console.log(e);var o=e.detail;this.categoryName=o.category||"",o.title&&(document.title=o.title+" - SHOP",this._announce(o.title+", loaded"))},_onChangeShop:function(e){console.log(e.detail.shopName)},_onAnnounce:function(e){this._announce(e.detail)},_announce:function(e){this._a11yLabel="",this.debounce("_a11yAnnouncer",function(){this._a11yLabel=e},100)},_domChange:function(e){if(window.performance&&performance.mark&&!this.__loggedDomChange){var o=Polymer.dom(e).rootTarget;o.domHost.is.match(this.page)&&(this.__loggedDomChange=!0,performance.mark(o.domHost.is+".domChange"))}},_computeShouldShowTabs:function(e,o){return("home"===e||"list"===e||"detail"===e)&&!o},_computeShouldRenderTabs:function(e,o){return e&&o},_computeShouldRenderDrawer:function(e,o){return e&&o},_computePluralizedQuantity:function(e){return e+" "+(1===e?"item":"items")},signInWithGoogle:function(){this.error=null,this.$.auth.signInWithPopup()},signOut:function(){this.error=null,this.$.auth.signOut()}});</script>
 
 </dom-module>
 </body></html>

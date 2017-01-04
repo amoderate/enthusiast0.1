@@ -219,6 +219,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <paper-input id="input" placeholder="" label="Shop Name ショップ名" class="input" type="text" value="{{shopName}}">
         </paper-input>
 
+        <paper-input label="Address  場所" value="{{value}}">
+        </paper-input>
+
+        <paper-input label="Phone  電話番号" value="{{phone}}">
+        </paper-input>
+
 
         <paper-textarea label="Item" value="{{itemName}}">
         </paper-textarea>
@@ -303,6 +309,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           notify: true
 
         },
+
+        phone: {
+          type: String,
+          notify: true
+        },
+
+        value: {
+          type: String,
+          notify: true
+        },
+
         theme:{
           type: String,
           notify: true
@@ -470,6 +487,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         updatesTags['/tags/' + newTagKey] = tagData;
         firebase.database().ref().update(updatesTags);
         this.itemName = '';
+        this.value = '';
+        this.phone = '';
         this.shopName = '';
         this.theme = '';
         this.itemPrice = '';

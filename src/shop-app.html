@@ -274,30 +274,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <paper-icon-button icon="icons:create"></paper-icon-button>
           </a>
         </div>
-        <div>
+        <!--<div>
           <a href="/shop-create" tabindex="-1">
             <paper-icon-button icon="maps:add-location"></paper-icon-button>
           </a>
         </div>
-
+        < -->
 
       </app-toolbar>
 
       <!-- Lazy-create the tabs for larger screen sizes. -->
 
     </app-header>
-
-    <!-- Lazy-create the drawer for small screen sizes. -->
-    <template is="dom-if" if="[[_shouldRenderDrawer]]">
-      <!-- Two-way bind `drawerOpened` since app-drawer can update `opened` itself. -->
-      <app-drawer opened="{{drawerOpened}}" swipe-open tabindex="0">
-        <iron-selector role="navigation" class="drawer-list" selected="[[categoryName]]" attr-for-selected="name">
-          <template is="dom-repeat" items="[[categories]]" as="category" initial-count="4">
-            <a name="[[category.name]]" href="/list/[[category.name]]">[[category.title]]</a>
-          </template>
-        </iron-selector>
-      </app-drawer>
-    </template>
 
     <iron-pages role="main" selected="[[page]]" attr-for-selected="name" selected-attribute="visible">
       <!-- home view -->
@@ -311,7 +299,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <!-- create an item -->
       <shop-item-create name="item-create"></shop-item-create>
       <!---create a shop -->
-      <shop-shop-create name="shop-create"></shop-shop-create>
+      <!--<shop-shop-create name="shop-create"></shop-shop-create> -->
       <!--shopbase -->
       <shop-base name="base" route="[[subroute]]"></shop-base>
 
@@ -493,7 +481,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _onChangeShop: function(event) {
         console.log(event.detail.shopName);
 
-        this.pageTittle = event.detail.shopName;
+        //this.pageTittle = event.detail.shopName;
 
 
       },

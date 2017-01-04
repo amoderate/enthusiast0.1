@@ -1004,22 +1004,25 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
       <iron-pages selected="{{selected}}">
         <div>
           <div class="layout horizontal center-justified">
-            <paper-tabs id="menu" scrollable="" selected="{{displayTag}}" no-bar="">
+            <paper-tabs id="menu" scrollable="" selected="{{displayTag}}" no-bar="" attr-for-selected="label">
                 <template is="dom-repeat" items="[[tags]]" as="tag">
-                  <paper-tab>[[tag.tag]]</paper-tab>
+                  <paper-tab label="{{tag.tag}}">[[tag.tag]]</paper-tab>
                 </template>
             </paper-tabs>
         </div>
-          <iron-pages selected="{{displayTag}}">
+          <iron-pages selected="{{displayTag}}" attr-for-selected="name">
+            <div name="{{displayTag}}">
             <ul class="grid">
               <template is="dom-repeat" items="[[items]]" as="item" filter="{{computeFilterTags(displayTag)}}">
                 <li>
                   [[item.name]]
                   <a href$="[[_getItemHref(item)]]">
-                    <shop-list-menu item="[[item]]"></shop-list-menu></a>
+                    <shop-list-menu item="[[item]]"></shop-list-menu>
+                  </a>
                 </li>
               </template>
             </ul>
+          </div>
         </iron-pages>
       </div>
         <div>
@@ -1046,12 +1049,12 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
 
       is: 'shop-base',
 
-      properties: {
+      ready: function () {
+           // make global values available on instance.
+           this.selected = this.shopTags;
+       },
 
-        selected: {
-          type: Number,
-          value: 0
-        },
+      properties: {
 
         category: Object,
 
@@ -1085,6 +1088,10 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
         shopLat: {
           type: Number,
           notify: true,
+        },
+        displayTag: {
+          type: String,
+          notify: true
         },
 
         shopLong: {
@@ -1129,7 +1136,6 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
       },
 
       _addressQueryResultChanged: function(changeRecord) {
-        console.log(changeRecord);
         this.selected = 0;
         this.shopAbout = "About";
         this.shopAddress = "";
@@ -1148,8 +1154,6 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
       },
 
       handleAjaxGPSresponse: function(request) {
-        console.log(request.detail.response);
-        console.log(this.$.queryGPS.lastResponse);
         var response = request.detail.response;
         response.results.forEach(function(s) {
               this.shopLat = s.geometry.location.lat;
@@ -1163,6 +1167,7 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
       },
 
       _getItemHref: function(item) {
+        console.log(this.displayTag);
         // By returning null when `itemId` is undefined, the href attribute won't be set and
         // the link will be disabled.
         // console.log(this.routeData.shop);
@@ -1170,7 +1175,6 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
       },
 
       _shopChanged: function(shopName) {
-       console.log("changed shop")
 
           this.debounce('change-shop', function() {
             // Notify the category and the page's title
@@ -1213,8 +1217,6 @@ i?(r._userId=e.toString(),r._userName=n.toString(),r._userRef=r._firechatRef.chi
         // return a filter function for the current search string
         string = string.toLowerCase();
         return function(item) {
-          console.log(item)
-          console.log(string)
           var japanese_name = item.shopsTags.toLowerCase();
           var english_name = item.shopsTags.toLowerCase();
           return (japanese_name.indexOf(string) != -1 ||
