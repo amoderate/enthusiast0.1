@@ -196,6 +196,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       >
     </firebase-query>
 
+    <firebase-query id="queryShops"
+      path="/shops"
+      data="{{shops}}"
+      order-by-child="/shopName"
+      start-at="[[shopName]]"
+      end-at="[[shopName]]"
+      limit-to-last="10"
+      >
+    </firebase-query>
+
     <firebase-query id="queryTags"
       path="/tags"
       data="{{tags}}"
@@ -290,6 +300,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         visible: Boolean,
 
+        latitude: {
+          type: String,
+          notify: true
+        },
+
+        longitude: {
+          type: String,
+          notify: true
+        },
+
         offline: {
           type: Boolean,
           observer: '_offlineChanged'
@@ -328,6 +348,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         itemPrice:{
           type: String,
           value:'',
+          notify: true
+        },
+
+        shops: {
+          type: Object,
           notify: true
         },
 
@@ -460,24 +485,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         })
      },
+
      _uploadShopClick: function(e) {
        var user = firebase.auth().currentUser;
        var shopNames = this.shopName;
+       var shopAddress = this.value;
+       var shopPhones = this.phone;
        var itemNames = this.itemName;
        var themes = this.theme;
        var prices = this.itemPrice
        var shopsTagss = this.shopTags;
+       var shopLngs = this.longitude;
+       var shopLats = this.latitude;
        var newItemKey = firebase.database().ref().child('items').push().key;
-
-
 
      if (this.tags.length > 0) {
 
      } else {
 
        if (user != null && !this.items == false && !this.shopName == false && !this.theme == false && !this.shopTags == false){
-        console.log(!this.theme);
-        console.log(!this.shopTags);
         var newTagKey = firebase.database().ref().child('tags').push().key;
         var updatesTags = {};
         var tagData = {
@@ -486,18 +512,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         };
         updatesTags['/tags/' + newTagKey] = tagData;
         firebase.database().ref().update(updatesTags);
-        this.itemName = '';
-        this.value = '';
-        this.phone = '';
-        this.shopName = '';
-        this.theme = '';
-        this.itemPrice = '';
-        this.shopTags = '';
         };
 
       };
 
-       if (user != null && this.items != null && this.shopName != null && this.theme != null && this.shopTags != null) {
+       console.log(this.shops);
+
+      if (this.shops.length > 0) {
+        console.log("shops there")
+      } else {
+        console.log("shops not there");
+        console.log(this.shops.shopName);
+        if (user != null && !this.shopName == false && !this.phone == false && !this.value == false) {
+          var newShopKey = firebase.database().ref().child('shops').push().key;
+          var updatesShops = {};
+          var shopData = {
+            shopName: shopNames,
+            shopAddres: shopAddress,
+            shopPhone: shopPhones,
+            shopLng: shopLngs,
+            shopLat: shopLats
+          };
+          updatesShops['/shops/' + newShopKey] = shopData;
+          firebase.database().ref().update(updatesShops);
+          };
+        };
+
+       if (user != null && !this.items == false && !this.shopName == false && !this.theme == false && !this.shopTags == false) {
            this.items.forEach(function (post) {
              var urls = post.url;
              var users = post.user;
@@ -506,6 +547,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                url: urls,
                user: post.user,
                shopName: shopNames,
+               shopAddres: shopAddress,
+               shopPhone: shopPhones,
                itemName: itemNames,
                price: prices,
                theme: themes,
@@ -516,10 +559,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               console.log(updates);
               firebase.database().ref().update(updates);
               firebase.database().ref().child('imageDraft').remove();
-
-
            });
          }
+         this.itemName = '';
+         this.value = '';
+         this.phone = '';
+         this.shopName = '';
+         this.theme = '';
+         this.itemPrice = '';
+         this.shopTags = '';
        },
 
        computeFilter: function(string) {
@@ -568,7 +616,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        this.value = this.place.formatted_address;
        this.phone = this.place.formatted_phone_number;
        this.shopName = this.place.name;
-       console.log(this.place);
+       this.longitude = this.place.geometry.location.lng();
+       this.latitude= this.place.geometry.location.lat();
+
+       console.log(this.longitude);
+       console.log(this.latitude);
      },
 
      toggleSelection: function(e) {
