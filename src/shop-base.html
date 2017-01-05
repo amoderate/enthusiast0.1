@@ -12,6 +12,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../bower_components/google-map/google-map.html">
 <link rel="import" href="../bower_components/google-map/google-map.html">
 <link rel="import" href="../bower_components/google-map/google-map-directions.html">
@@ -26,13 +29,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 
-<!-- jQuery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-<!-- Firechat -->
-<link rel="stylesheet" href="../bower_components/firechat/dist/firechat.min.css" />
-<script src="../bower_components/firechat/dist/firechat.min.js"></script>
 
-<link rel="import" href="fchat2-main.html">
 
 
 
@@ -76,6 +73,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       #menu {
 
       }
+      .footer{
+        @apply(--layout-fixed-bottom);
+        height: 64px;
+        background-color: white;
+
+      }
+
+      #message-input{
+        @apply(--layout-fixed-bottom);
+        height: 64px;
+        z-index: 1;
+        color: white;
+      }
 
       paper-tab.iron-selected {
         color: #E57373;
@@ -110,6 +120,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         text-decoration: none;
       }
 
+      .list {
+       @apply(--layout-flex);
+       overflow: auto;
+     }
+
       @media (max-width: 767px) {
         .hero-image {
           display: none;
@@ -133,8 +148,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
     </style>
-
-
 
     <app-route route="[[route]]" pattern="/:shop" data="{{routeData}}" tail="{{subroute}}">
     </app-route>
@@ -167,6 +180,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     >
     </firebase-query>
 
+    <firebase-query id="shopMessage"
+      path="/shopMessage/[[routeData.shop]]"
+      data="{{shopMessage}}"
+      order-by-child="/chatTime"
+      limit-to-last=10
+    >
+    </firebase-query>
+
 
       <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
         <div class="layout horizontal center-justified">
@@ -175,7 +196,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <paper-tab>About</paper-tab>
           <paper-tab>Maps</paper-tab>
           <paper-tab>Chat</paper-tab>
-          <paper-tab>Chat2</paper-tab>
         </paper-tabs>
       </div>
       </app-header>
@@ -216,14 +236,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </google-map>
         </div>
 
-        <div id="firechatwrapper">
-          <!-- <paper-button raised on-tap="initChat">Start Chat</paper-button> -->
-          <!-- <fchat-main></fchat-main> -->
-        </div>
-
         <div>
-          <!-- <paper-button raised on-tap="initChat">Start Chat</paper-button> -->
-          <fchat2-main></fchat2-main>
+
+          <div>
+
+           <div class="list">
+           <template is="dom-repeat" items="[[shopMessage]]" as="message" >
+             <paper-item>
+              <paper-item-body two-line>
+                <div>{{message.displayName}}</div>
+                <div secondary>{{message.chatText}}</div>
+              </paper-item-body>
+            </paper-item>
+           </template>
+
+         </div>
+             <paper-material elevation="1" class="footer">
+                 <paper-input id="message-input" label="New Message:" on-keyup="_handleInput"></paper-input>
+             </paper-material>
+          </div>
         </div>
       </iron-pages>
 
@@ -280,6 +311,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           notify: true
         },
 
+        messageTextCheck: {
+          type: String,
+          notify: true
+        },
+
         shopLong: {
           type: String,
           notify: true,
@@ -313,10 +349,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             title: 'Chat with Us'
           }
         ];
-
-        //console.log("aaa" + this.routeData.shop);
-
-        this.initChat();
 
       },
 
@@ -385,19 +417,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     },
 
+    _handleInput: function(e) {
+       if (e.keyCode == 13) {
+
+        var timestamp = new Date().getTime()
+
+         var chatTexts = e.target.value;
+         var users = firebase.auth().currentUser;
+         var shopName = this.routeData.shop;
+         if (users != null && !this.routeData.shop == false && !e.target.value == false) {
+           var newChatKey = firebase.database().ref().child('/shopMessage/' + this.routeData.shop).push().key;
+           var updates = {};
+           var chatData = {
+             userid: users.uid,
+             displayName: users.displayName,
+             chatTime: timestamp,
+             chatText: chatTexts
+           };
+           updates['/shopMessage/'+ shopName + '/' + newChatKey] = chatData;
+           firebase.database().ref().update(updates);
+         };
+         e.target.value = ''
+       };
+     },
+
       _toggleDrawer: function() {
         this.drawerOpened = !this.drawerOpened;
-      },
-
-      initChat() {
-
-        var user = firebase.auth().currentUser;
-        var chatRef = firebase.database().ref("chat");
-        var chat = new FirechatUI(chatRef, this.$.firechatwrapper);
-        if (user != null) {
-            chat.setUser(user.uid, user.displayName);
-        }
-
       }
 
     });
