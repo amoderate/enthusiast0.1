@@ -69,18 +69,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         -webkit-font-smoothing: antialiased;
         width: 35%;
         text-transform: uppercase;
-        margin-bottom: 1px;
+        margin-bottom: 3px;
 
       }
 
       #menu {
-        background-color: #ECEFF1;
 
       }
 
       paper-tab.iron-selected {
         color: #E57373;
-        background-color: #ECEFF1;
+
       }
 
       paper-tab {
@@ -152,8 +151,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       id="queryAddress"
       path="/shops"
       order-by-child="/shopName"
-      equal-to="[[routeData.shop]]"
-      data="{{addressQueryResult}}"
+      start-at="{{routeData.shop}}"
+      end-at="{{routeData.shop}}"
+      data="{{shopData}}"
       >
     </firebase-query>
 
@@ -168,14 +168,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </firebase-query>
 
 
-    <iron-ajax
-      id="queryGPS"
-      url="https://maps.google.com/maps/api/geocode/json?address=[[shopAddress]]"
-      handle-as="json"
-      on-response="handleAjaxGPSresponse"
-      debounce-duration="300">
-    </iron-ajax>
-
       <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
         <div class="layout horizontal center-justified">
         <paper-tabs selected="{{selected}}"  no-bar>
@@ -183,7 +175,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <paper-tab>About</paper-tab>
           <paper-tab>Maps</paper-tab>
           <paper-tab>Chat</paper-tab>
-          <paper-tab>Chat2</paper-tab>          
+          <paper-tab>Chat2</paper-tab>
         </paper-tabs>
       </div>
       </app-header>
@@ -217,8 +209,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
 
         <div>
-          <google-map latitude="[[shopLat]]" longitude="[[shopLong]]" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E">
-            <google-map-marker latitude="[[shopLat]]" longitude="[[shopLong]]" title="[[routeData.shop]]"></google-map-marker>
+          <google-map id="map" map="{{map}}" atitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers>
+            <template is="dom-repeat" items="[[shopData]]" as="shop">
+              <google-map-marker style="transit-layer" map="[[map]]" latitude="{{shop.shopLat}}" longitude="{{shop.shopLng}}" title="{[routeData.shop}}" draggable="false"></google-map-marker>
+            </template>
           </google-map>
         </div>
 
@@ -230,7 +224,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div>
           <!-- <paper-button raised on-tap="initChat">Start Chat</paper-button> -->
           <fchat2-main></fchat2-main>
-        </div>               
+        </div>
       </iron-pages>
 
   </template>
@@ -278,7 +272,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         shopLat: {
-          type: Number,
+          type: String,
           notify: true,
         },
         displayTag: {
@@ -287,13 +281,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         shopLong: {
-          type: Number,
+          type: String,
           notify: true,
         },
       },
 
       observers: [
-        '_addressQueryResultChanged(addressQueryResult.splices)',
         '_shopChanged(routeData.shop)'
       ],
 
@@ -325,32 +318,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         this.initChat();
 
-      },
-
-      _addressQueryResultChanged: function(changeRecord) {
-        this.selected = 0;
-        this.shopAbout = "About";
-        this.shopAddress = "";
-        this.shopLat = "0";
-        this.shopLong = "0";
-
-        if (changeRecord) {
-            changeRecord.indexSplices.forEach(function(s) {
-                s.object.forEach(function(shop) {
-                  this.shopAbout = shop.about;
-                  this.shopAddress = shop.address;
-                  this.$.queryGPS.generateRequest();
-                }.bind(this));
-            }.bind(this));
-        }
-      },
-
-      handleAjaxGPSresponse: function(request) {
-        var response = request.detail.response;
-        response.results.forEach(function(s) {
-              this.shopLat = s.geometry.location.lat;
-              this.shopLong = s.geometry.location.lng;
-        }.bind(this));
       },
 
       _getListItems: function(items) {
