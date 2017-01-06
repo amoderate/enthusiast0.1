@@ -171,12 +171,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </firebase-query>
 
     <firebase-query id="menuTags"
-      path="/tags"
+      path="/tags/shopName/[[routeData.shop]]"
       data="{{tags}}"
-      order-by-child="/shopName"
-      start-at="[[routeData.shop]]"
-      end-at="[[routeData.shop]]"
-      limit-to-first=10
     >
     </firebase-query>
 
@@ -320,6 +316,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: String,
           notify: true,
         },
+
+        tags: {
+          type: Object,
+          notify: true
+        }
       },
 
       observers: [

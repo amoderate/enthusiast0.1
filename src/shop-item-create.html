@@ -99,11 +99,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin: 8px auto;
         background: white;
       }
-      .price {
-        margin: 16px 0 40px;
-        font-size: 16px;
-        color: var(--app-secondary-color);
-      }
 
       .description {
         margin: 32px 0;
@@ -162,11 +157,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           line-height: 24px;
         }
 
-        .price {
-          font-size: inherit;
-          margin: 12px 0 32px;
-        }
-
       }
 
     </style>
@@ -206,13 +196,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       >
     </firebase-query>
 
+
     <firebase-query id="queryTags"
-      path="/tags"
+      path="/tags/shopName/[[shopName]]"
       data="{{tags}}"
       order-by-child="/tag"
       start-at="[[shopTags]]"
       end-at="[[shopTags]]"
       limit-to-first=10
+    >
+    </firebase-query>
+
+
+    <firebase-query id="searchSuggestTags"
+      path="/tags"
+      data="{{tagsSeach}}"
+      order-by-child="/tag"
+      start-at="[[shopTags]]"
+      end-at="[[shopTags+'\uf8ff']]"
+      limit-to-first=30
     >
     </firebase-query>
 
@@ -229,17 +231,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <paper-input id="input" placeholder="" label="Shop Name ショップ名" class="input" type="text" value="{{shopName}}">
         </paper-input>
 
-        <paper-input label="Address  場所" value="{{value}}">
-        </paper-input>
-
-        <paper-input label="Phone  電話番号" value="{{phone}}">
-        </paper-input>
-
-
         <paper-textarea label="Item" value="{{itemName}}">
-        </paper-textarea>
-
-        <paper-textarea label="Price" value="{{itemPrice}}">
         </paper-textarea>
 
         <paper-input label="Theme" value="{{theme}}">
@@ -259,7 +251,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </paper-input>
 
         <paper-tabs  scrollable  selected="{{shopTags}}" attr-for-selected="label">
-          <template is="dom-repeat" items="[[tags]]" as="tag" initial-count="10" filter="{{computeFilterTags(shopTags)}}">
+          <template is="dom-repeat" items="[[tagsSeach]]" as="tag" initial-count="10" filter="{{computeFilterTags(shopTags)}}">
             <paper-tab label="{{tag.tag}}">
               {{tag.tag}}
             </paper-tab>
@@ -345,12 +337,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           notify: true
         },
 
-        itemPrice:{
-          type: String,
-          value:'',
-          notify: true
-        },
-
         shops: {
           type: Object,
           notify: true
@@ -359,12 +345,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         shopTags:{
           type: String,
           value:'',
-          notify: true
-        },
-
-        tagInList:{
-          type: Boolean,
-          value: false,
           notify: true
         },
 
@@ -382,12 +362,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: String,
           notify: true
         },
-
-       tagsLocation: {
-         type: String,
-         value: 'https://obsessed-tokyo.firebaseio.com/tags',
-         notify: true
-       },
 
         searchString: {
           type: String,
@@ -432,10 +406,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var elem = document.createElement('textarea');
         elem.innerHTML = text;
         return elem.textContent;
-      },
-
-      _formatPrice: function(price) {
-        return price ? '$' + price.toFixed(2) : '';
       },
 
       _addToCart: function() {
@@ -493,7 +463,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        var shopPhones = this.phone;
        var itemNames = this.itemName;
        var themes = this.theme;
-       var prices = this.itemPrice
        var shopsTagss = this.shopTags;
        var shopLngs = this.longitude;
        var shopLats = this.latitude;
@@ -505,25 +474,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
        if (user != null && !this.items == false && !this.shopName == false && !this.theme == false && !this.shopTags == false){
         var newTagKey = firebase.database().ref().child('tags').push().key;
+        var newTagKey = firebase.database().ref().child('tags/shopName/'+this.shopName).push().key;
         var updatesTags = {};
         var tagData = {
-          tag: shopsTagss,
-          shopName: shopNames
+          tag: shopsTagss
         };
         updatesTags['/tags/' + newTagKey] = tagData;
+        updatesTags['/tags/shopName/' + this.shopName + '/' + newTagKey] = tagData;
         firebase.database().ref().update(updatesTags);
         };
-
       };
-
-       console.log(this.shops);
 
       if (this.shops.length > 0) {
         console.log("shops there")
       } else {
         console.log("shops not there");
         console.log(this.shops.shopName);
-        if (user != null && !this.shopName == false && !this.phone == false && !this.value == false) {
+        if (user != null && !this.shopName == false && !this.phone == false && !this.value == false && !this.shopTags == false) {
           var newShopKey = firebase.database().ref().child('shops').push().key;
           var updatesShops = {};
           var shopData = {
@@ -550,7 +517,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                shopAddres: shopAddress,
                shopPhone: shopPhones,
                itemName: itemNames,
-               price: prices,
                theme: themes,
                shopsTags: shopsTagss,
                itemid: newItemKey
@@ -566,7 +532,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          this.phone = '';
          this.shopName = '';
          this.theme = '';
-         this.itemPrice = '';
          this.shopTags = '';
        },
 

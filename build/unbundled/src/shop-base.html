@@ -2,6 +2,9 @@
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../bower_components/google-map/google-map.html">
 <link rel="import" href="../bower_components/google-map/google-map.html">
 <link rel="import" href="../bower_components/google-map/google-map-directions.html">
@@ -17,12 +20,6 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-
-<link rel="stylesheet" href="../bower_components/firechat/dist/firechat.min.css">
-<script src="../bower_components/firechat/dist/firechat.min.js"></script>
-
-<link rel="import" href="fchat2-main.html">
 
 
 
@@ -66,6 +63,19 @@
       #menu {
 
       }
+      .footer{
+        @apply(--layout-fixed-bottom);
+        height: 64px;
+        background-color: white;
+
+      }
+
+      #message-input{
+        @apply(--layout-fixed-bottom);
+        height: 64px;
+        z-index: 1;
+        color: white;
+      }
 
       paper-tab.iron-selected {
         color: #E57373;
@@ -100,6 +110,11 @@
         text-decoration: none;
       }
 
+      .list {
+       @apply(--layout-flex);
+       overflow: auto;
+     }
+
       @media (max-width: 767px) {
         .hero-image {
           display: none;
@@ -124,8 +139,6 @@
       }
     </style>
 
-
-
     <app-route route="[[route]]" pattern="/:shop" data="{{routeData}}" tail="{{subroute}}">
     </app-route>
 
@@ -138,6 +151,9 @@
     <firebase-query id="menuTags" path="/tags" data="{{tags}}" order-by-child="/shopName" start-at="[[routeData.shop]]" end-at="[[routeData.shop]]" limit-to-first="10">
     </firebase-query>
 
+    <firebase-query id="shopMessage" path="/shopMessage/[[routeData.shop]]" data="{{shopMessage}}" order-by-child="/chatTime" limit-to-last="10">
+    </firebase-query>
+
 
       <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
         <div class="layout horizontal center-justified">
@@ -146,7 +162,6 @@
           <paper-tab>About</paper-tab>
           <paper-tab>Maps</paper-tab>
           <paper-tab>Chat</paper-tab>
-          <paper-tab>Chat2</paper-tab>
         </paper-tabs>
       </div>
       </app-header>
@@ -187,193 +202,31 @@
           </google-map>
         </div>
 
-        <div id="firechatwrapper">
-          
-          
-        </div>
-
         <div>
-          
-          <fchat2-main></fchat2-main>
+
+          <div>
+
+           <div class="list">
+           <template is="dom-repeat" items="[[shopMessage]]" as="message">
+             <paper-item>
+              <paper-item-body two-line="">
+                <div>{{message.displayName}}</div>
+                <div secondary="">{{message.chatText}}</div>
+              </paper-item-body>
+            </paper-item>
+           </template>
+
+         </div>
+             <paper-material elevation="1" class="footer">
+                 <paper-input id="message-input" label="New Message:" on-keyup="_handleInput"></paper-input>
+             </paper-material>
+          </div>
         </div>
       </iron-pages>
 
   </template>
 
-  <script>
-
-    Polymer({
-
-      is: 'shop-base',
-
-      ready: function () {
-           // make global values available on instance.
-           this.selected = this.shopTags;
-       },
-
-      properties: {
-
-        category: Object,
-
-        shopName: String,
-
-        visible: Boolean,
-
-        route: Object,
-
-        routeData: Object,
-
-        item: Object,
-
-        menuTitles : Object,
-
-        addressQueryResult: {
-          type: Array,
-          notify: true,
-        },
-
-        shopAbout: {
-          type: String,
-          notify: true,
-        },
-
-        shopAddress: {
-          type: Number,
-          notify: true,
-        },
-
-        shopLat: {
-          type: String,
-          notify: true,
-        },
-        displayTag: {
-          type: String,
-          notify: true
-        },
-
-        shopLong: {
-          type: String,
-          notify: true,
-        },
-      },
-
-      observers: [
-        '_shopChanged(routeData.shop)'
-      ],
-
-
-      ready: function() {
-        document.title = this.routeData.shop + ' - SHOP';
-        shopName = this.routeData.shop;
-
-        this.menuTitles = [
-          {
-            name: 'menu',
-            title: 'Our Offerings'
-          },
-          {
-            name: 'about',
-            title: 'About Us'
-          },
-          {
-            name: 'location',
-            title: 'Our Location'
-          },
-          {
-            name: 'chat',
-            title: 'Chat with Us'
-          }
-        ];
-
-        //console.log("aaa" + this.routeData.shop);
-
-        this.initChat();
-
-      },
-
-      _getListItems: function(items) {
-        // Return placeholder items when the items haven't loaded yet.
-        return items || [{},{},{},{},{},{},{},{},{},{}];
-      },
-
-      _getItemHref: function(item) {
-        console.log(this.displayTag);
-        // By returning null when `itemId` is undefined, the href attribute won't be set and
-        // the link will be disabled.
-        // console.log(this.routeData.shop);
-        return item.shopName ? ['/detail', item.shopName, item.itemName, item.itemid].join('/') : null;
-      },
-
-      _shopChanged: function(shopName) {
-
-          this.debounce('change-shop', function() {
-            // Notify the category and the page's title
-            this.fire('change-shop', {
-              shopName: shopName.toUpperCase()
-            });
-          });
-
-      },
-
-      _getPluralizedQuantity: function(quantity) {
-        if (!quantity) {
-          return '';
-        }
-        var pluralizedQ = quantity === 1 ? 'item' : 'items';
-        return  '(' + quantity + ' ' + pluralizedQ + ')';
-      },
-
-      _notifyNetworkStatus: function() {
-        var oldOffline = this.offline;
-        this.offline =  !navigator.onLine;
-        // Show the snackbar if the user is offline when starting a new session
-        // or if the network status changed.
-        if (this.offline || (!this.offline && oldOffline === true)) {
-          if (!this._networkSnackbar) {
-            this._networkSnackbar = document.createElement('shop-snackbar');
-            Polymer.dom(this.root).appendChild(this._networkSnackbar);
-          }
-          Polymer.dom(this._networkSnackbar).innerHTML = this.offline ?
-              'You are offline' : 'You are online';
-          this._networkSnackbar.open();
-        }
-      },
-
-      computeFilterTags: function(string) {
-      if (!string) {
-        // set filter to null to disable filtering
-        return null;
-      } else {
-        // return a filter function for the current search string
-        string = string.toLowerCase();
-        return function(item) {
-          var japanese_name = item.shopsTags.toLowerCase();
-          var english_name = item.shopsTags.toLowerCase();
-          return (japanese_name.indexOf(string) != -1 ||
-              english_name.indexOf(string) != -1);
-
-        };
-      }
-    },
-
-      _toggleDrawer: function() {
-        this.drawerOpened = !this.drawerOpened;
-      },
-
-      initChat() {
-
-        var user = firebase.auth().currentUser;
-        var chatRef = firebase.database().ref("chat");
-        var chat = new FirechatUI(chatRef, this.$.firechatwrapper);
-        if (user != null) {
-            chat.setUser(user.uid, user.displayName);
-        }
-
-      }
-
-    });
-
-  </script>
+  <script>Polymer({is:"shop-base",ready:function(){this.selected=this.shopTags},properties:{category:Object,shopName:String,visible:Boolean,route:Object,routeData:Object,item:Object,menuTitles:Object,addressQueryResult:{type:Array,notify:!0},shopAbout:{type:String,notify:!0},shopAddress:{type:Number,notify:!0},shopLat:{type:String,notify:!0},displayTag:{type:String,notify:!0},messageTextCheck:{type:String,notify:!0},shopLong:{type:String,notify:!0}},observers:["_shopChanged(routeData.shop)"],ready:function(){document.title=this.routeData.shop+" - SHOP",shopName=this.routeData.shop,this.menuTitles=[{name:"menu",title:"Our Offerings"},{name:"about",title:"About Us"},{name:"location",title:"Our Location"},{name:"chat",title:"Chat with Us"}]},_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(e){return console.log(this.displayTag),e.shopName?["/detail",e.shopName,e.itemName,e.itemid].join("/"):null},_shopChanged:function(e){this.debounce("change-shop",function(){this.fire("change-shop",{shopName:e.toUpperCase()})})},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_notifyNetworkStatus:function(){var e=this.offline;this.offline=!navigator.onLine,(this.offline||!this.offline&&e===!0)&&(this._networkSnackbar||(this._networkSnackbar=document.createElement("shop-snackbar"),Polymer.dom(this.root).appendChild(this._networkSnackbar)),Polymer.dom(this._networkSnackbar).innerHTML=this.offline?"You are offline":"You are online",this._networkSnackbar.open())},computeFilterTags:function(e){return e?(e=e.toLowerCase(),function(t){var a=t.shopsTags.toLowerCase(),o=t.shopsTags.toLowerCase();return a.indexOf(e)!=-1||o.indexOf(e)!=-1}):null},_handleInput:function(e){if(13==e.keyCode){var t=(new Date).getTime(),a=e.target.value,o=firebase.auth().currentUser,i=this.routeData.shop;if(null!=o&&0==!this.routeData.shop&&0==!e.target.value){var n=firebase.database().ref().child("/shopMessage/"+this.routeData.shop).push().key,s={},r={userid:o.uid,displayName:o.displayName,chatTime:t,chatText:a};s["/shopMessage/"+i+"/"+n]=r,firebase.database().ref().update(s)}e.target.value=""}},_toggleDrawer:function(){this.drawerOpened=!this.drawerOpened}});</script>
 
 </dom-module>
 </body></html>
