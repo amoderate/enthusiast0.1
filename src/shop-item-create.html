@@ -72,14 +72,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             unicode-bidi: embed;
         }
 
-    FILE-INPUT { position: relative; margin: 64px 32px;
-    width: 30%;
-    max-width:4600px;
-    width: 50px;
-    height: 50px;
-    padding: 16px 0 16px 0;
-    width: calc(99.66% - 8px);
-    margin: 8px auto;}
+      FILE-INPUT { position: relative; margin: 64px 32px;
+      width: 30%;
+      max-width:4600px;
+      width: 50px;
+      height: 50px;
+      padding: 16px 0 16px 0;
+      width: calc(99.66% - 8px);
+      margin: 8px auto;}
 
       h1 {
         font-size: 24px;
@@ -189,16 +189,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <firebase-query id="queryShops"
       path="/shops"
       data="{{shops}}"
-      order-by-child="/shopName"
-      start-at="[[shopName]]"
-      end-at="[[shopName]]"
-      limit-to-last="10"
+      order-by-child="/shopNameUnique"
+      equal-to="[[shopNameUnique]]" 
+      limit-to-last="1"
       >
     </firebase-query>
 
 
     <firebase-query id="queryTags"
-      path="/tags/shopName/[[shopName]]"
+      path="/tags/shopNameUnique/[[shopNameUnique]]"
       data="{{tags}}"
       order-by-child="/tag"
       start-at="[[shopTags]]"
@@ -230,6 +229,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <paper-input id="input" placeholder="" label="Shop Name ショップ名" class="input" type="text" value="{{shopName}}">
         </paper-input>
+
+        <paper-input label="Address  場所" value="{{value}}">
+        </paper-input>        
 
         <paper-textarea label="Item" value="{{itemName}}">
         </paper-textarea>
@@ -338,7 +340,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         shops: {
-          type: Object,
+          type: Array,
           notify: true
         },
 
@@ -369,18 +371,49 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           notify: true
         },
 
+        shopNameUnique: {
+          type: String,
+          notify: true,
+          value: '9999'
+        },    
+
+        shopIds: {
+          type: String,
+          notify: true
+        },            
+
+        shopPhones: {
+          type: String,
+          notify: true
+        },            
+
         failure: Boolean
 
       },
 
 
       observers: [
-        '_itemChanged(item, visible)'
+        '_itemChanged(item, visible)',
+        '_shopQueryResultChanged(shops.splices)'
       ],
 
       listeners: {
       'file-input.change': 'imageUploadTap',
       },
+
+      _shopQueryResultChanged: function(changeRecord) {
+        console.log("here we go!!");
+        console.log(changeRecord);
+        if (changeRecord) {
+          changeRecord.indexSplices.forEach(function(s) {
+              s.object.forEach(function(shop) {
+                 // console.log(shop.shopNameUnique);                 
+                 this.shopIds = shop.shopId;
+                 this.shopPhones = shop.shopPhone;
+              }, this);
+          }, this);          
+        }
+      },         
 
       _itemChanged: function(item, visible) {
         if (visible) {
@@ -459,6 +492,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      _uploadShopClick: function(e) {
        var user = firebase.auth().currentUser;
        var shopNames = this.shopName;
+       var shopNameUniques = this.shopNameUnique;
        var shopAddress = this.value;
        var shopPhones = this.phone;
        var itemNames = this.itemName;
@@ -474,38 +508,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
        if (user != null && !this.items == false && !this.shopName == false && !this.theme == false && !this.shopTags == false){
         var newTagKey = firebase.database().ref().child('tags').push().key;
-        var newTagKey = firebase.database().ref().child('tags/shopName/'+this.shopName).push().key;
+        var newTagKey = firebase.database().ref().child('tags/shopNameUnique/'+this.shopNameUnique).push().key;
         var updatesTags = {};
         var tagData = {
           tag: shopsTagss
         };
         updatesTags['/tags/' + newTagKey] = tagData;
-        updatesTags['/tags/shopName/' + this.shopName + '/' + newTagKey] = tagData;
+        updatesTags['/tags/shopNameUnique/' + this.shopNameUnique + '/' + newTagKey] = tagData;
         firebase.database().ref().update(updatesTags);
         };
       };
 
       if (this.shops.length > 0) {
         console.log("shops there")
-      } else {
-        console.log("shops not there");
-        console.log(this.shops.shopName);
-        if (user != null && !this.shopName == false && !this.phone == false && !this.value == false && !this.shopTags == false) {
-          var newShopKey = firebase.database().ref().child('shops').push().key;
-          var updatesShops = {};
-          var shopData = {
-            shopName: shopNames,
-            shopAddres: shopAddress,
-            shopPhone: shopPhones,
-            shopLng: shopLngs,
-            shopLat: shopLats
-          };
-          updatesShops['/shops/' + newShopKey] = shopData;
-          firebase.database().ref().update(updatesShops);
-          };
-        };
 
-       if (user != null && !this.items == false && !this.shopName == false && !this.theme == false && !this.shopTags == false) {
+
+       if (user != null && !this.items == false && !this.shopName == false && !this.shopNameUnique == false && !this.theme == false && !this.shopTags == false) {
            this.items.forEach(function (post) {
              var urls = post.url;
              var users = post.user;
@@ -513,9 +531,60 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
              var itemData = {
                url: urls,
                user: post.user,
+               shopNameUnique: shopNameUniques,
+               shopName: shopNames,
+               shopAddres: shopAddress,
+               shopPhone: this.shopPhones,
+               shopId: this.shopIds,
+               itemName: itemNames,
+               theme: themes,
+               shopsTags: shopsTagss,
+               itemid: newItemKey
+              };
+              updates['/items/' + newItemKey] = itemData;
+              console.log(updates);
+              firebase.database().ref().update(updates);
+              firebase.database().ref().child('imageDraft').remove();
+           }, this);
+         }
+
+
+      } else {
+        console.log("shops not there");
+        console.log(this.shops.shopName);
+
+        if (shopPhones == null) {shopPhones = "";}
+
+        if (user != null && !this.shopName == false && !this.shopNameUnique == false && !this.value == false && !this.shopTags == false) {
+          var newShopKey = firebase.database().ref().child('shops').push().key;
+          var updatesShops = {};
+          var shopData = {
+            shopNameUnique: shopNameUniques,
+            shopName: shopNames,
+            shopAddres: shopAddress,
+            shopPhone: shopPhones,
+            shopLng: shopLngs,
+            shopLat: shopLats,
+            shopId: newShopKey, 
+          };
+          updatesShops['/shops/' + newShopKey] = shopData;
+          firebase.database().ref().update(updatesShops);
+          };
+
+
+       if (user != null && !this.items == false && !this.shopName == false && !this.shopNameUnique == false && !this.theme == false && !this.shopTags == false) {
+           this.items.forEach(function (post) {
+             var urls = post.url;
+             var users = post.user;
+             var updates = {};
+             var itemData = {
+               url: urls,
+               user: post.user,
+               shopNameUnique: shopNameUniques,
                shopName: shopNames,
                shopAddres: shopAddress,
                shopPhone: shopPhones,
+               shopId: newShopKey,
                itemName: itemNames,
                theme: themes,
                shopsTags: shopsTagss,
@@ -527,12 +596,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               firebase.database().ref().child('imageDraft').remove();
            });
          }
+
+
+
+        };
+
+
          this.itemName = '';
          this.value = '';
          this.phone = '';
          this.shopName = '';
          this.theme = '';
          this.shopTags = '';
+         this.shopNameUnique = '9999';
        },
 
        computeFilter: function(string) {
@@ -578,14 +654,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        if (!this.place.address_components) {
          return;
        }
+       
        this.value = this.place.formatted_address;
        this.phone = this.place.formatted_phone_number;
-       this.shopName = this.place.name;
+       this.shopName = this.place.name;       
        this.longitude = this.place.geometry.location.lng();
        this.latitude= this.place.geometry.location.lat();
+       var gpsHash = parseInt((Math.abs(this.latitude)*10)) + parseInt((Math.abs(this.longitude)*10));
+       this.shopNameUnique = this.shopName + '-'+ gpsHash;
 
        console.log(this.longitude);
        console.log(this.latitude);
+       console.log(this.shopNameUnique);
      },
 
      toggleSelection: function(e) {

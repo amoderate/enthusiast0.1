@@ -152,10 +152,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <app-route route="[[route]]" pattern="/:shop" data="{{routeData}}" tail="{{subroute}}">
     </app-route>
 
+    <firebase-auth id="auth"
+      user="{{user}}"
+      provider="google"
+      on-error="showError"
+      >
+    </firebase-auth>
+
     <firebase-query id="query"
     path="/items"
     data="{{items}}"
-    order-by-child="/shopName"
+    order-by-child="/shopNameUnique"
     start-at="{{routeData.shop}}"
     end-at="{{routeData.shop}}">
     </firebase-query>
@@ -163,7 +170,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <firebase-query
       id="queryAddress"
       path="/shops"
-      order-by-child="/shopName"
+      order-by-child="/shopNameUnique"
       start-at="{{routeData.shop}}"
       end-at="{{routeData.shop}}"
       data="{{shopData}}"
@@ -171,7 +178,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </firebase-query>
 
     <firebase-query id="menuTags"
-      path="/tags/shopName/[[routeData.shop]]"
+      path="/tags/shopNameUnique/[[routeData.shop]]"
       data="{{tags}}"
     >
     </firebase-query>
@@ -184,19 +191,47 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     >
     </firebase-query>
 
+<!--     <firebase-query id="shopMessage"
+      path="/shopAdmins/[[routeData.shop]]"
+      data="{{shopMessage}}"
+      order-by-child="/chatTime"
+      limit-to-last=10
+    >
+    </firebase-query>    --> 
 
-      <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
+    <firebase-query 
+      id="shopAdmin"
+      path="/shopAdmins/[[routeData.shop]]"
+      data="{{shopAdmin}}"
+      order-by-child="/adminUserId"
+      equal-to="[[user.uid]]" 
+      limit-to-last="1"
+      >
+    </firebase-query>    
+
+
+
+<template is="dom-if" if="{{isShopAdmin}}">
+  You are admin of this shop. Click here to add cover picture, about info and official menu.
+</template>
+
+
+
+      <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">    
         <div class="layout horizontal center-justified">
-        <paper-tabs selected="{{selected}}"  no-bar>
-          <paper-tab>Menu</paper-tab>
-          <paper-tab>About</paper-tab>
-          <paper-tab>Maps</paper-tab>
-          <paper-tab>Chat</paper-tab>
-        </paper-tabs>
-      </div>
+          <paper-tabs selected="{{selected}}"  no-bar>          
+            <paper-tab>Menu</paper-tab>
+            <paper-tab>About</paper-tab>
+            <paper-tab>Maps</paper-tab>
+            <paper-tab>Chat</paper-tab>
+            <paper-tab>Official Menu</paper-tab>
+          </paper-tabs>
+        </div>
       </app-header>
 
+
       <iron-pages selected="{{selected}}">
+
         <div>
           <div class="layout horizontal center-justified">
             <paper-tabs id="menu" scrollable selected="{{displayTag}}" no-bar attr-for-selected="label">
@@ -204,22 +239,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   <paper-tab label="{{tag.tag}}">[[tag.tag]]</paper-tab>
                 </template>
             </paper-tabs>
-        </div>
+          </div>
           <iron-pages selected="{{displayTag}}" attr-for-selected="name">
             <div name = "{{displayTag}}">
-            <ul class="grid">
-              <template is="dom-repeat" items="[[items]]" as="item" filter="{{computeFilterTags(displayTag)}}">
-                <li>
-                  [[item.name]]
-                  <a href$="[[_getItemHref(item)]]">
-                    <shop-list-menu item="[[item]]"></shop-list-menu>
-                  </a>
-                </li>
-              </template>
-            </ul>
-          </div>
-        </iron-pages>
-      </div>
+              <ul class="grid">
+                <template is="dom-repeat" items="[[items]]" as="item" filter="{{computeFilterTags(displayTag)}}">
+                  <li>
+                    [[item.name]]
+                    <a href$="[[_getItemHref(item)]]">
+                      <shop-list-menu item="[[item]]"></shop-list-menu>
+                    </a>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </iron-pages>
+        </div>
+
         <div>
           [[shopAbout]]
         </div>
@@ -233,25 +269,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
 
         <div>
-
           <div>
-
-           <div class="list">
-           <template is="dom-repeat" items="[[shopMessage]]" as="message" >
-             <paper-item>
-              <paper-item-body two-line>
-                <div>{{message.displayName}}</div>
-                <div secondary>{{message.chatText}}</div>
-              </paper-item-body>
-            </paper-item>
-           </template>
-
-         </div>
-             <paper-material elevation="1" class="footer">
-                 <paper-input id="message-input" label="New Message:" on-keyup="_handleInput"></paper-input>
-             </paper-material>
+            <div class="list">
+              <template is="dom-repeat" items="[[shopMessage]]" as="message" >
+                <paper-item>
+                  <paper-item-body two-line>
+                    <div>{{message.displayName}}</div>
+                    <div secondary>{{message.chatText}}</div>
+                  </paper-item-body>
+                </paper-item>
+              </template>
+            </div>
+            <paper-material elevation="1" class="footer">
+              <paper-input id="message-input" label="New Message:" on-keyup="_handleInput"></paper-input>
+            </paper-material>
           </div>
         </div>
+
+        <div>
+           Owner of this shop? [[isShopAdmin]]
+        </div>        
       </iron-pages>
 
   </template>
@@ -262,16 +299,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       is: 'shop-base',
 
-      ready: function () {
-           // make global values available on instance.
-           this.selected = this.shopTags;
-       },
-
       properties: {
 
         category: Object,
 
         shopName: String,
+
+        shopNameUnique: String,
 
         visible: Boolean,
 
@@ -320,17 +354,41 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         tags: {
           type: Object,
           notify: true
-        }
+        },
+
+        shopAdmin: {
+          type: Array,
+          notify: true
+        },    
+
+        isShopAdmin: {
+          type: Boolean,
+          notify: true,
+          value: false,
+        },              
       },
 
       observers: [
-        '_shopChanged(routeData.shop)'
+        '_shopChanged(routeData.shop)',
+        '_shopAdminQueryResultChanged(shopAdmin.splices)'
       ],
 
+      _shopAdminQueryResultChanged: function(changeRecord) {                
+        this.isShopAdmin = false;
+        
+        if (changeRecord) {          
+          changeRecord.indexSplices.forEach(function(s) {
+            this.isShopAdmin = true;
+          }, this);          
+        }
+      },
 
       ready: function() {
         document.title = this.routeData.shop + ' - SHOP';
         shopName = this.routeData.shop;
+
+        this.selected = "0";
+           
 
         this.menuTitles = [
           {
@@ -363,7 +421,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // By returning null when `itemId` is undefined, the href attribute won't be set and
         // the link will be disabled.
         // console.log(this.routeData.shop);
-        return item.shopName ? ['/detail', item.shopName, item.itemName, item.itemid].join('/') : null;
+        return item.shopNameUnique ? ['/detail', item.shopNameUnique, item.itemName, item.itemid].join('/') : null;
       },
 
       _shopChanged: function(shopName) {
@@ -375,6 +433,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             });
           });
 
+          this.selected = "0";
       },
 
       _getPluralizedQuantity: function(quantity) {
@@ -442,9 +501,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        };
      },
 
-      _toggleDrawer: function() {
-        this.drawerOpened = !this.drawerOpened;
-      }
+    // _handleInput: function(e) {
+    //    if (e.keyCode == 13) {
+
+    //     var timestamp = new Date().getTime()
+
+    //      var chatTexts = e.target.value;
+    //      var users = firebase.auth().currentUser;
+    //      var shopName = this.routeData.shop;
+    //      if (users != null && !this.routeData.shop == false && !e.target.value == false) {
+    //        var newChatKey = firebase.database().ref().child('/shopAdmins/' + this.routeData.shop).push().key;
+    //        var updates = {};
+    //        var chatData = {
+    //          adminUserId: users.uid,             
+    //        };
+    //        updates['/shopAdmins/'+ shopName + '/' + newChatKey] = chatData;
+    //        firebase.database().ref().update(updates);
+    //      };
+    //      e.target.value = ''
+    //    };
+    //  },     
+
+    //   _toggleDrawer: function() {
+    //     this.drawerOpened = !this.drawerOpened;
+    //   }
 
     });
 

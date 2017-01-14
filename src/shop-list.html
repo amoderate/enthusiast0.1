@@ -183,7 +183,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // By returning null when `itemId` is undefined, the href attribute won't be set and
         // the link will be disabled.
         console.log(item)
-        return item.shopName ? ['/detail', item.shopName, item.itemName, item.itemid].join('/') : null;
+        return item.shopName ? ['/detail', item.shopNameUnique, item.itemName, item.itemid].join('/') : null;
       },
 
       _getPluralizedQuantity: function(quantity) {

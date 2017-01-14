@@ -142,6 +142,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           margin: 12px 0 32px;
         }
 
+      css-small {
+        font-size: 10px;
+        color: var(--app-secondary-color);
+      }             
+
       }
 
     </style>
@@ -179,9 +184,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
         <shop-button>
           <button on-tap="_goToShopPage" aria-label="Visit Shop">
-            <a href$="[[_getItemHref(item)]]"><shop-list-item-detail item="[[item]]" ></shop-list-item-detail> Visit [[routeData.shop]]</a>
-          </button>
+            <a href$="[[_getItemHref(item)]]">Visit [[item.shopName]]</a>            
+          </button>          
         </shop-button>
+        <br>
+        <css-small>[[item.shopAddres]]</css-small>
 
       </div>
     </template>
@@ -239,7 +246,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // By returning null when `itemId` is undefined, the href attribute won't be set and
         // the link will be disabled.
         //console.log(['/base', item.shopName].join('/'))
-        return item.shopName ? ['/base', item.shopName].join('/') : null;
+        return item.shopName ? ['/base', item.shopNameUnique].join('/') : null;
       },
 
 
