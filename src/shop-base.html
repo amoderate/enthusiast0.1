@@ -29,7 +29,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 
-
+<link rel="import" href="shop-admin.html">
 
 
 
@@ -39,7 +39,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       .hero-image {
         position: relative;
-        height: 320px;
+        height: 160px;        
         overflow: hidden;
         margin-bottom: 32px;
       }
@@ -127,7 +127,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       @media (max-width: 767px) {
         .hero-image {
-          display: none;
+          /*display: none;*/
         }
         .grid{
           @apply(--layout-vertical);
@@ -146,7 +146,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           text-transform: uppercase;
           margin-bottom: 1px;
         }
-      }
+      }      
     </style>
 
     <app-route route="[[route]]" pattern="/:shop" data="{{routeData}}" tail="{{subroute}}">
@@ -209,13 +209,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       >
     </firebase-query>    
 
+    <firebase-document
+      id="aboutDocument"        
+      path="/shopAdminsResources/[[routeData.shop]]"
+      data="{{editableAboutData}}">
+    </firebase-document>
+
+    <firebase-query 
+      id="shopAdminsResources"
+      path="/shopAdminsResources/[[routeData.shop]]"
+      data="{{shopAdminsResources}}"      
+      orderByChild="/imageCover"
+      limit-to-last="1"
+      >
+    </firebase-query>       
 
 
-<template is="dom-if" if="{{isShopAdmin}}">
-  You are admin of this shop. Click here to add cover picture, about info and official menu.
-</template>
 
 
+      <template is="dom-if" if="{{isShopAdmin}}">
+        You are admin of this shop. Click <a href="/admin/[[routeData.shop]]" tabindex="-1">here</a> to add a cover picture, about info and official menu.
+      </template>
+
+
+    
 
       <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">    
         <div class="layout horizontal center-justified">
@@ -228,6 +245,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </paper-tabs>
         </div>
       </app-header>
+
+
+
+    <template is="dom-repeat" items="[[shopAdminsResources]]" as="result">
+      <shop-image        
+          src="[[result.$val]]"
+          class="hero-image">
+      </shop-image>            
+    </template>      
+
+
 
 
       <iron-pages selected="{{selected}}">
@@ -256,9 +284,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </iron-pages>
         </div>
 
+
         <div>
-          [[shopAbout]]
+          [[editableAboutData.about]]
+
+          <template is="dom-if" if="{{isShopAdmin}}">
+            <br>
+            <br>
+            <br>
+            <br>
+            <b>(Admin only) Edit form:</b>
+
+            <p>
+              <input is="iron-input" value="{{editableAboutData.about::input}}">              
+            </p>
+          </template>          
         </div>
+
 
         <div>
           <google-map id="map" map="{{map}}" atitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers>
@@ -407,7 +449,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             name: 'chat',
             title: 'Chat with Us'
           }
-        ];
+        ];        
 
       },
 
