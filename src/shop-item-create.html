@@ -187,14 +187,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </firebase-query>
 
     <firebase-query id="queryShops"
-      path="/shops"
+      path="/shops/[[shopNameUnique]]"
       data="{{shops}}"
       order-by-child="/shopNameUnique"
-      equal-to="[[shopNameUnique]]" 
+      equal-to="[[shopNameUnique]]"
       limit-to-last="1"
       >
     </firebase-query>
 
+    <firebase-query
+      id="queryAddress"
+      path="/shops/[[routeData.shop]]"
+      order-by-child="/shopNameUnique"
+      start-at="{{routeData.shop}}"
+      end-at="{{routeData.shop}}"
+      data="{{shopData}}"
+      >
+    </firebase-query>
 
     <firebase-query id="queryTags"
       path="/tags/shopNameUnique/[[shopNameUnique]]"
@@ -231,7 +240,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </paper-input>
 
         <paper-input label="Address  場所" value="{{value}}">
-        </paper-input>        
+        </paper-input>
 
         <paper-textarea label="Item" value="{{itemName}}">
         </paper-textarea>
@@ -375,17 +384,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: String,
           notify: true,
           value: '9999'
-        },    
+        },
 
         shopIds: {
           type: String,
           notify: true
-        },            
+        },
 
         shopPhones: {
           type: String,
           notify: true
-        },            
+        },
 
         failure: Boolean
 
@@ -407,13 +416,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (changeRecord) {
           changeRecord.indexSplices.forEach(function(s) {
               s.object.forEach(function(shop) {
-                 // console.log(shop.shopNameUnique);                 
+                 // console.log(shop.shopNameUnique);
                  this.shopIds = shop.shopId;
                  this.shopPhones = shop.shopPhone;
               }, this);
-          }, this);          
+          }, this);
         }
-      },         
+      },
 
       _itemChanged: function(item, visible) {
         if (visible) {
@@ -490,6 +499,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      },
 
      _uploadShopClick: function(e) {
+       var newTagKey = firebase.database().ref().child('imageDraft/').push().key;
+       var newItemKey = firebase.database().ref().child('items').push().key;
+
+
+       updatesTags = {};
        var user = firebase.auth().currentUser;
        var shopNames = this.shopName;
        var shopNameUniques = this.shopNameUnique;
@@ -500,24 +514,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        var shopsTagss = this.shopTags;
        var shopLngs = this.longitude;
        var shopLats = this.latitude;
-       var newItemKey = firebase.database().ref().child('items').push().key;
-
-     if (this.tags.length > 0) {
-
-     } else {
 
        if (user != null && !this.items == false && !this.shopName == false && !this.theme == false && !this.shopTags == false){
-        var newTagKey = firebase.database().ref().child('tags').push().key;
+        var newTagsKey = firebase.database().ref().child('tags').push().key;
         var newTagKey = firebase.database().ref().child('tags/shopNameUnique/'+this.shopNameUnique).push().key;
         var updatesTags = {};
         var tagData = {
           tag: shopsTagss
         };
-        updatesTags['/tags/' + newTagKey] = tagData;
+        if (this.tagsSeach.length == 0){
+          console.log(this.tagsSearch);
+          updatesTags['/tags/' + newTagsKey] = tagData;
+        };
+
+        if (this.tags.length == 0) {
+          console.log(this.tags);
         updatesTags['/tags/shopNameUnique/' + this.shopNameUnique + '/' + newTagKey] = tagData;
         firebase.database().ref().update(updatesTags);
         };
-      };
+     };
 
       if (this.shops.length > 0) {
         console.log("shops there")
@@ -541,7 +556,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                shopsTags: shopsTagss,
                itemid: newItemKey
               };
-              updates['/items/' + newItemKey] = itemData;
+              updates['/items/' + this.shopNameUnique] = itemData;
               console.log(updates);
               firebase.database().ref().update(updates);
               firebase.database().ref().child('imageDraft').remove();
@@ -549,9 +564,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          }
 
 
-      } else {
-        console.log("shops not there");
-        console.log(this.shops.shopName);
+      }  else  {
 
         if (shopPhones == null) {shopPhones = "";}
 
@@ -565,9 +578,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             shopPhone: shopPhones,
             shopLng: shopLngs,
             shopLat: shopLats,
-            shopId: newShopKey, 
+            shopId: newShopKey,
           };
-          updatesShops['/shops/' + newShopKey] = shopData;
+          updatesShops['/shops/' + this.shopNameUnique] = shopData;
           firebase.database().ref().update(updatesShops);
           };
 
@@ -654,10 +667,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        if (!this.place.address_components) {
          return;
        }
-       
+
        this.value = this.place.formatted_address;
        this.phone = this.place.formatted_phone_number;
-       this.shopName = this.place.name;       
+       this.shopName = this.place.name;
        this.longitude = this.place.geometry.location.lng();
        this.latitude= this.place.geometry.location.lat();
        var gpsHash = parseInt((Math.abs(this.latitude)*10)) + parseInt((Math.abs(this.longitude)*10));
