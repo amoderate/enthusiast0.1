@@ -1,0 +1,207 @@
+<html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/file-input/file-input.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+
+<link rel="import" href="shop-button.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-select.html">
+
+
+</head><body><dom-module id="shop-admin">
+
+  <template>
+
+    <style include="shop-common-styles shop-button shop-select">
+
+      :host {
+        display: block;
+      }
+
+      #content {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+      shop-image {
+        position: relative;
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 600px;
+        --shop-image-img: {
+          @apply(--layout-fit);
+        };
+      }
+
+      shop-image::before {
+        content: "";
+        display: block;
+        padding-top: 100%;
+      }
+
+      .detail {
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 400px;
+        transition: opacity 0.4s;
+        opacity: 1;
+      }
+      .pre {
+            white-space: pre;
+            unicode-bidi: embed;
+        }
+
+      FILE-INPUT { position: relative; margin: 64px 32px;
+      width: 30%;
+      max-width:4600px;
+      width: 50px;
+      height: 50px;
+      padding: 16px 0 16px 0;
+      width: calc(99.66% - 8px);
+      margin: 8px auto;}
+
+      h1 {
+        font-size: 24px;
+        font-weight: 500;
+        line-height: 28px;
+        margin: 0;
+      }
+
+      .giant {
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 600px;
+        width: 100px;
+        height: 100px;
+        padding: 16px 0 16px 0;
+        width: calc(99.66% - 8px);
+        margin: 8px auto;
+        background: white;
+      }
+
+      .description {
+        margin: 32px 0;
+      }
+
+      .description > h2 {
+        margin: 16px 0;
+        font-size: 13px;
+      }
+
+      .description > p {
+        margin: 0;
+        color: var(--app-secondary-color);
+      }
+
+      .pickers {
+        @apply(--layout-vertical);
+        border-top: 1px solid #ccc;
+      }
+
+      .centered{
+        height: 100%;
+        padding: 16px 0 16px 0;
+        width: calc(99.66% - 8px);
+        margin: 8px auto;
+        background: white;
+      }
+
+      shop-select > select {
+        font-size: 16px;
+        padding: 16px 24px 16px 70px;
+      }
+
+      @media (max-width: 767px) {
+
+        #content {
+          @apply(--layout-vertical);
+          @apply(--layout-center);
+        }
+
+        shop-image {
+          margin: 0;
+          width: 80%;
+        }
+
+        .detail {
+          box-sizing: border-box;
+          margin: 32px 0;
+          padding: 0 24px;
+          width: 100%;
+          max-width: 600px;
+        }
+
+        h1 {
+          font-size: 20px;
+          line-height: 24px;
+        }
+
+      }
+
+    </style>
+
+    
+    <app-route route="[[route]]" pattern="/:shop" data="{{routeData}}" tail="{{subroute}}">
+    </app-route>
+
+    <shop-category-data categories="{{categories}}"></shop-category-data>
+
+    <firebase-auth id="auth" user="{{user}}" provider="google" on-error="showError">
+    </firebase-auth>
+
+    
+
+    
+
+
+        
+
+    <div id="content" hidden$="[[failure]]">
+
+      
+      <div class="detail">
+
+        
+
+
+      
+
+        Change cover image for [[routeData.shop]] (1440x160)
+        
+        
+        <div class="centered">
+          <file-input id="file-input">
+            <iron-icon icon="image:photo-camera" class="giant"></iron-icon>
+          </file-input>
+        </div>
+
+
+
+
+
+
+
+
+
+
+      </div>
+    </div>
+    
+
+  </template>
+
+  <script>Polymer({is:"shop-admin",properties:{item:Object,route:Object,routeData:Object,visible:Boolean,latitude:{type:String,notify:!0},longitude:{type:String,notify:!0},offline:{type:Boolean,observer:"_offlineChanged"},items:{type:Object,notify:!0},shopName:{type:String,notify:!0},itemName:{type:String,notify:!0},phone:{type:String,notify:!0},value:{type:String,notify:!0},theme:{type:String,notify:!0},shops:{type:Array,notify:!0},shopTags:{type:String,value:"",notify:!0},tags:{type:Object,notify:!0},tokens:{type:Array,notify:!0},shoptypes:{type:String,notify:!0},searchString:{type:String,value:"For the love of beer",notify:!0},shopNameUnique:{type:String,notify:!0,value:"9999"},shopIds:{type:String,notify:!0},shopPhones:{type:String,notify:!0},failure:Boolean},listeners:{"file-input.change":"fileInputCoverChangedFct"},fileInputCoverChangedFct:function(e){if(file=e.target.files[0],!file.type.match("image.*"))return void console.log("error: not an image");var t=new Date,i=Math.round(t/1e3),n=firebase.storage().ref("imageShopAdmins/"+this.routeData.shop+"/"+i+"_"+file.name),o=n.put(file);o.on("state_changed",function(e){e.bytesTransferred/e.totalBytes*100},function(e){},function(){var e="shopAdminsResources/"+this.routeData.shop+"/imageCover/",t=(firebase.database().ref().child(e).push().key,firebase.auth().currentUser,o.snapshot.downloadURL),i={};i[e]=t,firebase.database().ref().update(i)}.bind(this))}});</script>
+
+</dom-module>
+</body></html>

@@ -10,6 +10,13 @@
 <link rel="import" href="../bower_components/google-map/google-map-directions.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/paper-chip/paper-chip.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-list-menu.html">
 
@@ -19,7 +26,12 @@
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 
+<link rel="import" href="shop-admin.html">
 
+<link rel="import" href="shop-button.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-select.html">
 
 
 
@@ -29,9 +41,9 @@
 
       .hero-image {
         position: relative;
-        height: 320px;
+        height: 160px;
         overflow: hidden;
-        margin-bottom: 32px;
+        margin-bottom:10px;
       }
 
       google-map {
@@ -54,20 +66,32 @@
         --paper-tab-ink: #E57373;
         font-family: 'Roboto', 'Noto', sans-serif;
         -webkit-font-smoothing: antialiased;
-        width: 35%;
+        width: 45%;
         text-transform: uppercase;
         margin-bottom: 3px;
+      }
+
+      #content {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        margin: 0 10px 32px 10px;
 
       }
 
-      #menu {
-
-      }
       .footer{
         @apply(--layout-fixed-bottom);
         height: 64px;
         background-color: white;
 
+      }
+      .layout-center {
+        @apply(--layout-block);
+        @apply(--layout-self-center);
+
+        width: 75%;
+        max-width: 700px;
+        transition: opacity 0.4s;
+        opacity: 1;
       }
 
       #message-input{
@@ -84,6 +108,12 @@
 
       paper-tab {
       --paper-tab-ink: #E57373;
+      }
+
+      shop-image::before {
+        content: "";
+        display: block;
+        padding-top: 100%;
       }
 
       --paper-tab-ink: #E57373;
@@ -117,7 +147,7 @@
 
       @media (max-width: 767px) {
         .hero-image {
-          display: none;
+          /*display: none;*/
         }
         .grid{
           @apply(--layout-vertical);
@@ -142,91 +172,226 @@
     <app-route route="[[route]]" pattern="/:shop" data="{{routeData}}" tail="{{subroute}}">
     </app-route>
 
-    <firebase-query id="query" path="/items" data="{{items}}" order-by-child="/shopName" start-at="{{routeData.shop}}" end-at="{{routeData.shop}}">
+    <firebase-document path="/shops/[[routeData.shop]]" data="{{form}}"></firebase-document>
+
+    <firebase-auth id="auth" user="{{user}}" provider="google" on-error="showError">
+    </firebase-auth>
+
+    <firebase-query id="query" path="/items" data="{{items}}" order-by-child="/shopNameUnique" start-at="{{routeData.shop}}" end-at="{{routeData.shop}}">
     </firebase-query>
 
-    <firebase-query id="queryAddress" path="/shops" order-by-child="/shopName" start-at="{{routeData.shop}}" end-at="{{routeData.shop}}" data="{{shopData}}">
-    </firebase-query>
 
-    <firebase-query id="menuTags" path="/tags" data="{{tags}}" order-by-child="/shopName" start-at="[[routeData.shop]]" end-at="[[routeData.shop]]" limit-to-first="10">
+    <firebase-query id="menuTags" path="/tags/shopNameUnique/[[routeData.shop]]" data="{{tags}}">
     </firebase-query>
 
     <firebase-query id="shopMessage" path="/shopMessage/[[routeData.shop]]" data="{{shopMessage}}" order-by-child="/chatTime" limit-to-last="10">
     </firebase-query>
 
+    <firebase-query id="shopAdmin" path="/shopAdmins/[[routeData.shop]]" data="{{shopAdmin}}" order-by-child="/adminUserId" equal-to="[[user.uid]]" limit-to-last="1">
+    </firebase-query>
 
-      <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
-        <div class="layout horizontal center-justified">
-        <paper-tabs selected="{{selected}}" no-bar="">
-          <paper-tab>Menu</paper-tab>
-          <paper-tab>About</paper-tab>
-          <paper-tab>Maps</paper-tab>
-          <paper-tab>Chat</paper-tab>
-        </paper-tabs>
+    <firebase-document id="aboutDocument" path="/shopAdminsResources/[[routeData.shop]]" data="{{editableAboutData}}">
+    </firebase-document>
+
+    <firebase-document id="shopAdminsResources" path="/shopAdminsResources/[[routeData.shop]]" data="{{shopAdminsResources}}">
+    </firebase-document>
+
+    <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
+      <div class="layout horizontal center-justified">
+          <paper-tabs scrollable="" selected="{{selected}}" no-bar="">
+              <paper-tab>Images</paper-tab>
+              <paper-tab>About</paper-tab>
+              <paper-tab>Maps</paper-tab>
+              <paper-tab>Chat</paper-tab>
+              <paper-tab>Official Menu</paper-tab>
+          </paper-tabs>
       </div>
-      </app-header>
+      <div id="content" hidden$="[[!isShopAdmin]]">
+          You are admin of this shop. &nbsp; <a href="/admin/[[routeData.shop]]" tabindex="-1">Upload a photo </a>
+      </div>
+    </app-header>
 
+    <div hidden$="[[!hasCoverImage]]">
+      <shop-image src="[[shopAdminsResources.imageCover]]" class="hero-image">
+      </shop-image>
+    </div>
       <iron-pages selected="{{selected}}">
         <div>
           <div class="layout horizontal center-justified">
             <paper-tabs id="menu" scrollable="" selected="{{displayTag}}" no-bar="" attr-for-selected="label">
                 <template is="dom-repeat" items="[[tags]]" as="tag">
-                  <paper-tab label="{{tag.tag}}">[[tag.tag]]</paper-tab>
+                    <paper-tab label="{{tag.tag}}">[[tag.tag]]</paper-tab>
                 </template>
             </paper-tabs>
-        </div>
+          </div>
           <iron-pages selected="{{displayTag}}" attr-for-selected="name">
             <div name="{{displayTag}}">
-            <ul class="grid">
-              <template is="dom-repeat" items="[[items]]" as="item" filter="{{computeFilterTags(displayTag)}}">
-                <li>
-                  [[item.name]]
-                  <a href$="[[_getItemHref(item)]]">
-                    <shop-list-menu item="[[item]]"></shop-list-menu>
-                  </a>
-                </li>
-              </template>
-            </ul>
-          </div>
-        </iron-pages>
-      </div>
-        <div>
-          [[shopAbout]]
+              <ul class="grid">
+                <template is="dom-repeat" items="[[items]]" as="item" filter="{{computeFilterTags(displayTag)}}">
+                  <li>
+                    [[item.name]]
+                    <a href$="[[_getItemHref(item)]]">
+                      <shop-list-menu item="[[item]]"></shop-list-menu>
+                    </a>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </iron-pages>
         </div>
-
         <div>
-          <google-map id="map" map="{{map}}" atitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers="">
-            <template is="dom-repeat" items="[[shopData]]" as="shop">
-              <google-map-marker style="transit-layer" map="[[map]]" latitude="{{shop.shopLat}}" longitude="{{shop.shopLng}}" title="{[routeData.shop}}" draggable="false"></google-map-marker>
-            </template>
+          <div id="content" hidden$="[[!isShopAdmin]]">
+            <div class="layout-center">
+              <paper-input id="input" placeholder="" label="Shop Name ショップ名" class="input" type="text" value="{{form.shopName}}">
+              </paper-input>
+              <paper-input label="Address  場所" value="{{form.shopAddres}}">
+              </paper-input>
+              <paper-input label="Phone  電話番号" value="{{form.shopPhone}}">
+              </paper-input>
+                <paper-menu>
+                  <paper-icon-item>
+                    <div item-icon="">日</div>
+                    <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.sundayAmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.sundayAmClose}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.sundayPmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.sundayPmClose}}">&gt;
+                    </paper-input>
+                  </paper-icon-item>
+                  <paper-icon-item>
+                    <div item-icon="">月</div>
+                    <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.mondayAmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.mondayAmClose}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.mondayPmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.mondayPmClose}}">
+                    </paper-input>
+                  </paper-icon-item>
+                  <paper-icon-item>
+                    <div item-icon="">火</div>
+                    <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.tuesdayAmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.tuesdayAmClose}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.tuesdayPmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.tuesdayPmClose}}">
+                    </paper-input>
+                  </paper-icon-item>
+                  <paper-icon-item>
+                    <div item-icon="">水</div>
+                    <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.wednesdayAmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.wednesdayAmClose}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.wednesdayPmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.wednesdayPmClose}}">
+                    </paper-input>
+                  </paper-icon-item>
+                  <paper-icon-item>
+                    <div item-icon="">木</div>
+                    <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.thursdayAmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.thursdayAmClose}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.thursdayPmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.thursdayPmClose}}">
+                    </paper-input>
+                  </paper-icon-item>
+                  <paper-icon-item>
+                    <div item-icon="">金</div>
+                    <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.fridayAmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.fridayAmClose}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.fridayPmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.fridayPmClose}}">
+                    </paper-input>
+                  </paper-icon-item>
+                  <paper-icon-item>
+                    <div item-icon="">土</div>
+                    <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.saturdayAmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.saturdayAmClose}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.saturdayPmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.saturdayPmClose}}">
+                    </paper-input>
+                  </paper-icon-item>
+              </paper-menu>
+              <paper-textarea label="About your shop" value="{{form.about}}">
+              </paper-textarea>
+            </div>
+          </div>
+          <div id="content" hidden$="[[isShopAdmin]]">
+            <div class="layout-center">
+              Name  ショップ名: &nbsp;  &nbsp; [[form.shopName]]
+              <br>
+              <br>
+              Address 場所": &nbsp;  &nbsp; [[form.shopAddres]]
+              <br>
+              <br>
+              Phone Number 電話番号: &nbsp;   &nbsp; [[form.shopPhone]]
+            </div>
+          </div>
+        </div>
+        <div>
+          <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers="" style="transit-layer">
+              <google-map-marker map="[[map]]" latitude="[[lat]]" longitude="[[long]]" title="{{routeData.shop}}" draggable="false"></google-map-marker>
           </google-map>
         </div>
-
         <div>
-
           <div>
-
-           <div class="list">
-           <template is="dom-repeat" items="[[shopMessage]]" as="message">
-             <paper-item>
-              <paper-item-body two-line="">
-                <div>{{message.displayName}}</div>
-                <div secondary="">{{message.chatText}}</div>
-              </paper-item-body>
-            </paper-item>
-           </template>
-
-         </div>
-             <paper-material elevation="1" class="footer">
-                 <paper-input id="message-input" label="New Message:" on-keyup="_handleInput"></paper-input>
-             </paper-material>
+            <div class="list">
+              <template is="dom-repeat" items="[[shopMessage]]" as="message">
+                <paper-item>
+                  <paper-item-body two-line="">
+                    <div>{{message.displayName}}</div>
+                    <div secondary="">{{message.chatText}}</div>
+                  </paper-item-body>
+                </paper-item>
+              </template>
+            </div>
+            <paper-material elevation="1" class="footer">
+              <paper-input id="message-input" label="New Message:" on-keyup="_handleInput"></paper-input>
+            </paper-material>
           </div>
         </div>
+        <div>
+           Owner of this shop? [[isShopAdmin]]
+        </div>
       </iron-pages>
-
   </template>
-
-  <script>Polymer({is:"shop-base",ready:function(){this.selected=this.shopTags},properties:{category:Object,shopName:String,visible:Boolean,route:Object,routeData:Object,item:Object,menuTitles:Object,addressQueryResult:{type:Array,notify:!0},shopAbout:{type:String,notify:!0},shopAddress:{type:Number,notify:!0},shopLat:{type:String,notify:!0},displayTag:{type:String,notify:!0},messageTextCheck:{type:String,notify:!0},shopLong:{type:String,notify:!0}},observers:["_shopChanged(routeData.shop)"],ready:function(){document.title=this.routeData.shop+" - SHOP",shopName=this.routeData.shop,this.menuTitles=[{name:"menu",title:"Our Offerings"},{name:"about",title:"About Us"},{name:"location",title:"Our Location"},{name:"chat",title:"Chat with Us"}]},_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(e){return console.log(this.displayTag),e.shopName?["/detail",e.shopName,e.itemName,e.itemid].join("/"):null},_shopChanged:function(e){this.debounce("change-shop",function(){this.fire("change-shop",{shopName:e.toUpperCase()})})},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_notifyNetworkStatus:function(){var e=this.offline;this.offline=!navigator.onLine,(this.offline||!this.offline&&e===!0)&&(this._networkSnackbar||(this._networkSnackbar=document.createElement("shop-snackbar"),Polymer.dom(this.root).appendChild(this._networkSnackbar)),Polymer.dom(this._networkSnackbar).innerHTML=this.offline?"You are offline":"You are online",this._networkSnackbar.open())},computeFilterTags:function(e){return e?(e=e.toLowerCase(),function(t){var a=t.shopsTags.toLowerCase(),o=t.shopsTags.toLowerCase();return a.indexOf(e)!=-1||o.indexOf(e)!=-1}):null},_handleInput:function(e){if(13==e.keyCode){var t=(new Date).getTime(),a=e.target.value,o=firebase.auth().currentUser,i=this.routeData.shop;if(null!=o&&0==!this.routeData.shop&&0==!e.target.value){var n=firebase.database().ref().child("/shopMessage/"+this.routeData.shop).push().key,s={},r={userid:o.uid,displayName:o.displayName,chatTime:t,chatText:a};s["/shopMessage/"+i+"/"+n]=r,firebase.database().ref().update(s)}e.target.value=""}},_toggleDrawer:function(){this.drawerOpened=!this.drawerOpened}});</script>
+  <script>Polymer({is:"shop-base",properties:{category:Object,shopName:String,shopNameUnique:String,visible:Boolean,route:Object,routeData:{type:Object,notify:!0},item:Object,menuTitles:{type:Object,notify:!0},addressQueryResult:{type:Array,notify:!0},shopAbout:{type:String,notify:!0},shopAddress:{type:Number,notify:!0},displayTag:{type:String,notify:!0},messageTextCheck:{type:String,notify:!0},form:{type:Object,notify:!0},long:{type:Number,value:35.6895,notify:!0},lat:{type:Number,value:139.6917,notify:!0},tags:{type:Object,notify:!0},shopAdmin:{type:Array,notify:!0},isShopAdmin:{type:Boolean,notify:!0,value:!1},shopAdminsResources:{type:Object,notify:!0},hasCoverImage:{type:Boolean,notify:!0,value:!1}},observers:["_shopChanged(routeData.shop)","_shopAdminQueryResultChanged(shopAdmin.splices)","_shopLoaded(form)","_imageCoverLoaded(shopAdminsResources)"],_shopAdminQueryResultChanged:function(e){this.isShopAdmin=!1,e&&e.indexSplices.forEach(function(e){this.isShopAdmin=!0},this)},ready:function(){document.title=this.routeData.shop+" - SHOP",shopName=this.routeData.shop,this.selected="0",this.menuTitles=[{name:"menu",title:"Our Offerings"},{name:"about",title:"About Us"},{name:"location",title:"Our Location"},{name:"chat",title:"Chat with Us"}]},_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(e){return e.shopNameUnique?["/detail",e.shopNameUnique,e.itemName,e.itemid].join("/"):null},_shopChanged:function(e){this.debounce("change-shop",function(){this.fire("change-shop",{shopName:e.toUpperCase()})}),this.selected="0"},_shopLoaded:function(e){0==!e.shopLat&&0==!e.shopLng&&(this.lat=e.shopLat,this.long=e.shopLng)},_imageCoverLoaded:function(e){0==!e.imageCover&&(this.hasCoverImage=!0)},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_notifyNetworkStatus:function(){var e=this.offline;this.offline=!navigator.onLine,(this.offline||!this.offline&&e===!0)&&(this._networkSnackbar||(this._networkSnackbar=document.createElement("shop-snackbar"),Polymer.dom(this.root).appendChild(this._networkSnackbar)),Polymer.dom(this._networkSnackbar).innerHTML=this.offline?"You are offline":"You are online",this._networkSnackbar.open())},computeFilterTags:function(e){return e?(e=e.toLowerCase(),function(t){var o=t.shopsTags.toLowerCase(),i=t.shopsTags.toLowerCase();return o.indexOf(e)!=-1||i.indexOf(e)!=-1}):null},_handleInput:function(e){if(13==e.keyCode){var t=(new Date).getTime(),o=e.target.value,i=firebase.auth().currentUser,n=this.routeData.shop;if(null!=i&&0==!this.routeData.shop&&0==!e.target.value){var a=firebase.database().ref().child("/shopMessage/"+this.routeData.shop).push().key,s={},r={userid:i.uid,displayName:i.displayName,chatTime:t,chatText:o};s["/shopMessage/"+n+"/"+a]=r,firebase.database().ref().update(s)}e.target.value=""}}});</script>
 
 </dom-module>
 </body></html>

@@ -62,14 +62,14 @@
             unicode-bidi: embed;
         }
 
-    FILE-INPUT { position: relative; margin: 64px 32px;
-    width: 30%;
-    max-width:4600px;
-    width: 50px;
-    height: 50px;
-    padding: 16px 0 16px 0;
-    width: calc(99.66% - 8px);
-    margin: 8px auto;}
+      FILE-INPUT { position: relative; margin: 64px 32px;
+      width: 30%;
+      max-width:4600px;
+      width: 50px;
+      height: 50px;
+      padding: 16px 0 16px 0;
+      width: calc(99.66% - 8px);
+      margin: 8px auto;}
 
       h1 {
         font-size: 24px;
@@ -88,11 +88,6 @@
         width: calc(99.66% - 8px);
         margin: 8px auto;
         background: white;
-      }
-      .price {
-        margin: 16px 0 40px;
-        font-size: 16px;
-        color: var(--app-secondary-color);
       }
 
       .description {
@@ -152,11 +147,6 @@
           line-height: 24px;
         }
 
-        .price {
-          font-size: inherit;
-          margin: 12px 0 32px;
-        }
-
       }
 
     </style>
@@ -173,10 +163,17 @@
     <firebase-query id="query" path="/imageDraft/[[user.uid]]" data="{{items}}" limit-to-last="1">
     </firebase-query>
 
-    <firebase-query id="queryShops" path="/shops" data="{{shops}}" order-by-child="/shopName" start-at="[[shopName]]" end-at="[[shopName]]" limit-to-last="10">
+    <firebase-query id="queryShops" path="/shops/[[shopNameUnique]]" data="{{shops}}" order-by-child="/shopNameUnique" equal-to="[[shopNameUnique]]" limit-to-last="1">
     </firebase-query>
 
-    <firebase-query id="queryTags" path="/tags" data="{{tags}}" order-by-child="/tag" start-at="[[shopTags]]" end-at="[[shopTags]]" limit-to-first="10">
+    <firebase-query id="queryAddress" path="/shops/[[routeData.shop]]" order-by-child="/shopNameUnique" start-at="{{routeData.shop}}" end-at="{{routeData.shop}}" data="{{shopData}}">
+    </firebase-query>
+
+    <firebase-query id="queryTags" path="/tags/shopNameUnique/[[shopNameUnique]]" data="{{tags}}" order-by-child="/tag" start-at="[[shopTags]]" end-at="[[shopTags]]" limit-to-first="10">
+    </firebase-query>
+
+
+    <firebase-query id="searchSuggestTags" path="/tags" data="{{tagsSeach}}" order-by-child="/tag" start-at="[[shopTags]]" end-at="[[shopTags+'\uf8ff']]" limit-to-first="30">
     </firebase-query>
 
     <div id="content" hidden$="[[failure]]">
@@ -195,14 +192,7 @@
         <paper-input label="Address  場所" value="{{value}}">
         </paper-input>
 
-        <paper-input label="Phone  電話番号" value="{{phone}}">
-        </paper-input>
-
-
         <paper-textarea label="Item" value="{{itemName}}">
-        </paper-textarea>
-
-        <paper-textarea label="Price" value="{{itemPrice}}">
         </paper-textarea>
 
         <paper-input label="Theme" value="{{theme}}">
@@ -222,7 +212,7 @@
         </paper-input>
 
         <paper-tabs scrollable="" selected="{{shopTags}}" attr-for-selected="label">
-          <template is="dom-repeat" items="[[tags]]" as="tag" initial-count="10" filter="{{computeFilterTags(shopTags)}}">
+          <template is="dom-repeat" items="[[tagsSeach]]" as="tag" initial-count="10" filter="{{computeFilterTags(shopTags)}}">
             <paper-tab label="{{tag.tag}}">
               {{tag.tag}}
             </paper-tab>
@@ -244,7 +234,7 @@
 
   </template>
 
-  <script>Polymer({is:"shop-item-create",properties:{item:Object,route:Object,routeData:Object,visible:Boolean,latitude:{type:String,notify:!0},longitude:{type:String,notify:!0},offline:{type:Boolean,observer:"_offlineChanged"},items:{type:Object,notify:!0},shopName:{type:String,notify:!0},itemName:{type:String,notify:!0},phone:{type:String,notify:!0},value:{type:String,notify:!0},theme:{type:String,notify:!0},itemPrice:{type:String,value:"",notify:!0},shops:{type:Object,notify:!0},shopTags:{type:String,value:"",notify:!0},tagInList:{type:Boolean,value:!1,notify:!0},tags:{type:Object,notify:!0},tokens:{type:Array,notify:!0},shoptypes:{type:String,notify:!0},tagsLocation:{type:String,value:"https://obsessed-tokyo.firebaseio.com/tags",notify:!0},searchString:{type:String,value:"For the love of beer",notify:!0},failure:Boolean},observers:["_itemChanged(item, visible)"],listeners:{"file-input.change":"imageUploadTap"},_itemChanged:function(e,t){t&&this.debounce("item-change",function(){var t=e?e.description:"";this.$.desc.innerHTML=this._unescapeText(t),this.$.quantitySelect.value="1",this.$.sizeSelect.value="M",this.fire("change-section",{category:e.category,title:e.title})})},_unescapeText:function(e){var t=document.createElement("textarea");return t.innerHTML=e,t.textContent},_formatPrice:function(e){return e?"$"+e.toFixed(2):""},_addToCart:function(){this.fire("add-cart-item",{item:this.item,quantity:parseInt(this.$.quantitySelect.value,10),size:this.$.sizeSelect.value})},_isDefined:function(e){return null!=e},imageUploadTap:function(e){var t=e.target.files[0],i=firebase.storage().ref("image/"+t.name),s=i.put(t),o=this.shopName;console.log(o),s.on("state_changed",function(e){e.bytesTransferred/e.totalBytes*100},function(e){},function(){var e=firebase.database().ref().child("imageDraft/").push().key,t=firebase.auth().currentUser,i=s.snapshot.downloadURL,a={},n={url:i,user:t.uid,shop:o};a["/imageDraft/"+t.uid+"/"+e]=n,a["/users/"+t.uid+"/image/"+e]=n,console.log(i),firebase.database().ref().update(a)})},_uploadShopClick:function(e){var t=firebase.auth().currentUser,i=this.shopName,s=this.value,o=this.phone,a=this.itemName,n=this.theme,h=this.itemPrice,r=this.shopTags,l=this.longitude,p=this.latitude,c=firebase.database().ref().child("items").push().key;if(this.tags.length>0);else if(null!=t&&0==!this.items&&0==!this.shopName&&0==!this.theme&&0==!this.shopTags){var u=firebase.database().ref().child("tags").push().key,f={},g={tag:r,shopName:i};f["/tags/"+u]=g,firebase.database().ref().update(f)}if(console.log(this.shops),this.shops.length>0)console.log("shops there");else if(console.log("shops not there"),console.log(this.shops.shopName),null!=t&&0==!this.shopName&&0==!this.phone&&0==!this.value){var m=firebase.database().ref().child("shops").push().key,d={},y={shopName:i,shopAddres:s,shopPhone:o,shopLng:l,shopLat:p};d["/shops/"+m]=y,firebase.database().ref().update(d)}null!=t&&0==!this.items&&0==!this.shopName&&0==!this.theme&&0==!this.shopTags&&this.items.forEach(function(e){var t=e.url,l=(e.user,{}),p={url:t,user:e.user,shopName:i,shopAddres:s,shopPhone:o,itemName:a,price:h,theme:n,shopsTags:r,itemid:c};l["/items/"+c]=p,console.log(l),firebase.database().ref().update(l),firebase.database().ref().child("imageDraft").remove()}),this.itemName="",this.value="",this.phone="",this.shopName="",this.theme="",this.itemPrice="",this.shopTags=""},computeFilter:function(e){return e?(e=e.toLowerCase(),function(t){var i=t.title.toLowerCase(),s=t.name.toLowerCase();return i.indexOf(e)!=-1||s.indexOf(e)!=-1}):null},computeFilterTags:function(e){return e?(e=e.toLowerCase(),function(t){var i=t.tag.toLowerCase(),s=t.tag.toLowerCase();return i.indexOf(e)!=-1||s.indexOf(e)!=-1}):null},on_api_load:function(){this.autocomplete=new google.maps.places.Autocomplete(this.$.input,this.options),google.maps.event.addListener(this.autocomplete,"place_changed",this.on_change_place.bind(this))},on_change_place:function(){this.place=this.autocomplete.getPlace(),this.place.address_components&&(this.value=this.place.formatted_address,this.phone=this.place.formatted_phone_number,this.shopName=this.place.name,this.longitude=this.place.geometry.location.lng(),this.latitude=this.place.geometry.location.lat(),console.log(this.longitude),console.log(this.latitude))},toggleSelection:function(e){console.log("it's selected");var t=this.$.categories.itemForElement(e.target);this.$.selector.select(t.title),this.theme=t.name}});</script>
+  <script>Polymer({is:"shop-item-create",properties:{item:Object,route:Object,routeData:Object,visible:Boolean,latitude:{type:String,notify:!0},longitude:{type:String,notify:!0},offline:{type:Boolean,observer:"_offlineChanged"},items:{type:Object,notify:!0},shopName:{type:String,notify:!0},itemName:{type:String,notify:!0},phone:{type:String,notify:!0},value:{type:String,notify:!0},theme:{type:String,notify:!0},shops:{type:Array,notify:!0},shopTags:{type:String,value:"",notify:!0},tags:{type:Object,notify:!0},tokens:{type:Array,notify:!0},shoptypes:{type:String,notify:!0},searchString:{type:String,value:"For the love of beer",notify:!0},shopNameUnique:{type:String,notify:!0,value:"9999"},shopIds:{type:String,notify:!0},shopPhones:{type:String,notify:!0},failure:Boolean},observers:["_itemChanged(item, visible)","_shopQueryResultChanged(shops.splices)"],listeners:{"file-input.change":"imageUploadTap"},_shopQueryResultChanged:function(e){console.log("here we go!!"),console.log(e),e&&e.indexSplices.forEach(function(e){e.object.forEach(function(e){this.shopIds=e.shopId,this.shopPhones=e.shopPhone},this)},this)},_itemChanged:function(e,t){t&&this.debounce("item-change",function(){var t=e?e.description:"";this.$.desc.innerHTML=this._unescapeText(t),this.$.quantitySelect.value="1",this.$.sizeSelect.value="M",this.fire("change-section",{category:e.category,title:e.title})})},_unescapeText:function(e){var t=document.createElement("textarea");return t.innerHTML=e,t.textContent},_addToCart:function(){this.fire("add-cart-item",{item:this.item,quantity:parseInt(this.$.quantitySelect.value,10),size:this.$.sizeSelect.value})},_isDefined:function(e){return null!=e},imageUploadTap:function(e){var t=e.target.files[0],s=firebase.storage().ref("image/"+t.name),i=s.put(t),a=this.shopName;console.log(a),i.on("state_changed",function(e){e.bytesTransferred/e.totalBytes*100},function(e){},function(){var e=firebase.database().ref().child("imageDraft/").push().key,t=firebase.auth().currentUser,s=i.snapshot.downloadURL,o={},h={url:s,user:t.uid,shop:a};o["/imageDraft/"+t.uid+"/"+e]=h,o["/users/"+t.uid+"/image/"+e]=h,console.log(s),firebase.database().ref().update(o)})},_uploadShopClick:function(e){var t=firebase.database().ref().child("imageDraft/").push().key,s=firebase.database().ref().child("items").push().key;f={};var i=firebase.auth().currentUser,a=this.shopName,o=this.shopNameUnique,h=this.value,n=this.phone,r=this.itemName,p=this.theme,l=this.shopTags,u=this.longitude,c=this.latitude;if(null!=i&&0==!this.items&&0==!this.shopName&&0==!this.shopNameUnique&&0==!this.theme&&0==!this.shopTags){var m=firebase.database().ref().child("tags").push().key,t=firebase.database().ref().child("tags/shopNameUnique/"+this.shopNameUnique).push().key,f={},d={tag:l};0==this.tagsSeach.length&&(f["/tags/"+m]=d),0==this.tags.length&&(f["/tags/shopNameUnique/"+this.shopNameUnique+"/"+t]=d),firebase.database().ref().update(f)}if(this.shops.length>0)console.log("shops there"),null!=i&&0==!this.items&&0==!this.shopName&&0==!this.shopNameUnique&&0==!this.theme&&0==!this.shopTags&&this.items.forEach(function(e){var t=e.url,i=(e.user,{}),n={url:t,user:e.user,shopNameUnique:o,shopName:a,shopAddres:h,shopPhone:this.shopPhones,shopId:this.shopIds,itemName:r,theme:p,shopsTags:l,itemid:s};i["/items/"+this.shopNameUnique]=n,console.log(i),firebase.database().ref().update(i),firebase.database().ref().child("imageDraft").remove()},this);else{if(null==n&&(n=""),null!=i&&0==!this.items&&0==!this.shopName&&0==!this.shopNameUnique&&0==!this.theme&&0==!this.shopTags){var g=firebase.database().ref().child("shops").push().key,y={},b={shopNameUnique:o,shopName:a,shopAddres:h,shopPhone:n,shopLng:u,shopLat:c,shopId:g};y["/shops/"+this.shopNameUnique]=b,firebase.database().ref().update(y)}null!=i&&0==!this.items&&0==!this.shopName&&0==!this.shopNameUnique&&0==!this.theme&&0==!this.shopTags&&this.items.forEach(function(e){var t=e.url,i=(e.user,{}),u={url:t,user:e.user,shopNameUnique:o,shopName:a,shopAddres:h,shopPhone:n,shopId:g,itemName:r,theme:p,shopsTags:l,itemid:s};i["/items/"+s]=u,console.log(i),firebase.database().ref().update(i),firebase.database().ref().child("imageDraft").remove()})}this.itemName="",this.value="",this.phone="",this.shopName="",this.theme="",this.shopTags="",this.shopNameUnique="9999"},computeFilter:function(e){return e?(e=e.toLowerCase(),function(t){var s=t.title.toLowerCase(),i=t.name.toLowerCase();return s.indexOf(e)!=-1||i.indexOf(e)!=-1}):null},computeFilterTags:function(e){return e?(e=e.toLowerCase(),function(t){var s=t.tag.toLowerCase(),i=t.tag.toLowerCase();return s.indexOf(e)!=-1||i.indexOf(e)!=-1}):null},on_api_load:function(){this.autocomplete=new google.maps.places.Autocomplete(this.$.input,this.options),google.maps.event.addListener(this.autocomplete,"place_changed",this.on_change_place.bind(this))},on_change_place:function(){if(this.place=this.autocomplete.getPlace(),this.place.address_components){this.value=this.place.formatted_address,this.phone=this.place.formatted_phone_number,this.shopName=this.place.name,this.longitude=this.place.geometry.location.lng(),this.latitude=this.place.geometry.location.lat();var e=parseInt(10*Math.abs(this.latitude))+parseInt(10*Math.abs(this.longitude));this.shopNameUnique=this.shopName+"-"+e,console.log(this.longitude),console.log(this.latitude),console.log(this.shopNameUnique)}},toggleSelection:function(e){console.log("it's selected");var t=this.$.categories.itemForElement(e.target);this.$.selector.select(t.title),this.theme=t.name}});</script>
 
 </dom-module>
 </body></html>

@@ -515,7 +515,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        var shopLngs = this.longitude;
        var shopLats = this.latitude;
 
-       if (user != null && !this.items == false && !this.shopName == false && !this.theme == false && !this.shopTags == false){
+       if (user != null && !this.items == false && !this.shopName == false && !this.shopNameUnique == false && !this.theme == false && !this.shopTags == false){
         var newTagsKey = firebase.database().ref().child('tags').push().key;
         var newTagKey = firebase.database().ref().child('tags/shopNameUnique/'+this.shopNameUnique).push().key;
         var updatesTags = {};
@@ -523,15 +523,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           tag: shopsTagss
         };
         if (this.tagsSeach.length == 0){
-          console.log(this.tagsSearch);
           updatesTags['/tags/' + newTagsKey] = tagData;
+
         };
 
         if (this.tags.length == 0) {
-          console.log(this.tags);
-        updatesTags['/tags/shopNameUnique/' + this.shopNameUnique + '/' + newTagKey] = tagData;
-        firebase.database().ref().update(updatesTags);
+          updatesTags['/tags/shopNameUnique/' + this.shopNameUnique + '/' + newTagKey] = tagData;
         };
+        firebase.database().ref().update(updatesTags);
      };
 
       if (this.shops.length > 0) {
@@ -568,7 +567,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         if (shopPhones == null) {shopPhones = "";}
 
-        if (user != null && !this.shopName == false && !this.shopNameUnique == false && !this.value == false && !this.shopTags == false) {
+        if (user != null && !this.items == false && !this.shopName == false && !this.shopNameUnique == false && !this.theme == false && !this.shopTags == false) {
           var newShopKey = firebase.database().ref().child('shops').push().key;
           var updatesShops = {};
           var shopData = {
