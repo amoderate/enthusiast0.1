@@ -23,8 +23,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-query.html">
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+
 
 <link rel="import" href="shop-category-data.html">
 <!-- Since 'home' is the default route, eagerly load it. -->
@@ -237,16 +240,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div class="left-bar-item">
           <div>
           <paper-button hidden$="[[user]]" on-tap="signInWithGoogle"><iron-icon icon="icons:lock-open"></iron-icon></paper-button>
-          <paper-button toggles raised hidden$="[[!user]]" on-tap="signOut"><iron-icon icon="icons:lock-outline"></iron-icon></paper-button>
+          <paper-button toggles hidden$="[[!user]]" on-tap="signOut"><iron-icon icon="icons:lock-outline"></iron-icon></paper-button>
           </div>
-          <a class="back-btn" href="/list/[[categoryName]]" tabindex="-1">
-            <paper-icon-button icon="arrow-back" aria-label="Go back"></paper-icon-button>
-          </a>
+        
         </div>
         <div class="logo" main-title><a href="/" aria-label="SHOP Home">[[pageTittle]]</a></div>
+
         <div>
           <a href="/item-create" tabindex="-1">
             <paper-icon-button icon="icons:create"></paper-icon-button>
+          </a>
+        </div>
+
+        <div>
+          <a href="/profile/[[user.uid]]" tabindex="-1">
+            <paper-icon-button icon="social:person"></paper-icon-button>
           </a>
         </div>
         <!--<div>
@@ -276,6 +284,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <!---create a shop -->
       <!--<shop-shop-create name="shop-create"></shop-shop-create> -->
       <!--shopbase -->
+      <!-- view your profile-->
+      <shop-profile name="profile" rout="[[subroute]]"></shop-profile>
       <shop-admin name="admin" route="[[subroute]]"></shop-admin>
       <shop-base name="base" route="[[subroute]]"></shop-base>
 

@@ -22,6 +22,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/iron-icons/image-icons.html">
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/exif-from-image/exif-from-image.html">
+
 
 <link rel="import" href="shop-button.html">
 <link rel="import" href="shop-common-styles.html">
@@ -215,7 +217,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     >
     </firebase-query>
 
-
     <firebase-query id="searchSuggestTags"
       path="/tags"
       data="{{tagsSeach}}"
@@ -230,6 +231,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <template is="dom-repeat" items="{{items}}" as="item" hidden$="[[failure]]">
         <shop-image alt="[[item.shopName]]" src="[[item.url]]"></shop-image>
+        <exif-from-image imgpath="{{filePath}}"></exif-from-image>
+
 
       </template>
       <div class="detail">
@@ -390,6 +393,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: String,
           notify: true
         },
+        filePath: {
+          type: String,
+          notify: true
+        },
 
         shopPhones: {
           type: String,
@@ -466,6 +473,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       imageUploadTap: function(e) {
         var file = e.target.files[0];
+        console.log(file);
+        this.filePath = file
+        // get EXIF data
+
+
         var storageRef = firebase.storage().ref('image/' + file.name);
 
         var uploadTask = storageRef.put(file);
@@ -490,6 +502,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             user: user.uid,
             shop: shopName
           };
+          
           updates['/imageDraft/'+ user.uid + '/' + newImageKey] = imageData;
           updates['/users/' + user.uid + "/image/" + newImageKey] = imageData;
           console.log(downloadURL)

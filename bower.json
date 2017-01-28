@@ -41,7 +41,9 @@
     "iron-ajax": "PolymerElements/iron-ajax#^1.4.3",
     "paper-chip": "bendavis78/paper-chip#^1.1.2",
     "firechat": "^3.0.1",
-    "paper-material": "PolymerElements/paper-material#^1.0.6"
+    "paper-material": "PolymerElements/paper-material#^1.0.6",
+    "exif-from-image": "^0.0.1",
+    "exif-js": "^2.1.1"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
