@@ -105,6 +105,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         pattern="/:user"
         data="{{routeData}}">
     </app-route>
+    
+    <firebase-auth id="auth"
+      user="{{user}}"
+      provider="google"
+      on-error="showError"
+      >
+    </firebase-auth>
 
     <!--
       shop-category-data provides the category data for a given category name.
@@ -119,9 +126,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <firebase-query id="query"
       path="/items"
       data="{{itemList}}"
-      order-by-child="/theme"
-      start-at="[[category.title]]"
-      end-at="[[category.title]]"
+      order-by-child="/user"
+      equal-to="[[user.uid]]"
       >
     </firebase-query>
 
