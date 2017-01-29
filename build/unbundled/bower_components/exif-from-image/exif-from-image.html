@@ -1,0 +1,8 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="exif.html">
+
+</head><body><dom-module id="exif-from-image">
+</dom-module>
+
+<script>!function(){Polymer({is:"exif-from-image",properties:{imgpath:{type:String,value:"",observer:"_imgChanged"}},_imgChanged:function(i,a){if(i){var e=this,t=new Image;t.onload=function(){EXIF.getData(this,function(){this.exifdata&&e.fire("exifdata-available",this.exifdata)})},t.src=this.imgpath}}})}();</script>
+</body></html>

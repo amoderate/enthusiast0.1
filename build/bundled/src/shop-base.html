@@ -1,34 +1,4 @@
-<html><head><meta charset="UTF-8"><link rel="import" href="shop-app.html"></head><body><div hidden="" by-vulcanize=""><dom-module id="paper-material-shared-styles" assetpath="../bower_components/paper-material/">
-  <template>
-    <style>
-      :host {
-        display: block;
-        position: relative;
-      }
-
-      :host([elevation="1"]) {
-        @apply(--shadow-elevation-2dp);
-      }
-
-      :host([elevation="2"]) {
-        @apply(--shadow-elevation-4dp);
-      }
-
-      :host([elevation="3"]) {
-        @apply(--shadow-elevation-6dp);
-      }
-
-      :host([elevation="4"]) {
-        @apply(--shadow-elevation-8dp);
-      }
-
-      :host([elevation="5"]) {
-        @apply(--shadow-elevation-16dp);
-      }
-    </style>
-  </template>
-</dom-module>
-<dom-module id="paper-material" assetpath="../bower_components/paper-material/">
+<html><head><meta charset="UTF-8"><link rel="import" href="shop-app.html"></head><body><div hidden="" by-vulcanize=""><dom-module id="paper-material" assetpath="../bower_components/paper-material/">
   <template>
     <style include="paper-material-shared-styles"></style>
     <style>
@@ -1398,7 +1368,9 @@
           </div>
         </div>
         <div>
-           Owner of this shop? [[isShopAdmin]]
+            <div id="content">
+             Owner of this shop? [[isShopAdmin]]
+           </div>
         </div>
       </iron-pages>
   </template>

@@ -1,0 +1,117 @@
+<html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="shop-category-data.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-list-profile.html">
+
+
+</head><body><dom-module id="shop-profile">
+
+  <template>
+
+    <style include="shop-common-styles">
+
+      .hero-image {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        margin-bottom: 32px;
+      }
+
+      .hero-image {
+        --shop-image-img: {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+        };
+      }
+      .actions {
+        color: var(--paper-red-a200);
+
+        font-weight: bold;
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+      .grid {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-justified);
+        margin: 0 10px 32px 10px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .grid li {
+        -webkit-flex: 1 1;
+        flex: 1 1;
+        -webkit-flex-basis: 33%;
+        flex-basis: 33%;
+        max-width: 33%;
+      }
+
+      .grid a {
+        display:block;
+        text-decoration: none;
+      }
+
+      @media (max-width: 767px) {
+        .hero-image {
+          display: none;
+        }
+        .grid{
+          @apply(--layout-vertical);
+
+        }
+
+        .grid  li {
+          -webkit-flex-basis: 100%;
+          flex-basis: 100%;
+          max-width: 100%;
+        }
+
+        .logo {
+          text-align: center;
+          @apply(--layout-center);
+          padding-left: 7px;
+        }
+      }
+
+    </style>
+
+    
+    <app-route route="[[route]]" pattern="/:user" data="{{routeData}}">
+    </app-route>
+
+    <firebase-auth user="{{user}}" provider="google" on-error="showError">
+    </firebase-auth>
+
+    
+    <shop-category-data category-name="[[routeData.category]]" category="{{category}}" failure="{{failure}}">
+    </shop-category-data>
+
+    <firebase-query path="/items" data="{{itemList}}" order-by-child="/user" equal-to="[[user.uid]]">
+    </firebase-query>
+
+    <ul class="grid" hidden$="[[failure]]">
+      <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
+        <li>
+          <a href$="[[_getItemHref(item)]]"><shop-list-profile item="[[item]]"></shop-list-profile></a>
+          <div class="actions"> <paper-button toggles="" hidden$="[[!user]]" on-tap="deleteItem">Delete Item </paper-button> </div>
+        </li>
+      </template>
+    </ul>
+  </template>
+
+  <script>Polymer({is:"shop-profile",properties:{category:Object,route:Object,routeData:Object,visible:Boolean,offline:{type:Boolean,observer:"_offlineChanged"},failure:Boolean},_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(e){return console.log(e),e.shopName?["/detail",e.shopNameUnique,e.itemName,e.itemid].join("/"):null},deleteItem:function(e){var t=e.model.item;console.log(t),firebase.database().ref().child("items/"+t.itemid).remove()},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_tryReconnect:function(){this.$.categoryData.refresh()},_offlineChanged:function(e){e||this._tryReconnect()}});</script>
+
+</dom-module>
+</body></html>

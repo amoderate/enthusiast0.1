@@ -227,6 +227,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     >
     </firebase-query>
 
+    <firebase-query id="geo"
+      path="/geo/[[theme]]"
+      data="{{geo}}"
+      order-by-child="/shopNameUnique"
+      start-at="[[shopNameUnique]]"
+      end-at="[[shopNameUnique]]"
+      limit-to-first=30
+    >
+    </firebase-query>
+
     <div id="content" hidden$="[[failure]]">
 
       <template is="dom-repeat" items="{{items}}" as="item" hidden$="[[failure]]">
@@ -245,10 +255,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <paper-input label="Address  場所" value="{{value}}">
         </paper-input>
 
-        <paper-textarea label="Item" value="{{itemName}}">
+        <paper-textarea label="Item  皿" value="{{itemName}}">
         </paper-textarea>
 
-        <paper-input label="Theme" value="{{theme}}">
+        <paper-input label="Theme  テーマ" value="{{theme}}">
         </paper-input>
 
 
@@ -403,6 +413,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           notify: true
         },
 
+        longlat: {
+          type: String,
+          value: '9999',
+          notify: true
+        },
+
         failure: Boolean
 
       },
@@ -411,6 +427,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       observers: [
         '_itemChanged(item, visible)',
         '_shopQueryResultChanged(shops.splices)'
+
       ],
 
       listeners: {
@@ -418,7 +435,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _shopQueryResultChanged: function(changeRecord) {
-        console.log("here we go!!");
         console.log(changeRecord);
         if (changeRecord) {
           changeRecord.indexSplices.forEach(function(s) {
@@ -502,7 +518,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             user: user.uid,
             shop: shopName
           };
-          
+
           updates['/imageDraft/'+ user.uid + '/' + newImageKey] = imageData;
           updates['/users/' + user.uid + "/image/" + newImageKey] = imageData;
           console.log(downloadURL)
@@ -512,11 +528,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      },
 
      _uploadShopClick: function(e) {
+
        var newTagKey = firebase.database().ref().child('imageDraft/').push().key;
        var newItemKey = firebase.database().ref().child('items').push().key;
 
 
-       updatesTags = {};
        var user = firebase.auth().currentUser;
        var shopNames = this.shopName;
        var shopNameUniques = this.shopNameUnique;
@@ -527,6 +543,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        var shopsTagss = this.shopTags;
        var shopLngs = this.longitude;
        var shopLats = this.latitude;
+
+       if (this.geo.length == 0) {
+
+          if (user != null && !this.items == false && !this.shopName == false && !this.shopNameUnique == false && !this.theme == false && !this.shopTags == false){
+            console.log(user);
+            var newGeoKey = firebase.database().ref().child('geo/'+this.theme).push().key;
+            updatesGeos = {};
+            var geoData = {
+              user: user.uid,
+              shopName: shopNames,
+              shopNameUnique: shopNameUniques,
+              shopAddres: shopAddress,
+              shopPhone: shopPhones,
+              lng: shopLngs,
+              lat: shopLats
+            };
+            updatesGeos['/geo/' + this.theme + '/' + newGeoKey] = geoData;
+            firebase.database().ref().update(updatesGeos);
+          };
+
+       }
+       if (this.geo.length > 0) {
+         console.log("shops at this location")
+       };
+
+       updatesTags = {};
 
        if (user != null && !this.items == false && !this.shopName == false && !this.shopNameUnique == false && !this.theme == false && !this.shopTags == false){
         var newTagsKey = firebase.database().ref().child('tags').push().key;
@@ -540,6 +582,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         };
 
+
+
         if (this.tags.length == 0) {
           updatesTags['/tags/shopNameUnique/' + this.shopNameUnique + '/' + newTagKey] = tagData;
         };
@@ -547,8 +591,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      };
 
       if (this.shops.length > 0) {
-        console.log("shops there")
-
 
        if (user != null && !this.items == false && !this.shopName == false && !this.shopNameUnique == false && !this.theme == false && !this.shopTags == false) {
            this.items.forEach(function (post) {
@@ -564,6 +606,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                shopPhone: this.shopPhones,
                shopId: this.shopIds,
                itemName: itemNames,
+               itemLng: shopLngs,
+               itemLat: shopLats,
                theme: themes,
                shopsTags: shopsTagss,
                itemid: newItemKey
@@ -611,6 +655,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                shopPhone: shopPhones,
                shopId: newShopKey,
                itemName: itemNames,
+               itemLng: shopLngs,
+               itemLat: shopLats,
                theme: themes,
                shopsTags: shopsTagss,
                itemid: newItemKey
@@ -625,7 +671,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
         };
-
 
          this.itemName = '';
          this.value = '';
@@ -687,10 +732,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        this.latitude= this.place.geometry.location.lat();
        var gpsHash = parseInt((Math.abs(this.latitude)*10)) + parseInt((Math.abs(this.longitude)*10));
        this.shopNameUnique = this.shopName + '-'+ gpsHash;
-
-       console.log(this.longitude);
-       console.log(this.latitude);
-       console.log(this.shopNameUnique);
      },
 
      toggleSelection: function(e) {

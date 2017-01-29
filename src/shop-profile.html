@@ -105,8 +105,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         pattern="/:user"
         data="{{routeData}}">
     </app-route>
-    
-    <firebase-auth id="auth"
+
+    <firebase-auth
       user="{{user}}"
       provider="google"
       on-error="showError"
@@ -117,13 +117,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       shop-category-data provides the category data for a given category name.
     -->
     <shop-category-data
-        id="categoryData"
+
         category-name="[[routeData.category]]"
         category="{{category}}"
         failure="{{failure}}">
     </shop-category-data>
 
-    <firebase-query id="query"
+    <firebase-query
       path="/items"
       data="{{itemList}}"
       order-by-child="/user"
@@ -166,12 +166,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       },
 
-      observers: [
-        '_modeChanged(category)'
-
-      ],
-
-
       _getListItems: function(items) {
         // Return placeholder items when the items haven't loaded yet.
         return items || [{},{},{},{},{},{},{},{},{},{}];
@@ -198,18 +192,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return  '(' + quantity + ' ' + pluralizedQ + ')';
       },
 
-
-      _modeChanged: function(category) {
-       console.log("changed shop")
-
-          this.debounce('change-shop', function() {
-            // Notify the category and the page's title
-            this.fire('change-shop', {
-              shopName: 'EXPLORE'
-            });
-          });
-
-      },
 
       _tryReconnect: function() {
         this.$.categoryData.refresh();
