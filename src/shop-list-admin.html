@@ -1,0 +1,110 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+
+<dom-module id="shop-list-admin">
+
+  <template>
+
+    <style>
+
+      :host {
+        @apply(--layout-vertical);
+        @apply(--layout-center-justified);
+        text-align: center;
+        margin: 0 52px;
+      }
+      #img {
+        width: 250px;
+
+      }
+      iron-image {
+          width:100%; height:250px; background-color: lightgray;
+          margin: 32px 0 16px;
+          overflow: hidden;
+      }
+        iron-image::content img {
+          width: 100%;
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+      }
+
+      .title {
+        color: var(--app-primary-color);
+        font-weight: bold;
+      }
+
+      .price {
+        color: var(--app-secondary-color);
+      }
+
+      @media (max-width: 767px) {
+        :host {
+          margin: 0 12px;
+        }
+        #img {
+          width: auto;
+        }
+        iron-image {
+            width:100%; height:250px; background-color: lightgray;
+            margin: 0px 0 0px;
+        }
+          iron-image::content img {
+            width: 100%;
+        }
+      }
+
+      css-small {
+        font-size: 10px;
+        color: var(--app-secondary-color);
+      }
+
+    </style>
+
+    <div id="img">
+        <iron-image sizing="cover" preload fade src="[[item.url]]"></iron-image>
+    </div>
+
+    [[item.shopsTags]]
+    <div class="title">[[item.itemName]]</div>    
+    [[item.itemPrice]]
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'shop-list-admin',
+
+      properties: {
+
+        item: Object
+
+      },
+
+      _formatPrice: function(price) {
+        return price ? '$' + price.toFixed(2) : '';
+      }
+
+    });
+
+  </script>
+
+</dom-module>
