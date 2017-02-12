@@ -1,0 +1,190 @@
+<html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="shop-button.html">
+<link rel="import" href="shop-category-data.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-select.html">
+<link rel="import" href="shop-list-item-detail.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+
+
+</head><body><dom-module id="shop-detailofficialmenu">
+
+  <template>
+
+    <style include="shop-common-styles shop-button shop-select">
+
+      :host {
+        display: block;
+      }
+
+      #content {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+      a {
+        text-decoration: none;
+        color: var(--app-primary-color);
+      }
+
+      shop-image {
+        position: relative;
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 600px;
+        --shop-image-img: {
+          @apply(--layout-fit);
+        };
+      }
+
+      shop-image::before {
+        content: "";
+        display: block;
+        padding-top: 100%;
+      }
+
+      .detail {
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 400px;
+        transition: opacity 0.4s;
+        opacity: 0;
+      }
+
+      .detail[has-content] {
+        opacity: 1;
+      }
+
+      h1 {
+        font-size: 24px;
+        font-weight: 500;
+        line-height: 28px;
+        margin: 0;
+      }
+
+      .price {
+        margin: 16px 0 40px;
+        font-size: 16px;
+        color: var(--app-secondary-color);
+      }
+
+      .description {
+        margin: 32px 0;
+      }
+
+      .description > h2 {
+        margin: 16px 0;
+        font-size: 13px;
+      }
+
+      .description > p {
+        margin: 0;
+        color: var(--app-secondary-color);
+      }
+
+      .pickers {
+        @apply(--layout-vertical);
+        border-top: 1px solid #ccc;
+      }
+
+      shop-select > select {
+        font-size: 16px;
+        padding: 16px 24px 16px 70px;
+      }
+
+      iron-collapse {
+       box-shadow: 6px;
+      }
+
+      paper-button {
+       width: 100%;
+       text-transform: none;
+      }
+
+      @media (max-width: 767px) {
+
+        #content {
+          @apply(--layout-vertical);
+          @apply(--layout-center);
+        }
+
+        shop-image {
+          margin: 0;
+          width: 80%;
+        }
+
+        .detail {
+          box-sizing: border-box;
+          margin: 32px 0;
+          padding: 0 24px;
+          width: 100%;
+          max-width: 600px;
+        }
+
+        h1 {
+          font-size: 20px;
+          line-height: 24px;
+        }
+
+        .price {
+          font-size: inherit;
+          margin: 12px 0 32px;
+        }
+
+      css-small {
+        font-size: 10px;
+        color: var(--app-secondary-color);
+      }
+
+      }
+
+    </style>
+
+    
+    <app-route route="[[route]]" pattern="/:shop/:item/:itemid" data="{{routeData}}">
+    </app-route>
+
+    
+
+    <firebase-query id="query" path="/itemsAdmin/[[routeData.shop]]" data="{{items}}" order-by-child="/itemid" equal-to="[[queryEqualTo]]">
+    </firebase-query>
+
+
+    <div id="content" hidden$="[[failure]]">
+      <template is="dom-repeat" items="{{items}}" as="item">
+        <shop-image alt="[[item.shopName]]" src="[[item.url]]"></shop-image>
+        <div class="detail" has-content$="[[_isDefined(item)]]">          
+          <div class="description"></div>
+          <h1>[[item.itemName]]</h1>
+          <div class="price">JPY [[item.itemPrice]]</div>
+          <paper-textarea label="Quantity" value="{{itemQt}}"></paper-textarea>
+
+          <div class="description">
+            <h2>Description</h2>
+            <p id="desc">[[item.itemDesc]]</p>
+          </div>
+          <shop-button responsive="">
+            <button on-tap="_addToCart" aria-label="Add this item to cart">Add to Cart</button>
+          </shop-button>
+
+          <shop-button>
+            <button on-tap="_goToShopPage" aria-label="Visit Shop">
+              <a href$="[[_getItemHref(item)]]">Back to menu</a>
+            </button>
+          </shop-button>
+        </div>
+      </template>
+    </div>
+    
+
+
+
+
+  </template>
+
+  <script>Polymer({is:"shop-detailofficialmenu",properties:{item:Object,route:Object,routeData:{type:Array,notify:!0},visible:Boolean,failure:Boolean,itemQt:{type:Number,value:1},queryEqualTo:{type:String,notify:!0,value:"999"}},observers:["_queryResultChanged(routeData)"],_queryResultChanged:function(e){e&&(this.queryEqualTo=e.itemid)},_unescapeText:function(e){var t=document.createElement("textarea");return t.innerHTML=e,t.textContent},_formatPrice:function(e){return e?"$"+e.toFixed(2):""},_addToCart:function(e){this.fire("add-cart-item",{shopNameUnique:e.model.__data__.item.shopNameUnique,item:e.model.__data__.item.itemName,itemid:e.model.__data__.item.itemid,price:e.model.__data__.item.itemPrice,imageURL:e.model.__data__.item.url,quantity:Number(this.itemQt)})},_getItemHref:function(e){return this.routeData.shop?["/base",this.routeData.shop].join("/"):null},_isDefined:function(e){return null!=e},_goToShopPage:function(){}});</script>
+
+</dom-module>
+</body></html>

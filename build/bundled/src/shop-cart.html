@@ -1,9 +1,36 @@
-<html><head><link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="shop-button.html">
-<link rel="import" href="shop-common-styles.html">
-<link rel="import" href="shop-form-styles.html">
+<html><head><meta charset="UTF-8"><link rel="import" href="shop-app.html"></head><body><div hidden="" by-vulcanize=""><dom-module id="shop-form-styles" assetpath="/">
+  <template>
+    <style>
 
-</head><body><dom-module id="shop-cart">
+      :host {
+        display: block;
+      }
+
+      .main-frame {
+        margin: 0 auto;
+        padding: 0 24px 48px 24px;
+        max-width: 900px;
+        overflow: hidden;
+      }
+
+      .subsection:not([visible]) {
+        display: none;
+      }
+
+      .empty-cart {
+        text-align: center;
+        white-space: nowrap;
+        color: var(--app-secondary-color);
+      }
+
+      h2 {
+        font-size: 13px;
+      }
+
+    </style>
+  </template>
+</dom-module>
+</div><dom-module id="shop-cart">
 
   <template>
 
@@ -58,7 +85,7 @@
 
   </template>
 
-  <script>Polymer({is:"shop-cart",properties:{total:Number,cart:Array,visible:{type:Boolean,observer:"_visibleChanged"},_hasItems:{type:Boolean,computed:"_computeHasItem(cart.length)"}},_formatTotal:function(t){return isNaN(t)?"":"$"+t.toFixed(2)},_computeHasItem:function(t){return t>0},_getPluralizedQuantity:function(t){return t+" "+(1===t?"item":"items")},_visibleChanged:function(t){t&&this.fire("change-section",{title:"Your cart"})}});</script>
+  <script>Polymer({is:"shop-cart",properties:{total:Number,cart:Array,visible:{type:Boolean,observer:"_visibleChanged"},_hasItems:{type:Boolean,computed:"_computeHasItem(cart.length)"}},_formatTotal:function(t){return isNaN(t)?"":"JPY "+t.toFixed(2)},_computeHasItem:function(t){return t>0},_getPluralizedQuantity:function(t){return t+" "+(1===t?"item":"items")},_visibleChanged:function(t){t&&this.fire("change-section",{title:"Your cart"})}});</script>
 
 </dom-module>
 </body></html>

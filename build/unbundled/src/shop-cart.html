@@ -58,7 +58,7 @@
 
   </template>
 
-  <script>Polymer({is:"shop-cart",properties:{total:Number,cart:Array,visible:{type:Boolean,observer:"_visibleChanged"},_hasItems:{type:Boolean,computed:"_computeHasItem(cart.length)"}},_formatTotal:function(t){return isNaN(t)?"":"$"+t.toFixed(2)},_computeHasItem:function(t){return t>0},_getPluralizedQuantity:function(t){return t+" "+(1===t?"item":"items")},_visibleChanged:function(t){t&&this.fire("change-section",{title:"Your cart"})}});</script>
+  <script>Polymer({is:"shop-cart",properties:{total:Number,cart:Array,visible:{type:Boolean,observer:"_visibleChanged"},_hasItems:{type:Boolean,computed:"_computeHasItem(cart.length)"}},_formatTotal:function(t){return isNaN(t)?"":"JPY "+t.toFixed(2)},_computeHasItem:function(t){return t>0},_getPluralizedQuantity:function(t){return t+" "+(1===t?"item":"items")},_visibleChanged:function(t){t&&this.fire("change-section",{title:"Your cart"})}});</script>
 
 </dom-module>
 </body></html>

@@ -831,6 +831,82 @@
   <script>Polymer({is:"paper-chip",behaviors:[Polymer.IronButtonState,Polymer.IronControlState],properties:{removable:{type:Boolean,value:!1,reflectToAttribute:!0},singleLine:{type:Boolean,value:!1,reflectToAttribute:!0,observer:"_singleLineChanged"},persistRemoveButton:{type:Boolean,value:!1,reflectToAttribute:!0,observer:"_singleLineChanged"},animated:{type:Boolean,value:!1,reflectToAttribute:!0},opened:{type:Boolean,value:!1,reflectToAttribute:!0,notify:!0,observer:"_openedChanged"},active:{type:Boolean,value:!1,notify:!0,reflectToAttribute:!0},_elevation:{type:Number,computed:"_computeElevation(opened, focused, disabled, active, pressed)"},_keyTarget:{type:Object,value:function(){return this}}},listeners:{tap:"_onTap",blur:"_onBlur"},hostAttributes:{tabindex:"0"},ready:function(){this.$.removeBtn&&this.$.removeBtn.removeAttribute("tabindex")},_computeElevation:function(e,t,o){return t||o?1:e?4:0},_onTap:function(){this.toggleOpened()},_onBlur:function(){this.opened=!1},remove:function(e){e.stopPropagation();var t=this.fire("remove",{},{bubbles:!1,cancelable:!0});t.defaultPrevented||this.parentNode.removeChild(this)},toggleOpened:function(){this.singleLine||(this.opened=!this.opened)},_singleLineChanged:function(e){e&&this.opened&&(this.opened=!1)},_openedChanged:function(e){if(e&&this.singleLine)return void(this.opened=!1);if(this.animated){var t,o,n;t=this.$.content,o=n="",this.opened&&(this.animated=!1,this.opened=!0,o=t.offsetWidth+"px",n=t.offsetHeight+"px",this.opened=!1,this._forceReflow(),this.opened=!0,this.animated=!0),t.style.width=o,t.style.height=n}},_forceReflow:function(){return this.offsetHeight}});</script>
 
 </dom-module>
+<dom-module id="shop-list-admin" assetpath="/">
+
+  <template>
+
+    <style>
+
+      :host {
+        @apply(--layout-vertical);
+        @apply(--layout-center-justified);
+        text-align: center;
+        margin: 0 52px;
+      }
+      #img {
+        width: 250px;
+
+      }
+      iron-image {
+          width:100%; height:250px; background-color: lightgray;
+          margin: 32px 0 16px;
+          overflow: hidden;
+      }
+        iron-image::content img {
+          width: 100%;
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+      }
+
+      .title {
+        color: var(--app-primary-color);
+        font-weight: bold;
+      }
+
+      .price {
+        color: var(--app-secondary-color);
+      }
+
+      @media (max-width: 767px) {
+        :host {
+          margin: 0 12px;
+        }
+        #img {
+          width: auto;
+        }
+        iron-image {
+            width:100%; height:250px; background-color: lightgray;
+            margin: 0px 0 0px;
+        }
+          iron-image::content img {
+            width: 100%;
+        }
+      }
+
+      css-small {
+        font-size: 10px;
+        color: var(--app-secondary-color);
+      }
+
+    </style>
+
+    <div id="img">
+        <iron-image sizing="cover" preload="" fade="" src="[[item.url]]"></iron-image>
+    </div>
+
+    [[item.shopsTags]]
+    <div class="title">[[item.itemName]]</div>    
+    [[item.itemPrice]]
+
+  </template>
+
+  <script>Polymer({is:"shop-list-admin",properties:{item:Object},_formatPrice:function(e){return e?"$"+e.toFixed(2):""}});</script>
+
+</dom-module>
 <dom-module id="shop-admin" assetpath="/">
 
   <template>
@@ -959,6 +1035,64 @@
           line-height: 24px;
         }
 
+        .hero-image {
+          display: none;
+        }
+        .grid{
+          @apply(--layout-vertical);
+
+        }
+
+        .grid  li {
+          -webkit-flex-basis: 100%;
+          flex-basis: 100%;
+          max-width: 100%;
+        }
+
+        .logo {
+          text-align: center;
+          @apply(--layout-center);
+          padding-left: 7px;
+        }        
+      }
+
+      paper-tabs {
+        @apply(--layout-center);
+        font-family: 'Roboto', 'Noto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        width: 100%;
+        text-transform: uppercase;
+        margin-bottom: 1px;
+      } 
+            
+      .actions {
+        color: var(--paper-red-a200);
+
+        font-weight: bold;
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+      .grid {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-justified);
+        margin: 0 10px 32px 10px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .grid li {
+        -webkit-flex: 1 1;
+        flex: 1 1;
+        -webkit-flex-basis: 33%;
+        flex-basis: 33%;
+        max-width: 33%;
+      }
+
+      .grid a {
+        display:block;
+        text-decoration: none;
       }
 
     </style>
@@ -972,31 +1106,187 @@
     <firebase-auth id="auth" user="{{user}}" provider="google" on-error="showError">
     </firebase-auth>
 
+    <firebase-document path="/shops/[[routeData.shop]]" data="{{form}}">
+    </firebase-document>
     
-
+    <firebase-document id="shopAdminsResources" path="/shopAdminsResources/[[routeData.shop]]" data="{{shopAdminsResources}}">
+    </firebase-document>
     
-
+    <firebase-query id="query" path="/itemsAdmin/[[routeData.shop]]" data="{{itemList}}" order-by-child="/shopTags">
+    </firebase-query>
 
         
 
     <div id="content" hidden$="[[failure]]">
 
-      
       <div class="detail">
 
+
+
         
+      <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
+        <div class="layout horizontal center-justified">
+            <paper-tabs scrollable="" selected="{{selected}}" no-bar="">
+                <paper-tab>Cover</paper-tab>
+                <paper-tab>About</paper-tab>
+                <paper-tab>Official Menu</paper-tab>
+            </paper-tabs>
+        </div>
+      </app-header>        
+
+
+      <iron-pages selected="{{selected}}">
+
+        
+        <div>
+          Change cover image for [[routeData.shop]] (1440x160)
+          
+          
+          <div class="centered">
+            <file-input id="file-input">
+              <iron-icon icon="image:photo-camera" class="giant"></iron-icon>
+            </file-input>
+          </div>        
+
+          <shop-image src="[[shopAdminsResources.imageCover]]">
+          </shop-image>          
+        </div>
+
+                
+        <div>          
+          <div class="layout-center">
+            <paper-input id="input" placeholder="" label="Shop Name ショップ名" class="input" type="text" value="{{form.shopName}}">
+            </paper-input>
+            <paper-input label="Address  場所" value="{{form.shopAddres}}">
+            </paper-input>
+            <paper-input label="Phone  電話番号" value="{{form.shopPhone}}">
+            </paper-input>
+              <paper-menu>
+                <paper-icon-item>
+                  <div item-icon="">日</div>
+                  <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.sundayAmOpen}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.sundayAmClose}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.sundayPmOpen}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.sundayPmClose}}">&gt;
+                  </paper-input>
+                </paper-icon-item>
+                <paper-icon-item>
+                  <div item-icon="">月</div>
+                  <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.mondayAmOpen}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.mondayAmClose}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.mondayPmOpen}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.mondayPmClose}}">
+                  </paper-input>
+                </paper-icon-item>
+                <paper-icon-item>
+                  <div item-icon="">火</div>
+                  <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.tuesdayAmOpen}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.tuesdayAmClose}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.tuesdayPmOpen}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.tuesdayPmClose}}">
+                  </paper-input>
+                </paper-icon-item>
+                <paper-icon-item>
+                  <div item-icon="">水</div>
+                  <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.wednesdayAmOpen}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.wednesdayAmClose}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.wednesdayPmOpen}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.wednesdayPmClose}}">
+                  </paper-input>
+                </paper-icon-item>
+                <paper-icon-item>
+                  <div item-icon="">木</div>
+                  <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.thursdayAmOpen}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.thursdayAmClose}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.thursdayPmOpen}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.thursdayPmClose}}">
+                  </paper-input>
+                </paper-icon-item>
+                <paper-icon-item>
+                  <div item-icon="">金</div>
+                  <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.fridayAmOpen}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.fridayAmClose}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.fridayPmOpen}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.fridayPmClose}}">
+                  </paper-input>
+                </paper-icon-item>
+                <paper-icon-item>
+                  <div item-icon="">土</div>
+                  <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.saturdayAmOpen}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.saturdayAmClose}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.saturdayPmOpen}}">
+                  </paper-input>
+                    &nbsp;   &nbsp;
+                  <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.saturdayPmClose}}">
+                  </paper-input>
+                </paper-icon-item>
+            </paper-menu>
+            <paper-textarea label="About your shop" value="{{form.about}}">
+            </paper-textarea>
+          </div>
+        </div>
+
+        
+        <div>
+          <a href="/admin-item-create/[[routeData.shop]]" tabindex="-1">Add a new item</a>
+
+          <ul class="grid" hidden$="[[failure]]">
+            <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">            
+              <li>
+                <a href$="[[_getItemHref(item)]]"><shop-list-admin item="[[item]]"></shop-list-admin></a>
+                <div class="actions"> <paper-button toggles="" hidden$="[[!user]]" on-tap="deleteItem">Delete Item </paper-button> </div>
+              </li>
+            </template>
+          </ul>          
+        </div>
+
+      </iron-pages>
+
 
 
       
 
-        Change cover image for [[routeData.shop]] (1440x160)
-        
-        
-        <div class="centered">
-          <file-input id="file-input">
-            <iron-icon icon="image:photo-camera" class="giant"></iron-icon>
-          </file-input>
-        </div>
+
 
 
 
@@ -1013,7 +1303,7 @@
 
   </template>
 
-  <script>Polymer({is:"shop-admin",properties:{item:Object,route:Object,routeData:Object,visible:Boolean,latitude:{type:String,notify:!0},longitude:{type:String,notify:!0},offline:{type:Boolean,observer:"_offlineChanged"},items:{type:Object,notify:!0},shopName:{type:String,notify:!0},itemName:{type:String,notify:!0},phone:{type:String,notify:!0},value:{type:String,notify:!0},theme:{type:String,notify:!0},shops:{type:Array,notify:!0},shopTags:{type:String,value:"",notify:!0},tags:{type:Object,notify:!0},tokens:{type:Array,notify:!0},shoptypes:{type:String,notify:!0},searchString:{type:String,value:"For the love of beer",notify:!0},shopNameUnique:{type:String,notify:!0,value:"9999"},shopIds:{type:String,notify:!0},shopPhones:{type:String,notify:!0},failure:Boolean},listeners:{"file-input.change":"fileInputCoverChangedFct"},fileInputCoverChangedFct:function(e){if(file=e.target.files[0],!file.type.match("image.*"))return void console.log("error: not an image");var t=new Date,i=Math.round(t/1e3),n=firebase.storage().ref("imageShopAdmins/"+this.routeData.shop+"/"+i+"_"+file.name),o=n.put(file);o.on("state_changed",function(e){e.bytesTransferred/e.totalBytes*100},function(e){},function(){var e="shopAdminsResources/"+this.routeData.shop+"/imageCover/",t=(firebase.database().ref().child(e).push().key,firebase.auth().currentUser,o.snapshot.downloadURL),i={};i[e]=t,firebase.database().ref().update(i)}.bind(this))}});</script>
+  <script>Polymer({is:"shop-admin",properties:{item:Object,route:Object,routeData:Object,visible:Boolean,latitude:{type:String,notify:!0},longitude:{type:String,notify:!0},offline:{type:Boolean,observer:"_offlineChanged"},items:{type:Object,notify:!0},shopName:{type:String,notify:!0},itemName:{type:String,notify:!0},phone:{type:String,notify:!0},value:{type:String,notify:!0},theme:{type:String,notify:!0},shops:{type:Array,notify:!0},shopTags:{type:String,value:"",notify:!0},tags:{type:Object,notify:!0},tokens:{type:Array,notify:!0},shoptypes:{type:String,notify:!0},searchString:{type:String,value:"For the love of beer",notify:!0},shopNameUnique:{type:String,notify:!0,value:"9999"},shopIds:{type:String,notify:!0},shopPhones:{type:String,notify:!0},failure:Boolean,shopAdminsResources:{type:Object,notify:!0}},listeners:{"file-input.change":"fileInputCoverChangedFct"},fileInputCoverChangedFct:function(e){if(file=e.target.files[0],!file.type.match("image.*"))return void console.log("error: not an image");var t=new Date,i=Math.round(t/1e3),o=firebase.storage().ref("imageShopAdmins/"+this.routeData.shop+"/"+i+"_"+file.name),n=o.put(file);n.on("state_changed",function(e){e.bytesTransferred/e.totalBytes*100},function(e){},function(){var e="shopAdminsResources/"+this.routeData.shop+"/imageCover/",t=(firebase.database().ref().child(e).push().key,firebase.auth().currentUser,n.snapshot.downloadURL),i={};i[e]=t,firebase.database().ref().update(i)}.bind(this))},deleteItem:function(e){var t=e.model.item;firebase.database().ref().child("itemsAdmin/"+[[routeData.shop]]+"/"+t.itemid).remove()}});</script>
 
 </dom-module>
 </div><dom-module id="shop-base">
@@ -1161,6 +1451,8 @@
     <firebase-query id="query" path="/items" data="{{items}}" order-by-child="/shopNameUnique" start-at="{{routeData.shop}}" end-at="{{routeData.shop}}">
     </firebase-query>
 
+    <firebase-query id="query2" path="/itemsAdmin/[[routeData.shop]]" data="{{itemList}}">
+    </firebase-query>
 
     <firebase-query id="menuTags" path="/tags/shopNameUnique/[[routeData.shop]]" data="{{tags}}">
     </firebase-query>
@@ -1177,6 +1469,8 @@
     <firebase-document id="shopAdminsResources" path="/shopAdminsResources/[[routeData.shop]]" data="{{shopAdminsResources}}">
     </firebase-document>
 
+
+
     <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
       <div class="layout horizontal center-justified">
           <paper-tabs scrollable="" selected="{{selected}}" no-bar="">
@@ -1188,7 +1482,7 @@
           </paper-tabs>
       </div>
       <div id="content" hidden$="[[!isShopAdmin]]">
-          You are admin of this shop. &nbsp; <a href="/admin/[[routeData.shop]]" tabindex="-1">Upload a photo </a>
+          You are admin of this shop. &nbsp; <a href="/admin/[[routeData.shop]]" tabindex="-1">Go to admin space</a>
       </div>
     </app-header>
 
@@ -1371,10 +1665,20 @@
             <div id="content">
              Owner of this shop? [[isShopAdmin]]
            </div>
+           
+          <ul class="grid" hidden$="[[failure]]">
+            <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
+              <li>
+                <a href$="[[_getItemHrefB(item)]]"><shop-list-menu item="[[item]]"></shop-list-menu></a>
+                [[item.shopsTags]]
+                [[item.itemPrice]]
+              </li>
+            </template>
+          </ul>
         </div>
       </iron-pages>
   </template>
-  <script>Polymer({is:"shop-base",properties:{category:Object,shopName:String,shopNameUnique:String,visible:Boolean,route:Object,routeData:{type:Object,notify:!0},item:Object,menuTitles:{type:Object,notify:!0},addressQueryResult:{type:Array,notify:!0},shopAbout:{type:String,notify:!0},shopAddress:{type:Number,notify:!0},displayTag:{type:String,notify:!0},messageTextCheck:{type:String,notify:!0},form:{type:Object,notify:!0},long:{type:Number,value:35.6895,notify:!0},lat:{type:Number,value:139.6917,notify:!0},tags:{type:Object,notify:!0},shopAdmin:{type:Array,notify:!0},isShopAdmin:{type:Boolean,notify:!0,value:!1},shopAdminsResources:{type:Object,notify:!0},hasCoverImage:{type:Boolean,notify:!0,value:!1}},observers:["_shopChanged(routeData.shop)","_shopAdminQueryResultChanged(shopAdmin.splices)","_shopLoaded(form)","_imageCoverLoaded(shopAdminsResources)"],_shopAdminQueryResultChanged:function(e){this.isShopAdmin=!1,e&&e.indexSplices.forEach(function(e){this.isShopAdmin=!0},this)},ready:function(){document.title=this.routeData.shop+" - SHOP",shopName=this.routeData.shop,this.selected="0",this.menuTitles=[{name:"menu",title:"Our Offerings"},{name:"about",title:"About Us"},{name:"location",title:"Our Location"},{name:"chat",title:"Chat with Us"}]},_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(e){return e.shopNameUnique?["/detail",e.shopNameUnique,e.itemName,e.itemid].join("/"):null},_shopChanged:function(e){this.debounce("change-shop",function(){this.fire("change-shop",{shopName:e.toUpperCase()})}),this.selected="0"},_shopLoaded:function(e){0==!e.shopLat&&0==!e.shopLng&&(this.lat=e.shopLat,this.long=e.shopLng)},_imageCoverLoaded:function(e){0==!e.imageCover&&(this.hasCoverImage=!0)},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_notifyNetworkStatus:function(){var e=this.offline;this.offline=!navigator.onLine,(this.offline||!this.offline&&e===!0)&&(this._networkSnackbar||(this._networkSnackbar=document.createElement("shop-snackbar"),Polymer.dom(this.root).appendChild(this._networkSnackbar)),Polymer.dom(this._networkSnackbar).innerHTML=this.offline?"You are offline":"You are online",this._networkSnackbar.open())},computeFilterTags:function(e){return e?(e=e.toLowerCase(),function(t){var o=t.shopsTags.toLowerCase(),i=t.shopsTags.toLowerCase();return o.indexOf(e)!=-1||i.indexOf(e)!=-1}):null},_handleInput:function(e){if(13==e.keyCode){var t=(new Date).getTime(),o=e.target.value,i=firebase.auth().currentUser,n=this.routeData.shop;if(null!=i&&0==!this.routeData.shop&&0==!e.target.value){var a=firebase.database().ref().child("/shopMessage/"+this.routeData.shop).push().key,s={},r={userid:i.uid,displayName:i.displayName,chatTime:t,chatText:o};s["/shopMessage/"+n+"/"+a]=r,firebase.database().ref().update(s)}e.target.value=""}}});</script>
+  <script>Polymer({is:"shop-base",properties:{category:Object,shopName:String,shopNameUnique:String,visible:Boolean,route:Object,routeData:{type:Object,notify:!0},item:Object,menuTitles:{type:Object,notify:!0},addressQueryResult:{type:Array,notify:!0},shopAbout:{type:String,notify:!0},shopAddress:{type:Number,notify:!0},displayTag:{type:String,notify:!0},messageTextCheck:{type:String,notify:!0},form:{type:Object,notify:!0},long:{type:Number,value:35.6895,notify:!0},lat:{type:Number,value:139.6917,notify:!0},tags:{type:Object,notify:!0},shopAdmin:{type:Array,notify:!0},isShopAdmin:{type:Boolean,notify:!0,value:!1},shopAdminsResources:{type:Object,notify:!0},hasCoverImage:{type:Boolean,notify:!0,value:!1}},observers:["_shopChanged(routeData.shop)","_shopAdminQueryResultChanged(shopAdmin.splices)","_shopLoaded(form)","_imageCoverLoaded(shopAdminsResources)"],_shopAdminQueryResultChanged:function(e){this.isShopAdmin=!1,e&&e.indexSplices.forEach(function(e){this.isShopAdmin=!0},this)},ready:function(){document.title=this.routeData.shop+" - SHOP",shopName=this.routeData.shop,this.selected="0",this.menuTitles=[{name:"menu",title:"Our Offerings"},{name:"about",title:"About Us"},{name:"location",title:"Our Location"},{name:"chat",title:"Chat with Us"}]},_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(e){return e.shopNameUnique?["/detail",e.shopNameUnique,e.itemName,e.itemid].join("/"):null},_getItemHrefB:function(e){return e.shopNameUnique?["/detailofficialmenu",e.shopNameUnique,e.itemName,e.itemid].join("/"):null},_shopChanged:function(e){this.debounce("change-shop",function(){this.fire("change-shop",{shopName:e.toUpperCase()})}),this.selected="0"},_shopLoaded:function(e){0==!e.shopLat&&0==!e.shopLng&&(this.lat=e.shopLat,this.long=e.shopLng)},_imageCoverLoaded:function(e){0==!e.imageCover&&(this.hasCoverImage=!0)},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_notifyNetworkStatus:function(){var e=this.offline;this.offline=!navigator.onLine,(this.offline||!this.offline&&e===!0)&&(this._networkSnackbar||(this._networkSnackbar=document.createElement("shop-snackbar"),Polymer.dom(this.root).appendChild(this._networkSnackbar)),Polymer.dom(this._networkSnackbar).innerHTML=this.offline?"You are offline":"You are online",this._networkSnackbar.open())},computeFilterTags:function(e){return e?(e=e.toLowerCase(),function(t){var o=t.shopsTags.toLowerCase(),i=t.shopsTags.toLowerCase();return o.indexOf(e)!=-1||i.indexOf(e)!=-1}):null},_handleInput:function(e){if(13==e.keyCode){var t=(new Date).getTime(),o=e.target.value,i=firebase.auth().currentUser,n=this.routeData.shop;if(null!=i&&0==!this.routeData.shop&&0==!e.target.value){var a=firebase.database().ref().child("/shopMessage/"+this.routeData.shop).push().key,s={},r={userid:i.uid,displayName:i.displayName,chatTime:t,chatText:o};s["/shopMessage/"+n+"/"+a]=r,firebase.database().ref().update(s)}e.target.value=""}}});</script>
 
 </dom-module>
 </body></html>

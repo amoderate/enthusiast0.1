@@ -35,7 +35,7 @@
     "paper-tabs": "PolymerElements/paper-tabs#^1.7.0",
     "file-input": "^2.0.0",
     "google-apis": "GoogleWebComponents/google-apis#^1.1.7",
-    "google-map": "GoogleWebComponents/google-map#^1.1.14",
+    "google-map": "GoogleWebComponents/google-map#^1.2.0",
     "moment-element": "abdonrd/moment-element#^0.4.3",
     "paper-menu": "PolymerElements/paper-menu#^1.2.2",
     "iron-ajax": "PolymerElements/iron-ajax#^1.4.3",

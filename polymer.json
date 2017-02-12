@@ -8,6 +8,8 @@
     "src/shop-profile.html",
     "src/shop-shop-create.html",
     "src/shop-base.html",
+    "src/shop-base.html",
+    "src/shop-cart.html",
     "src/lazy-resources.html"
   ],
   "sourceGlobs": [

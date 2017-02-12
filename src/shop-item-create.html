@@ -255,6 +255,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <paper-input label="Address  場所" value="{{value}}">
         </paper-input>
 
+        <template is="dom-bind">
+        <google-map-search map="[[map]]" query="Pizza" results="{{results}}">
+        </google-map-search>
+
+        <google-map map="{{map}}" latitude="37.779"
+                    longitude="-122.3892">
+          <template is="dom-repeat" items="{{results}}" as="marker">
+            <google-map-marker latitude="{{marker.latitude}}"
+                               longitude="{{marker.longitude}}">
+              <h2>{{marker.name}}</h2>
+              <span>{{marker.formatted_address}}</span>
+            </google-map-marker>
+          </template>
+        </google-map>
+      </template>
+
         <paper-textarea label="Item  皿" value="{{itemName}}">
         </paper-textarea>
 

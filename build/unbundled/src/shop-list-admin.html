@@ -1,0 +1,83 @@
+<html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+
+</head><body><dom-module id="shop-list-admin">
+
+  <template>
+
+    <style>
+
+      :host {
+        @apply(--layout-vertical);
+        @apply(--layout-center-justified);
+        text-align: center;
+        margin: 0 52px;
+      }
+      #img {
+        width: 250px;
+
+      }
+      iron-image {
+          width:100%; height:250px; background-color: lightgray;
+          margin: 32px 0 16px;
+          overflow: hidden;
+      }
+        iron-image::content img {
+          width: 100%;
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+      }
+
+      .title {
+        color: var(--app-primary-color);
+        font-weight: bold;
+      }
+
+      .price {
+        color: var(--app-secondary-color);
+      }
+
+      @media (max-width: 767px) {
+        :host {
+          margin: 0 12px;
+        }
+        #img {
+          width: auto;
+        }
+        iron-image {
+            width:100%; height:250px; background-color: lightgray;
+            margin: 0px 0 0px;
+        }
+          iron-image::content img {
+            width: 100%;
+        }
+      }
+
+      css-small {
+        font-size: 10px;
+        color: var(--app-secondary-color);
+      }
+
+    </style>
+
+    <div id="img">
+        <iron-image sizing="cover" preload="" fade="" src="[[item.url]]"></iron-image>
+    </div>
+
+    [[item.shopsTags]]
+    <div class="title">[[item.itemName]]</div>    
+    [[item.itemPrice]]
+
+  </template>
+
+  <script>Polymer({is:"shop-list-admin",properties:{item:Object},_formatPrice:function(e){return e?"$"+e.toFixed(2):""}});</script>
+
+</dom-module>
+</body></html>
