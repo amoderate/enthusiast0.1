@@ -3,6 +3,8 @@
 <link rel="import" href="../bower_components/app-layout/app-scroll-effects/effects/waterfall.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../bower_components/app-layout/helpers/helpers.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
@@ -17,8 +19,10 @@
 <link rel="import" href="../bower_components/iron-icons/maps-icons.html">
 <link rel="import" href="../bower_components/iron-icons/social-icons.html">
 <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
-
-
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
 
 <link rel="import" href="shop-category-data.html">
 
@@ -56,6 +60,13 @@
           bottom: -10px;
         };
       }
+
+      paper-button {
+        width: 10px;
+        padding: 0px 0px 0px 0px;
+      }
+
+
 
       paper-icon-button {
         color: var(--app-primary-color);
@@ -206,7 +217,7 @@
         pointer-events: none;
         @apply(--layout-vertical);
         @apply(--layout-center-center);
-      }            
+      }
 
     </style>
 
@@ -215,11 +226,8 @@
     <firebase-app api-key="AIzaSyBYmC4Xe-kENDLjRKLSXDPkK2t8p6AOdI8" auth-domain="obsessed-tokyo.firebaseapp.com" database-url="https://obsessed-tokyo.firebaseio.com" storage-bucket="obsessed-tokyo.appspot.com">
     </firebase-app>
 
-
     <firebase-auth id="auth" user="{{user}}" provider="google" on-error="showError">
     </firebase-auth>
-
-
 
     <firebase-document id="documentProfile" path="/users/[[user.uid]]" data="{{userProfileData}}">
     </firebase-document>
@@ -230,7 +238,7 @@
 
 
     
-    <shop-cart-data id="cart" cart="{{cart}}" num-items="{{numItems}}" total="{{total}}">          
+    <shop-cart-data id="cart" cart="{{cart}}" num-items="{{numItems}}" total="{{total}}">
     </shop-cart-data>
 
 
@@ -241,14 +249,15 @@
     <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
       <app-toolbar>
         <div class="left-bar-item">
-          <div>
-          <paper-button hidden$="[[user]]" on-tap="signInWithGoogle"><iron-icon icon="icons:lock-open"></iron-icon></paper-button>
-          <paper-button toggles="" hidden$="[[!user]]" on-tap="signOut"><iron-icon icon="icons:lock-outline"></iron-icon></paper-button>
-          </div>
+          <div hidden$="[[user]]">
+          <paper-icon-button icon="icons:lock-open" on-tap="signInWithGoogle"></paper-icon-button>
+        </div>
+        <div hidden$="[[!user]]">
+          <paper-icon-button icon="icons:lock-outline" on-tap="signOut"></paper-icon-button>
+        </div>
 
         </div>
         <div class="logo" main-title=""><a href="/" aria-label="SHOP Home">[[pageTittle]]</a></div>
-
 
         <div>
           <a href="/item-create" tabindex="-1">
@@ -263,12 +272,7 @@
         </div>
         
 
-        <div class="cart-btn-container">
-          <a href="/cart" tabindex="-1">
-            <paper-icon-button icon="shopping-cart" aria-label$="Shopping cart: [[_computePluralizedQuantity(numItems)]]"></paper-icon-button>
-          </a>
-          <div class="cart-badge" aria-hidden="true" hidden$="[[!numItems]]">[[numItems]]</div>
-        </div>        
+        
 
       </app-toolbar>
 
@@ -292,13 +296,15 @@
       <shop-admin name="admin" route="[[subroute]]"></shop-admin>
       <shop-base name="base" route="[[subroute]]"></shop-base>
       <shop-admin-item-create name="admin-item-create" route="[[subroute]]"></shop-admin-item-create>
+
       <shop-detailofficialmenu name="detailofficialmenu" route="[[subroute]]" offline="[[offline]]"></shop-detailofficialmenu>
       
       <shop-cart name="cart" cart="[[cart]]" total="[[total]]"></shop-cart>
       
-      <shop-checkout name="checkout" cart="[[cart]]" total="[[total]]" route="{{subroute}}"></shop-checkout>      
+      <shop-checkout name="checkout" cart="[[cart]]" total="[[total]]" route="{{subroute}}"></shop-checkout>
 
     </iron-pages>
+
 
 
     

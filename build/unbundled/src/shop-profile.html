@@ -3,6 +3,8 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-icons/maps-icons.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/google-map/google-map-directions.html">
 
 <link rel="import" href="shop-category-data.html">
 <link rel="import" href="shop-common-styles.html">
@@ -63,6 +65,49 @@
         text-decoration: none;
       }
 
+      google-map {
+        height: 600px;
+      }
+
+      #content {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        margin: 0 10px 32px 10px;
+
+      }
+
+      .tab-layout {
+        @apply(--layout-block);
+        @apply(--layout-self-center);
+
+        width: 75%;
+        max-width: 700px;
+        transition: opacity 0.4s;
+        opacity: 1;
+      }
+
+
+      paper-tabs {
+        @apply(--layout-block);
+        @apply(--layout-self-center);
+        --paper-tab-ink: #E57373;
+        font-family: 'Roboto', 'Noto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        width: 45%;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+
+      paper-tab.iron-selected {
+        color: #E57373;
+
+      }
+
+      paper-tab {
+      --paper-tab-ink: #E57373;
+      }
+
+
       @media (max-width: 767px) {
         .hero-image {
           display: none;
@@ -83,6 +128,15 @@
           @apply(--layout-center);
           padding-left: 7px;
         }
+
+        paper-tabs {
+          @apply(--layout-center);
+          font-family: 'Roboto', 'Noto', sans-serif;
+          -webkit-font-smoothing: antialiased;
+          width: 85%;
+          text-transform: uppercase;
+          margin-bottom: 1px;
+        }
       }
 
     </style>
@@ -101,17 +155,61 @@
     <firebase-query path="/items" data="{{itemList}}" order-by-child="/user" equal-to="[[user.uid]]">
     </firebase-query>
 
-    <ul class="grid" hidden$="[[failure]]">
-      <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
-        <li>
-          <a href$="[[_getItemHref(item)]]"><shop-list-profile item="[[item]]"></shop-list-profile></a>
-          <div class="actions"> <paper-button toggles="" hidden$="[[!user]]" on-tap="deleteItem">Delete Item </paper-button> </div>
-        </li>
-      </template>
-    </ul>
+
+    <firebase-query path="/users/[[user.uid]]/favorite" order-by-child="/itemid" data="{{favoriteList}}">
+    </firebase-query>
+
+
+    <firebase-query id="geo" path="/geo/[[category.title]]" data="{{geo}}" limit-to-first="30">
+    </firebase-query>
+
+    <header>
+        <div id="content">
+          <paper-tabs selected="{{selected}}" no-bar="">
+              <paper-tab>My Uploads</paper-tab>
+              <paper-tab>My Favorites</paper-tab>
+              <paper-tab>Maps</paper-tab>
+          </paper-tabs>
+      </div>
+    </header>
+
+    <iron-pages selected="{{selected}}">
+      <div>
+          <div class="layout horizontal center-justified">
+            <ul class="grid" hidden$="[[failure]]">
+              <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
+                <li>
+                  <a href$="[[_getItemHref(item)]]"><shop-list-profile item="[[item]]"></shop-list-profile></a>
+                  <div class="actions"> <paper-button toggles="" hidden$="[[!user]]" on-tap="deleteItem">Delete Item</paper-button> </div>
+                </li>
+              </template>
+            </ul>
+          </div>
+      </div>
+      <div>
+          <div class="layout horizontal center-justified">
+            <ul class="grid" hidden$="[[failure]]">
+              <template is="dom-repeat" items="{{favoriteList}}" as="item" hidden$="[[failure]]">
+                <li>
+                  <a href$="[[_getItemHref(item)]]"><shop-list-profile item="[[item]]"></shop-list-profile></a>
+                  <div class="actions"> <paper-button toggles="" hidden$="[[!user]]" on-tap="unFavorite">remove from favorites</paper-button> </div>
+                </li>
+              </template>
+            </ul>
+          </div>
+      </div>
+      <div>
+        <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers="" style="transit-layer">
+          <template is="dom-repeat" items="{{geo}}" as="geo" hidden$="[[failure]]">
+            <google-map-marker map="[[map]]" latitude="{{geo.lat}}" longitude="{{geo.lng}}" draggable="false"></google-map-marker>
+          </template>
+        </google-map>
+      </div>
+    </iron-pages>
+
   </template>
 
-  <script>Polymer({is:"shop-profile",properties:{category:Object,route:Object,routeData:Object,visible:Boolean,offline:{type:Boolean,observer:"_offlineChanged"},failure:Boolean},_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(e){return console.log(e),e.shopName?["/detail",e.shopNameUnique,e.itemName,e.itemid].join("/"):null},deleteItem:function(e){var t=e.model.item;console.log(t),firebase.database().ref().child("items/"+t.itemid).remove()},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_tryReconnect:function(){this.$.categoryData.refresh()},_offlineChanged:function(e){e||this._tryReconnect()}});</script>
+  <script>Polymer({is:"shop-profile",properties:{category:Object,route:Object,routeData:Object,visible:Boolean,offline:{type:Boolean,observer:"_offlineChanged"},failure:Boolean},_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(e){return console.log(e),e.shopName?["/detail",e.shopNameUnique,e.itemName,e.itemid].join("/"):null},deleteItem:function(e){var t=e.model.item;console.log(t),firebase.database().ref().child("items/"+t.itemid).remove()},unFavorite:function(e){var t=e.model.item;console.log("/items/"+t.itemid+"/userFavorites/"+this.user.uid),firebase.database().ref().child("/items/"+t.itemid+"/userFavorites/"+this.user.uid).remove(),firebase.database().ref().child("/users/"+this.user.uid+"/favorite/"+t.itemid).remove()},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_tryReconnect:function(){this.$.categoryData.refresh()},_offlineChanged:function(e){e||this._tryReconnect()}});</script>
 
 </dom-module>
 </body></html>

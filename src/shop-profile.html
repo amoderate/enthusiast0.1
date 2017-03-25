@@ -13,6 +13,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../bower_components/iron-icons/maps-icons.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/google-map/google-map-directions.html">
 
 <link rel="import" href="shop-category-data.html">
 <link rel="import" href="shop-common-styles.html">
@@ -73,6 +75,49 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         text-decoration: none;
       }
 
+      google-map {
+        height: 600px;
+      }
+
+      #content {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        margin: 0 10px 32px 10px;
+
+      }
+
+      .tab-layout {
+        @apply(--layout-block);
+        @apply(--layout-self-center);
+
+        width: 75%;
+        max-width: 700px;
+        transition: opacity 0.4s;
+        opacity: 1;
+      }
+
+
+      paper-tabs {
+        @apply(--layout-block);
+        @apply(--layout-self-center);
+        --paper-tab-ink: #E57373;
+        font-family: 'Roboto', 'Noto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        width: 45%;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+
+      paper-tab.iron-selected {
+        color: #E57373;
+
+      }
+
+      paper-tab {
+      --paper-tab-ink: #E57373;
+      }
+
+
       @media (max-width: 767px) {
         .hero-image {
           display: none;
@@ -92,6 +137,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           text-align: center;
           @apply(--layout-center);
           padding-left: 7px;
+        }
+
+        paper-tabs {
+          @apply(--layout-center);
+          font-family: 'Roboto', 'Noto', sans-serif;
+          -webkit-font-smoothing: antialiased;
+          width: 85%;
+          text-transform: uppercase;
+          margin-bottom: 1px;
         }
       }
 
@@ -117,7 +171,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       shop-category-data provides the category data for a given category name.
     -->
     <shop-category-data
-
         category-name="[[routeData.category]]"
         category="{{category}}"
         failure="{{failure}}">
@@ -131,14 +184,67 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       >
     </firebase-query>
 
-    <ul class="grid" hidden$="[[failure]]">
-      <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
-        <li>
-          <a href$="[[_getItemHref(item)]]"><shop-list-profile item="[[item]]"></shop-list-profile></a>
-          <div class = "actions"> <paper-button toggles  hidden$="[[!user]]" on-tap="deleteItem">Delete Item </iron-icon></paper-button> </div>
-        </li>
-      </template>
-    </ul>
+
+    <firebase-query
+      path="/users/[[user.uid]]/favorite"
+      order-by-child="/itemid"
+      data="{{favoriteList}}"
+      order-by-child="/itemid"
+    >
+    </firebase-query>
+
+
+    <firebase-query id="geo"
+      path="/geo/[[category.title]]"
+      data="{{geo}}"
+      limit-to-first=30
+    >
+    </firebase-query>
+
+    <header>
+        <div id="content">
+          <paper-tabs selected="{{selected}}" no-bar>
+              <paper-tab>My Uploads</paper-tab>
+              <paper-tab>My Favorites</paper-tab>
+              <paper-tab>Maps</paper-tab>
+          </paper-tabs>
+      </div>
+    </header>
+
+    <iron-pages selected="{{selected}}">
+      <div>
+          <div class="layout horizontal center-justified">
+            <ul class="grid" hidden$="[[failure]]">
+              <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
+                <li>
+                  <a href$="[[_getItemHref(item)]]"><shop-list-profile item="[[item]]"></shop-list-profile></a>
+                  <div class = "actions"> <paper-button toggles  hidden$="[[!user]]" on-tap="deleteItem">Delete Item</paper-button> </div>
+                </li>
+              </template>
+            </ul>
+          </div>
+      </div>
+      <div>
+          <div class="layout horizontal center-justified">
+            <ul class="grid" hidden$="[[failure]]">
+              <template is="dom-repeat" items="{{favoriteList}}" as="item" hidden$="[[failure]]">
+                <li>
+                  <a href$="[[_getItemHref(item)]]"><shop-list-profile item="[[item]]"></shop-list-profile></a>
+                  <div class = "actions"> <paper-button toggles  hidden$="[[!user]]" on-tap="unFavorite">remove from favorites</paper-button> </div>
+                </li>
+              </template>
+            </ul>
+          </div>
+      </div>
+      <div>
+        <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers style="transit-layer">
+          <template is="dom-repeat" items="{{geo}}" as="geo" hidden$="[[failure]]">
+            <google-map-marker  map="[[map]]" latitude="{{geo.lat}}" longitude="{{geo.lng}}"  draggable="false"></google-map-marker>
+          </template>
+        </google-map>
+      </div>
+    </iron-pages>
+
   </template>
 
   <script>
@@ -182,6 +288,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var item = event.model.item
         console.log(item)
         firebase.database().ref().child('items/' + item.itemid).remove();
+      },
+
+      unFavorite: function(event) {
+
+        var item = event.model.item
+        console.log('/items/' + item.itemid + '/userFavorites/' + this.user.uid);
+
+        firebase.database().ref().child('/items/' + item.itemid + '/userFavorites/' + this.user.uid).remove();
+
+
+        firebase.database().ref().child('/users/' + this.user.uid + '/favorite/' + item.itemid).remove();
       },
 
       _getPluralizedQuantity: function(quantity) {

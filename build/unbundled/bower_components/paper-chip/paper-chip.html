@@ -1,239 +1,36 @@
 <html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-behaviors/iron-button-state.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../iron-icons/iron-icons.html">
-<link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-material/paper-material.html">
-<link rel="import" href="../paper-styles/paper-styles.html">
-
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../paper-styles/typography.html">
 
 
 </head><body><dom-module id="paper-chip">
-  <template>
-    <style>
-      :host {
-        display: inline-block;
-        vertical-align: top;
-        position: relative;
-        outline: none;
-        font-size: 14px;
-        cursor: default;
-        margin: 8px 0;
-        height: 32px;
-        overflow: visible;
-        @apply(--paper-chip);
-      }
-      :host([animated]) *,
-      :host([animated]) ::slotted(*) {
-        transition: 200ms ease-in;
-      }
-      #main, #chip {
-        border-radius: 16px;
-      }
-      #main {
-        background-color: var(--paper-chip-background-color, --paper-grey-200);
-        position: relative;
-        color: var(--paper-chip-secondary-text-color, --secondary-text-color);
-        @apply(--layout-vertical);
-      }
-      #chip {
-        box-sizing: border-box;
-        height: 32px;
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
-      }
-      paper-material {
-        border-radius: 16px;
-      }
-      #icon {
-        @apply(--layout-horizontal);
-        @apply(--layout-center);
-        @apply(--layout-center-justified);
-      }
-      #icon ::slotted([slot=icon]) {
-        margin-right: -4px;
-        width: 32px;
-        height: 32px;
-        line-height: 32px;
-        border-radius: 100%;
-        overflow: hidden;
-        text-align: center;
-        vertical-align: middle;
-        font-size: 16px;
-        font-weight: bold;
-        background-color: var(--paper-chip-icon-background-color, --paper-grey-500);
-        color: var(--paper-chip-icon-text-color, --text-primary-color);
-        @apply(--layout-flex);
-      }
-      #icon ::slotted(iron-icon.icon),
-      #icon ::slotted(iron-icon.icon svg) { /* FIXME: only top-level selectors allowed */
-        width: 32px;
-        height: 32px;
-      }
-      #icon ::slotted(iron-icon.icon) {
-        vertical-align: bottom;
-      }
-      #label {
-        padding: 0 4px 0 12px;
-        @apply(--layout-flex-auto);
-        @apply(--layout-self-center);
-      }
-      :host([single-line]:not([removable])) #label {
-        padding-right: 12px;
-      }
-      #label ::slotted([slot=label]),
-      #label ::slotted([slot=caption]) {
-        display: block;
-        white-space: nowrap;
-        margin: 0;
-        font-weight: normal;
-        font-size: 14px;
-      }
-      #label ::slotted([slot=label]) {
-        @apply(--paper-chip-label);
-      }
-      #label ::slotted([slot=caption]) {
-        @apply(--paper-chip-caption);
-      }
-      .icon-btn-wrapper {
-        @apply(--layout-self-center);
-      }
-      #removeBtn {
-        position: relative;
-        margin: 0 8px 0 4px;
-        padding: 2px;
-        width: 12px;
-        height: 12px;
-        border-radius: 100%;
-        background-color: var(--paper-chip-removebtn-background-color, --paper-grey-400);
-        color: var(--paper-chip-removebtn-icon-color, --text-primary-color);
-        cursor: pointer;
-        @apply(--paper-chip-removebtn);
-      }
-      #removeBtn iron-icon {
-        width: 12px;
-        height: 12px;
-        display: block;
-        @apply(--paper-chip-removebtn-icon);
-      }
-      :host(:not([removable])) #removeBtn {
-        display: none;
-      }
-      /* pressed state */
-      :host([pressed]) #main {
-        background-color: var(--paper-chip-pressed-background-color, --paper-grey-300);
-      }
 
-      /* initially hidden elements */
-      :host(:not([opened])) #label ::slotted([slot=caption]) {
-        color: var(--paper-chip-secondary-text-color, --secondary-text-color);
-        font-size: 0;
-        height: 0;
-      }
-      :host(:not([persist-remove-button]):not([single-line]):not([opened])) #removeBtn,
-      :host(:not([persist-remove-button]):not([single-line]):not([opened])) #removeBtn .icon {
-        width: 0;
-        height: 0;
-        margin: 0;
-        padding: 0;
-      }
-      :host(:not([persist-remove-button]):not([single-line]):not([opened])) #label {
-        padding-right: 12px;
-      }
-      :host(:not([opened])) #content {
-        width: 0;
-        height: 0;
-        min-width: 100%;
-        overflow: hidden;
-      }
-      :host(:not([opened])) #label ::slotted([slot=label]) {
-        color: var(--paper-chip-secondary-text-color, --secondary-text-color);
-      }
+	<template>
 
-      /* opened state */
-      :host([opened]) #main, :host([opened]) #chip {
-        border-radius: 0;
-      }
-      :host([opened]) #content {
-        height: auto;
-        width: auto;
-        min-width: 100%;
-        overflow: hidden;
-        @apply(--paper-chip-content);
-      }
-      :host([opened]) #chip {
-        height: 72px;
-      }
-      :host([opened]) #chip,
-      :host([opened]) #content ::slotted(*) {
-        padding: 16px 12px;
-        background-color: var(--paper-chip-opened-background-color, --paper-grey-50);
-      }
-      :host([opened]) #label ::slotted([slot=label]) {
-        color: var(--paper-chip-primary-text-color, --primary-text-color);
-        font-size: 16px;
-        @apply(--paper-chip-label-opened);
-      }
-      :host([opened]) paper-material {
-        border-radius: 0;
-      }
-      :host([opened]) #icon ::slotted([slot=icon]),
-      :host([opened]) #icon ::slotted(iron-icon.icon svg) { /* FIXME: only top-level selectors allowed)
-        font-size: 20px;
-        width: 40px;
-        height: 40px;
-        line-height: 40px;
-      }
-      :host([opened]) #removeBtn {
-        padding: 4px;
-        margin-left: 20px;
-        width: 16px;
-        height: 16px;
-      }
-      :host([opened]) #removeBtn iron-icon {
-        width: 16px;
-        height: 16px;
-      }
+		<style>
+			:host {
+				display: inline-block;
+				background-color: var(--paper-chip-background, --paper-grey-300);
+				height: 32px;
+				line-height: 32px!important;
+				padding: 0 12px;
+				border-radius: 16px;
+				color: var(--paper-chip-color, --primary-text-color);
+				font-size: 13px!important;
+				@apply(--paper-font-body1);
+			}
 
-      /* open + active state */
-      :host([opened][active]) #chip,
-      :host([opened][active]) ::slotted {
-        background-color: var(--paper-chip-active-color, --accent-color);
-				color: var(--paper-chip-active-text-color, --text-primary-color);
-      }
-      :host([opened][active]) #removeBtn {
-        color: var(--paper-chip-active-color, --accent-color);
-        background-color: var(--paper-chip-active-text-color, --text-primary-color);
-      }
-      :host([opened][active]) #chip #label ::slotted([slot=label]) {
-        color: var(--paper-chip-active-text-color, --text-primary-color);
-      }
-      :host([opened][active]) #chip #label ::slotted(h2) {
-        color: var(--paper-chip-active-secondary-text-color, --text-primary-color);
-      }
-    </style>
-    <paper-material id="shadow" elevation="{{_elevation}}" animated$="{{animated}}">
-      <div id="main">
-        <div id="chip">
-          <div id="icon">
-            <slot name="icon"></slot>
-          </div>
-          <div id="label">
-            <slot name="label"></slot>
-            <slot name="caption"></slot>
-          </div>
-          <div id="removeBtn" on-tap="remove" aria-label="remove button">
-            <iron-icon icon="close" class="icon"></iron-icon>
-          </div>
-        </div>
-        <div id="content">
-          <slot></slot>
-        </div>
-      </div>
-    </paper-material>
-  </template>
+			:host[selectable]:hover {
+				color: var(--paper-chip-color-selectable, white!important);
+				background-color: var(--paper-chip-background-selectable, --paper-grey-600);
+			}
+		</style>
 
-  <script>Polymer({is:"paper-chip",behaviors:[Polymer.IronButtonState,Polymer.IronControlState],properties:{removable:{type:Boolean,value:!1,reflectToAttribute:!0},singleLine:{type:Boolean,value:!1,reflectToAttribute:!0,observer:"_singleLineChanged"},persistRemoveButton:{type:Boolean,value:!1,reflectToAttribute:!0,observer:"_singleLineChanged"},animated:{type:Boolean,value:!1,reflectToAttribute:!0},opened:{type:Boolean,value:!1,reflectToAttribute:!0,notify:!0,observer:"_openedChanged"},active:{type:Boolean,value:!1,notify:!0,reflectToAttribute:!0},_elevation:{type:Number,computed:"_computeElevation(opened, focused, disabled, active, pressed)"},_keyTarget:{type:Object,value:function(){return this}}},listeners:{tap:"_onTap",blur:"_onBlur"},hostAttributes:{tabindex:"0"},ready:function(){this.$.removeBtn&&this.$.removeBtn.removeAttribute("tabindex")},_computeElevation:function(e,t,o){return t||o?1:e?4:0},_onTap:function(){this.toggleOpened()},_onBlur:function(){this.opened=!1},remove:function(e){e.stopPropagation();var t=this.fire("remove",{},{bubbles:!1,cancelable:!0});t.defaultPrevented||this.parentNode.removeChild(this)},toggleOpened:function(){this.singleLine||(this.opened=!this.opened)},_singleLineChanged:function(e){e&&this.opened&&(this.opened=!1)},_openedChanged:function(e){if(e&&this.singleLine)return void(this.opened=!1);if(this.animated){var t,o,n;t=this.$.content,o=n="",this.opened&&(this.animated=!1,this.opened=!0,o=t.offsetWidth+"px",n=t.offsetHeight+"px",this.opened=!1,this._forceReflow(),this.opened=!0,this.animated=!0),t.style.width=o,t.style.height=n}},_forceReflow:function(){return this.offsetHeight}});</script>
+		<content></content>
+
+	</template>
 
 </dom-module>
+
+<script>!function(){Polymer({is:"paper-chip",properties:{selectable:{type:Boolean,value:!1}}})}();</script>
 </body></html>
