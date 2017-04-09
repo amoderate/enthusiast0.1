@@ -401,20 +401,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
-      _shared: function(items) {
-        if (!items) {
-          // set filter to null to disable filtering
-          return null;
-
-        } else {
+      _shared: function(item) {
           currentUser = firebase.auth().currentUser;
-          return function(userFavorites) {
-            var usersWhoHaveFavorited = userFavorites.userId;
-            return (usersWhoHaveFavorited.indexOf(currentUser) != -1);
-          };
-        }
+          console.log(currentUser.uid)
+          console.log(item)
+          console.log(item[currentUser.uid])
+          return currentUser.uid in item;
 
-      }
+        }
 
     });
 
