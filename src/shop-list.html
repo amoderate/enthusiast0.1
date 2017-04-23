@@ -64,6 +64,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         -webkit-flex-basis: 33%;
         flex-basis: 33%;
         max-width: 33%;
+        padding: 3px;
       }
 
       .grid a {
@@ -117,6 +118,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       }
 
+      paper-button {
+        margin-top: 3px;
+      }
+
       paper-tab {
       --paper-tab-ink: #E57373;
       }
@@ -124,7 +129,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       #repostButton {
         font-weight: bold;
         @apply(--layout-horizontal);
-        @apply(--layout-center-justified);;
+        @apply(--layout-center-justified);
       }
 
 
@@ -138,20 +143,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         }
 
-
-        .grid li {
-          -webkit-flex: 1 1;
-          flex: 1 1;
-          -webkit-flex-basis: 33%;
-          flex-basis: 33%;
-          max-width: 33%;
-        }
-
-
         .grid  li {
           -webkit-flex-basis: 100%;
           flex-basis: 100%;
           max-width: 100%;
+
+
         }
 
         .logo {
@@ -224,7 +221,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         src="[[category.image]]"
         placeholder-img="[[category.placeholder]]" class="hero-image"></shop-image>
 
-
     <header>
       <h1>[[category.title]]</h1>
       <span>[[_getPluralizedQuantity(itemList.length)]]</span>
@@ -261,7 +257,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div>
         <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers style="transit-layer">
           <template is="dom-repeat" items="{{geo}}" as="geo" hidden$="[[failure]]">
-            <google-map-marker  map="[[map]]" latitude="{{geo.lat}}" longitude="{{geo.lng}}"  draggable="false"></google-map-marker>
+            <div>
+              <google-map-marker  map="[[map]]" latitude="{{geo.lat}}" longitude="{{geo.lng}}"  draggable="false"></google-map-marker>
+            </div>
           </template>
         </google-map>
       </div>
@@ -402,12 +400,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _shared: function(item) {
+        if (item) {
           currentUser = firebase.auth().currentUser;
-          console.log(currentUser.uid)
-          console.log(item)
-          console.log(item[currentUser.uid])
           return currentUser.uid in item;
-
+          }
         }
 
     });

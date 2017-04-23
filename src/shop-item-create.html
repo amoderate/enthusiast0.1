@@ -358,8 +358,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <google-maps-api id="maps" api-key="AIzaSyDp_5oAA4F35biRBtx0nyWAfSSv61OjKnM" libraries="places" on-api-load="on_api_load"></google-maps-api>
 
-
-
         <paper-input id="input" placeholder="" label="Shop Name ショップ名" class="input" type="text" value="{{shopName}}">
         </paper-input>
 
@@ -389,22 +387,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </paper-tab>
           </template>
         </paper-tabs>
-
       </div>
     </div>
-
 
   <div id="content" hidden$="[[failure]]">
     <div class="detail">
       <div>
         <paper-material elevation="0">
-          <marked-element markdown="{{entry}}">
+          <marked-element markdown="{{blog}}">
             <div class="markdown-html"></div>
           </marked-element>
         </paper-material>
       </div>
       <div>
-        <paper-textarea label="Write something" value="{{entry::input}}">
+        <paper-textarea label="Write something" value="{{blog::input}}">
         </paper-textarea>
       </div>
     </div>
@@ -546,6 +542,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         shoptypes:{
           type: String,
+          notify: true
+        },
+
+        blog: {
+          type: String,
+          value: '',
           notify: true
         },
 
@@ -729,9 +731,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          var newTagKey = firebase.database().ref().child('imageDraft/').push().key;
          var newItemKey = firebase.database().ref().child('items').push().key;
 
-
          var user = firebase.auth().currentUser;
          var shopNames = this.shopName;
+         var blogs = this.blog;
          var shopNameUniques = this.shopNameUnique;
          var shopAddress = this.value;
          var shopPhones = this.phone;
@@ -800,6 +802,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                  itemLng: shopLngs,
                  itemLat: shopLats,
                  theme: themes,
+                 blog: blogs,
                  shopsTags: shopsTagss,
                  itemid: newItemKey
                 };
@@ -848,6 +851,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                  itemLng: shopLngs,
                  itemLat: shopLats,
                  theme: themes,
+                 blog: blogs,
                  shopsTags: shopsTagss,
                  itemid: newItemKey
                 };
@@ -865,6 +869,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
            this.shopName = '';
            this.theme = '';
            this.shopTags = '';
+           this.blog = '';
            this.shopNameUnique = '9999';
        }
 

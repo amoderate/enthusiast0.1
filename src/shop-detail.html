@@ -16,6 +16,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="shop-image.html">
 <link rel="import" href="shop-select.html">
 <link rel="import" href="shop-list-item-detail.html">
+<link rel="import" href="shop-list-detail-image.html">
+<link rel="import" href="../bower_components/marked-element/marked-element.html">
 
 
 
@@ -25,127 +27,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <style include="shop-common-styles shop-button shop-select">
 
-      :host {
-        display: block;
-      }
+    a {
+      text-decoration: none;
+      color: var(--app-primary-color);
+    }
 
-      #content {
+      shop-button {
         @apply(--layout-horizontal);
         @apply(--layout-center-justified);
-      }
-      a {
-        text-decoration: none;
-        color: var(--app-primary-color);
+
       }
 
-      shop-image {
-        position: relative;
-        margin: 64px 32px;
-        width: 50%;
-        max-width: 600px;
-        --shop-image-img: {
-          @apply(--layout-fit);
-        };
+      #blog {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+
       }
 
-      shop-image::before {
-        content: "";
-        display: block;
-        padding-top: 100%;
-      }
-
-      .detail {
-        margin: 64px 32px;
-        width: 50%;
-        max-width: 400px;
-        transition: opacity 0.4s;
-        opacity: 0;
-      }
-
-      .detail[has-content] {
-        opacity: 1;
-      }
-
-      h1 {
-        font-size: 24px;
-        font-weight: 500;
-        line-height: 28px;
-        margin: 0;
-      }
-
-      .price {
-        margin: 16px 0 40px;
-        font-size: 16px;
-        color: var(--app-secondary-color);
-      }
-
-      .description {
-        margin: 32px 0;
-      }
-
-      .description > h2 {
-        margin: 16px 0;
-        font-size: 13px;
-      }
-
-      .description > p {
-        margin: 0;
-        color: var(--app-secondary-color);
-      }
-
-      .pickers {
-        @apply(--layout-vertical);
-        border-top: 1px solid #ccc;
-      }
-
-      shop-select > select {
-        font-size: 16px;
-        padding: 16px 24px 16px 70px;
-      }
-
-      iron-collapse {
-       box-shadow: 6px;
-      }
-
-      paper-button {
-       width: 100%;
-       text-transform: none;
-      }
 
       @media (max-width: 767px) {
-
-        #content {
-          @apply(--layout-vertical);
-          @apply(--layout-center);
-        }
-
-        shop-image {
-          margin: 0;
-          width: 80%;
-        }
-
-        .detail {
-          box-sizing: border-box;
-          margin: 32px 0;
-          padding: 0 24px;
-          width: 100%;
-          max-width: 600px;
-        }
-
-        h1 {
-          font-size: 20px;
-          line-height: 24px;
-        }
-
-        .price {
-          font-size: inherit;
-          margin: 12px 0 32px;
-        }
-
-      css-small {
-        font-size: 10px;
-        color: var(--app-secondary-color);
-      }
 
       }
 
@@ -154,6 +54,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <!--
       app-route provides the name of the category and the item.
     -->
+
     <app-route
         route="[[route]]"
         pattern="/:shop/:item/:itemid"
@@ -173,15 +74,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       >
     </firebase-query>
 
-
     <div id="content">
       <template is="dom-repeat" items="{{items}}" as="item" >
-      <shop-image alt="[[item.shopName]]" src="[[item.url]]"></shop-image>
-      <div class="detail" has-content$="[[_isDefined(item)]]">
-        <div class="description">
-          <h2>Description</h2>
-            <h1>[[item.itemName]] by [[item.shopName]]</h1>
-        </div>
+        <shop-list-detail-image item="[[item]]" > </shop-list-detail-image >
+
+          <div id = "blog">
+            <paper-material elevation="0">
+              <marked-element markdown="{{item.blog}}">
+                <div class="markdown-html"></div>
+              </marked-element>
+            </paper-material>
+          </div>
+
         <shop-button>
           <button on-tap="_goToShopPage" aria-label="Visit Shop">
             <a href$="[[_getItemHref(item)]]">Visit [[item.shopName]]</a>
@@ -245,8 +149,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         //console.log(['/base', item.shopName].join('/'))
         return item.shopName ? ['/base', item.shopNameUnique].join('/') : null;
       },
-
-
 
       _isDefined: function(item) {
         return item != null;

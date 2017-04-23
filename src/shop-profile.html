@@ -19,7 +19,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="shop-category-data.html">
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-image.html">
-<link rel="import" href="shop-list-profile.html">
+<link rel="import" href="shop-list-menu.html">
 
 
 <dom-module id="shop-profile">
@@ -61,6 +61,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         padding: 0;
         list-style: none;
       }
+
 
       .grid li {
         -webkit-flex: 1 1;
@@ -122,8 +123,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         .hero-image {
           display: none;
         }
+
+
         .grid{
           @apply(--layout-vertical);
+          margin: 0 0px 32px 0px;
 
         }
 
@@ -132,6 +136,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           flex-basis: 100%;
           max-width: 100%;
         }
+
 
         .logo {
           text-align: center;
@@ -217,8 +222,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <ul class="grid" hidden$="[[failure]]">
               <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
                 <li>
-                  <a href$="[[_getItemHref(item)]]"><shop-list-profile item="[[item]]"></shop-list-profile></a>
-                  <div class = "actions"> <paper-button toggles  hidden$="[[!user]]" on-tap="deleteItem">Delete Item</paper-button> </div>
+                    <div>
+                      <a href$="[[_getItemHref(item)]]"><shop-list-menu item="[[item]]"></shop-list-menu></a>
+                      <div class = "actions"> <paper-button toggles  hidden$="[[!user]]" on-tap="deleteItem">Delete Item</paper-button> </div>
+                  </div>
                 </li>
               </template>
             </ul>
@@ -229,7 +236,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <ul class="grid" hidden$="[[failure]]">
               <template is="dom-repeat" items="{{favoriteList}}" as="item" hidden$="[[failure]]">
                 <li>
-                  <a href$="[[_getItemHref(item)]]"><shop-list-profile item="[[item]]"></shop-list-profile></a>
+                  <a href$="[[_getItemHref(item)]]"><shop-list-menu item="[[item]]"></shop-list-menu></a>
                   <div class = "actions"> <paper-button toggles  hidden$="[[!user]]" on-tap="unFavorite">remove from favorites</paper-button> </div>
                 </li>
               </template>
