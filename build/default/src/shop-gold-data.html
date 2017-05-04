@@ -1,0 +1,144 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+
+</head><body><dom-module id="shop-gold-data">
+
+  <script>
+  (function() {
+    var shopList = [
+      {
+        shopName: 'ShopTestT',
+        shopTitle: 'ShopTestT',
+        image: '/images/tkyo_yko_chba.jpg',
+        placeholder: 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAXAABAQEAAAAAAAAAAAAAAAAAAAIEAQEAAAAAAAAAAAAAAAAAAAACEAAAAwYHAQAAAAAAAAAAAAAAERMBAhIyYhQhkaEDIwUVNREBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A3dkr5e8tfpwuneJITOzIcmQpit037Bw4mnCVNOpAAQv/2Q=='
+      },
+      {
+        shopName: 'Mars',
+        shopTitle: 'Mars',
+        image: '/images/mars.jpg',
+        placeholder: 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAWQABAQAAAAAAAAAAAAAAAAAAAAEBAQEAAAAAAAAAAAAAAAAAAAIDEAABAwMFAQAAAAAAAAAAAAARAAEygRIDIlITMwUVEQEBAAAAAAAAAAAAAAAAAAAAQf/aAAwDAQACEQMRAD8Avqn5meQ0kwk1UyclmLtNj7L4PQoioFf/2Q=='
+      },
+      {
+        shopName: 'Saturn',
+        shopTitle: 'Saturn',
+        image: '/images/saturn.png',
+        placeholder: 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQFBsfFxcXFxcfHhcaGhoaFx4eIyUnJSMeLy8zMy8vQEBAQEBAQEBAQEBAQEBAAREPDxETERUSEhUUERQRFBoUFhYUGiYaGhwaGiYwIx4eHh4jMCsuJycnLis1NTAwNTVAQD9AQEBAQEBAQEBAQED/wAARCAADAA4DASIAAhEBAxEB/8QAWQABAQAAAAAAAAAAAAAAAAAAAAEBAQEAAAAAAAAAAAAAAAAAAAIDEAABAwMFAQAAAAAAAAAAAAARAAEygRIDIlITMwUVEQEBAAAAAAAAAAAAAAAAAAAAQf/aAAwDAQACEQMRAD8Avqn5meQ0kwk1UyclmLtNj7L4PQoioFf/2Q=='
+      }
+    ];
+
+    Polymer({
+
+      is: 'shop-gold-data',
+
+      properties: {
+
+        shopName: String,
+
+        itemName: String,
+
+        shops: {
+          type: Array,
+          value: shopList,
+          readOnly: true,
+          notify: true
+        },
+
+        shop: {
+          type: Object,
+          computed: '_computeShop(shopName)',
+          notify: true
+        },
+
+        item: {
+          type: Object,
+          computed: '_computeItem(shop.items, itemName)',
+          notify: true
+        },
+
+        failure: {
+          type: Boolean,
+          notify: true,
+          readOnly: true
+        }
+      },
+
+      _getShopObject: function(shopName) {
+        for (var i = 0, c; c = this.shops[i]; ++i) {
+          if (c.shopName === shopName) {
+            return c;
+          }
+        }
+        return null;
+      },
+
+      _computeShop: function(shopName) {
+        // Fetch the items of the shop. Note that the fetch is asynchronous,
+        // which means `shop.items` may not be set initially (but that path
+        // will be notified when the fetch completes).
+        var shopObj = this._getShopObject(shopName);
+        this._fetchItems(shopObj, 1);
+        return shopObj;
+      },
+
+      _computeItem: function(items, itemName) {
+        for (var i = 0, item; item = items[i]; ++i) {
+          if (item.name === itemName) {
+            return item;
+          }
+        }
+      },
+
+      _fetchItems: function(shop, attempts) {
+        this._setFailure(false);
+        // Only fetch the items of a shop if it has not been previously set.
+        if (!shop || shop.items) {
+          return;
+        }
+        this._getResource({
+          url: '/data/' + shop.shopName + '.json',
+          onLoad: function(e) {
+            this.set('shop.items', JSON.parse(e.target.responseText));
+          },
+          onError: function(e) {
+            this._setFailure(true);
+          }
+        }, attempts);
+      },
+
+      _getResource: function(rq, attempts) {
+        var xhr = new XMLHttpRequest();
+        xhr.addEventListener('load', rq.onLoad.bind(this));
+        xhr.addEventListener('error', function(e) {
+          // Flaky connections might fail fetching resources
+          if (attempts > 1) {
+            this.debounce('_getResource', this._getResource.bind(this, rq, attempts - 1), 200);
+          } else {
+            rq.onError.call(this, e);
+          }
+        }.bind(this));
+
+        xhr.open('GET', rq.url);
+        xhr.send();
+      },
+
+      refresh: function() {
+        if (this.shopName) {
+          // Try at most 3 times to get the items.
+          this._fetchItems(this._getShopObject(this.shopName), 3);
+        }
+      }
+
+    });
+
+  })();
+  </script>
+
+</dom-module>
+</body></html>

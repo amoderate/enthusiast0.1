@@ -1,0 +1,914 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+
+<link rel="import" href="../bower_components/file-input/file-input.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+<link rel="import" href="../bower_components/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/marked-element/marked-element.html">
+<link rel="import" href="shop-button.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-select.html">
+
+
+</head><body><dom-module id="shop-item-create">
+
+  <template>
+
+    <style include="shop-common-styles shop-button shop-select">
+
+      :host {
+        display: block;
+        --app-primary-color: #202020;
+        --app-secondary-color: #757575;
+        --app-accent-color: #172C50;
+      }
+
+
+      #content {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+      .barbutton{
+          --iron-icon-width: 50%;
+          --iron-icon-height: 45px;
+          --iron-icon-fill-color: white;
+          --iron-icon-stroke-color: black;
+      }
+
+
+      .tab-layout {
+        @apply(--layout-block);
+        @apply(--layout-self-center);
+
+        width: 75%;
+        max-width: 700px;
+        transition: opacity 0.4s;
+        opacity: 1;
+      }
+
+      paper-toolbar {
+        @apply(--layout-fixed-bottom);
+        z-index: 1;
+        background-color: rgba(255, 255, 255, 0.95);
+      }
+      paper-button.red {
+        padding: 0px 0px 0px 60px;
+      }
+
+      paper-button.custom {
+        --paper-button-ink-color: var(--app-primary-color);
+        /* These could also be individually defined for each of the
+          specific css classes, but we'll just do it once as an example */
+        --paper-button-flat-keyboard-focus: {
+
+          color: white !important;
+        };
+        --paper-button-raised-keyboard-focus: {
+          background-color: var(--app-secondary-color) !important;
+          color: white !important;
+        };
+
+      }
+      paper-button.pink {
+        color: var(--app-primary-color);
+        padding: 0px 0px 0px 0px;
+      }
+
+      paper-tabs {
+        @apply(--layout-center);
+        font-family: 'Roboto', 'Noto', sans-serif;
+
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+
+      paper-tab.iron-selected {
+        color: var(--app-primary-color);
+      }
+
+      paper-tab {
+      --paper-tab-ink: var(--app-primary-color);
+      }
+
+      shop-image {
+        position: relative;
+        margin: 0;
+        width: 100%;
+        max-width: 600px;
+        --shop-image-img: {
+          @apply(--layout-fit);
+          top: 0;
+          bottom: 0;
+          max-width: none;
+        };
+      }
+
+      shop-image::before {
+        content: "";
+        display: block;
+        padding-top: 100%;
+      }
+
+      polymer-quill.full {
+    --polymer-quill-editor-max-height: 600px;
+    --polymer-quill-editor-min-height: 200px;
+  }
+
+      .detail {
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 400px;
+        transition: opacity 0.4s;
+        opacity: 1;
+      }
+
+      h1 {
+        font-size: 24px;
+        font-weight: 500;
+        line-height: 28px;
+        margin: 0;
+      }
+
+      .description {
+        margin: 32px 0;
+      }
+
+      .description > h2 {
+        margin: 16px 0;
+        font-size: 13px;
+      }
+
+      .description > p {
+        margin: 0;
+        color: var(--app-secondary-color);
+      }
+
+      .pickers {
+        @apply(--layout-vertical);
+        border-top: 1px solid #ccc;
+      }
+
+      shop-select > select {
+        font-size: 16px;
+        padding: 16px 24px 16px 70px;
+      }
+
+      .flex-horizontal {
+           @apply(--layout-horizontal);
+         }
+       .flexchild {
+         @apply(--layout-flex);
+       }
+
+       #toast1 {
+
+           text-align: center;
+
+     }
+
+     #toast2 {
+
+         text-align: center;
+
+   }
+
+   paper-progress {
+    --paper-progress-active-color: var(--paper-yellow-400);
+    --paper-progress-secondary-color: var(--paper-yellow-400);
+    display: block;
+    width: 100%;
+    margin: 20px 0;
+  }
+
+      @media (max-width: 767px) {
+
+        #content {
+          @apply(--layout-vertical);
+          @apply(--layout-center);
+        }
+
+        shop-image {
+          margin: 0;
+          width: 100%;
+        }
+
+
+      FILE-INPUT {
+        position: relative;
+        margin: 0px 0;
+        padding: 0 0px;
+       }
+
+        .detail {
+          box-sizing: border-box;
+          margin: 32px 0;
+          padding: 0 24px;
+          width: 100%;
+          max-width: 600px;
+        }
+
+        h1 {
+          font-size: 20px;
+          line-height: 24px;
+        }
+
+        paper-tabs {
+          @apply(--layout-center);
+          font-family: 'Roboto', 'Noto', sans-serif;
+          -webkit-font-smoothing: antialiased;
+          text-transform: uppercase;
+          margin-bottom: 1px;
+          }
+        }
+      }
+
+    </style>
+
+    <!--
+      app-route provides the name of the category and the item.
+    -->
+    <app-route route="[[route]]" pattern="/:category/:item" data="{{routeData}}">
+    </app-route>
+
+    <shop-category-data categories="{{categories}}"></shop-category-data>
+
+    <firebase-auth id="auth" user="{{user}}" provider="google" on-error="showError">
+    </firebase-auth>
+
+    <firebase-query id="query" path="/imageDraft/[[user.uid]]" data="{{items}}" limit-to-last="1">
+    </firebase-query>
+
+    <firebase-query id="queryShops" path="/shops/[[shopNameUnique]]" data="{{shops}}" order-by-child="/shopNameUnique" equal-to="[[shopNameUnique]]" limit-to-last="1">
+    </firebase-query>
+
+    <firebase-query id="queryAddress" path="/shops/[[routeData.shop]]" order-by-child="/shopNameUnique" start-at="{{routeData.shop}}" end-at="{{routeData.shop}}" data="{{shopData}}">
+    </firebase-query>
+
+    <firebase-query id="queryTags" path="/tags/shopNameUnique/[[shopNameUnique]]" data="{{tags}}" order-by-child="/tag" start-at="[[shopTags]]" end-at="[[shopTags]]" limit-to-first="10">
+    </firebase-query>
+
+    <firebase-query id="searchSuggestTags" path="/tags" data="{{tagsSeach}}" order-by-child="/tag" start-at="[[shopTags]]" limit-to-first="30">
+
+    <firebase-query id="isUniqueTags" path="/tags" data="{{selectedTag}}" order-by-child="/tag" start-at="[[shopTags]]" end-at="[[shopTags]]" limit-to-first="30">
+
+    </firebase-query>
+
+    <firebase-query id="geo" path="/geo/[[theme]]" data="{{geo}}" order-by-child="/shopNameUnique" start-at="[[shopNameUnique]]" end-at="[[shopNameUnique]]" limit-to-first="30">
+    </firebase-query>
+
+    <firebase-query id="UserGeo" path="/users/[[user.uid]]/geo" data="{{usergeo}}" order-by-child="/shopNameUnique" start-at="[[shopNameUnique]]" end-at="[[shopNameUnique]]" limit-to-first="30">
+    </firebase-query>
+
+    <div id="content" hidden$="[[failure]]">
+
+      <template is="dom-repeat" items="{{items}}" as="item" hidden$="[[failure]]">
+        <shop-image alt="[[item.shopName]]" src="[[item.url]]"></shop-image>
+      </template>
+
+    </div>
+
+    <header>
+      <span>[[_getPluralizedQuantity(itemList.length)]]</span>
+        <div id="content">
+          <paper-tabs selected="{{selected}}" no-bar="">
+              <paper-tab>Tags タグ</paper-tab>
+              <paper-tab>Comment コメント</paper-tab>
+          </paper-tabs>
+      </div>
+    </header>
+
+    <iron-pages selected="{{selected}}">
+
+    <div id="content" hidden$="[[failure]]">
+
+      <div class="detail">
+
+        <google-maps-api id="maps" api-key="AIzaSyDp_5oAA4F35biRBtx0nyWAfSSv61OjKnM" libraries="places" on-api-load="on_api_load"></google-maps-api>
+
+        <paper-input id="input" placeholder="" label="Shop Name ショップ名" class="input" type="text" value="{{shopName}}">
+        </paper-input>
+
+        <paper-input label="Address  場所" value="{{value}}">
+        </paper-input>
+
+        <paper-textarea label="Item  皿" value="{{itemName}}">
+        </paper-textarea>
+
+        <paper-input label="Theme  テーマ" value="{{theme}}">
+        </paper-input>
+      <paper-tabs scrollable="" selected="{{theme}}" attr-for-selected="label" no-bar="">
+        <template is="dom-repeat" items="[[categories]]" as="category" initial-count="10" filter="{{computeFilter(theme)}}">
+          <paper-tab label="{{category.title}}">
+            {{category.title}}
+          </paper-tab>
+        </template>
+
+        </paper-tabs>
+
+        <paper-input label="#Tags" value="{{shopTags}}">
+        </paper-input>
+        <paper-tabs scrollable="" selected="{{shopTags}}" attr-for-selected="label" no-bar="">
+          <template is="dom-repeat" items="[[tagsSeach]]" as="tag" initial-count="10" filter="{{computeFilterTags(shopTags)}}">
+            <paper-tab label="{{tag.tag}}">
+                {{tag.tag}}
+            </paper-tab>
+          </template>
+        </paper-tabs>
+      </div>
+    </div>
+
+  <div id="content" hidden$="[[failure]]">
+    <div class="detail">
+      <div>
+        <paper-material elevation="0">
+          <marked-element markdown="{{blog}}">
+            <div class="markdown-html"></div>
+          </marked-element>
+        </paper-material>
+      </div>
+      <div>
+        <paper-textarea label="Write something" value="{{blog::input}}">
+        </paper-textarea>
+      </div>
+    </div>
+  </div>
+
+  </iron-pages>
+
+  <paper-toast id="toast1" class="fit-bottom" text="[[toast1Text]]"></paper-toast>
+  <paper-toast id="toast2" class="fit-bottom"><paper-progress indeterminate=""></paper-progress></paper-toast>
+
+  <paper-toolbar class="toolbar" middle-justify="center">
+    <div class="middle">
+
+      <div class="container flex-horizontal">
+        <div class="flexchild2">
+           <paper-button toggles="" on-tap="_uploadShopClick" class="custom pink">
+              <iron-icon icon="hardware:keyboard-arrow-up" class="barbutton"></iron-icon>
+          </paper-button>
+        </div>
+        <div class="flexchild2">
+          <paper-button class="custom red" toggles="">
+            <file-input id="file-input" class="barbutton">
+              <iron-icon icon="image:camera-alt" class="barbutton"></iron-icon>
+            </file-input>
+          </paper-button>
+        </div>
+      </div>
+
+    </div>
+   </paper-toolbar>
+
+
+
+
+    <!--
+      shop-network-warning shows a warning message when the items can't be rendered due
+      to network conditions.
+    -->
+
+  </firebase-query></template>
+
+  <script>
+
+    Polymer({
+
+      is: 'shop-item-create',
+
+      properties: {
+
+        item: Object,
+
+        route: Object,
+
+        routeData: Object,
+
+        visible: Boolean,
+
+        latitude: {
+          type: Number,
+          notify: true
+        },
+
+        longitude: {
+          type: Number,
+          notify: true
+        },
+
+        longlat: {
+          type: String,
+          value: '9999',
+          notify: true
+        },
+
+        offline: {
+          type: Boolean,
+          observer: '_offlineChanged'
+        },
+        items: {
+          type: Object,
+          notify: true
+        },
+
+        shopName: {
+          type: String,
+          notify: true
+
+        },
+        itemName: {
+          type: String,
+          notify: true
+
+        },
+
+        phone: {
+          type: String,
+          notify: true
+        },
+
+        value: {
+          type: String,
+          notify: true
+        },
+
+        reveseAddres: {
+          type: String,
+          notify: true
+        },
+
+        theme:{
+          type: String,
+          notify: true
+        },
+
+        shops: {
+          type: Array,
+          notify: true
+        },
+
+        shopTags:{
+          type: String,
+          value:'',
+          notify: true
+        },
+
+        selectedTag:{
+          type:Object,
+          notify: true
+        },
+
+        tags:{
+          type: Object,
+          notify: true
+        },
+
+        tokens: {
+          type: Array,
+          notify: true
+        },
+
+        shoptypes:{
+          type: String,
+          notify: true
+        },
+
+        blog: {
+          type: String,
+          value: '',
+          notify: true
+        },
+
+        searchString: {
+          type: String,
+          value: 'For the love of beer',
+          notify: true
+        },
+
+        shopNameUnique: {
+          type: String,
+          notify: true,
+          value: '9999'
+        },
+
+        shopIds: {
+          type: String,
+          notify: true
+        },
+        filePath: {
+          type: String,
+          notify: true
+        },
+
+        shopPhones: {
+          type: String,
+          notify: true
+        },
+
+        toast1Text: {
+          type: String,
+          notify: true
+
+        },
+
+        failure: Boolean
+
+      },
+
+
+      observers: [
+        '_itemChanged(item, visible)',
+        '_shopQueryResultChanged(shops.splices)'
+
+      ],
+
+      listeners: {
+      'file-input.change': 'imageUploadTap',
+      },
+
+      _shopQueryResultChanged: function(changeRecord) {
+        if (changeRecord) {
+          changeRecord.indexSplices.forEach(function(s) {
+              s.object.forEach(function(shop) {
+                 this.shopIds = shop.shopId;
+                 this.shopPhones = shop.shopPhone;
+              }, this);
+          }, this);
+        }
+      },
+
+      _itemChanged: function(item, visible) {
+        if (visible) {
+          this.debounce('item-change', function() {
+            // The item description contains escaped HTML (e.g. "&lt;br&gt;"), so we need to
+            // unescape it ("<br>") and set it as innerHTML.
+            var text = item ? item.description : '';
+            this.$.desc.innerHTML = this._unescapeText(text);
+
+            // Reset the select menus.
+            this.$.quantitySelect.value = '1';
+            this.$.sizeSelect.value = 'M';
+
+            this.fire('change-section', {
+              category: item.category,
+              title: item.title
+            });
+          });
+        }
+      },
+
+      _unescapeText: function(text) {
+        var elem = document.createElement('textarea');
+        elem.innerHTML = text;
+        return elem.textContent;
+      },
+
+      _addToCart: function() {
+        // This event will be handled by shop-app.
+        this.fire('add-cart-item', {
+          item: this.item,
+          quantity: parseInt(this.$.quantitySelect.value, 10),
+          size: this.$.sizeSelect.value
+        });
+      },
+
+      _isDefined: function(item) {
+        return item != null;
+      },
+
+
+      imageUploadTap: function(e) {
+
+
+        var file = e.target.files[0];
+
+        var storageRef = firebase.storage().ref('image/' + file.name);
+
+        var uploadTask = storageRef.put(file);
+        var shopName = this.shopName;
+        toast2.open();
+
+
+        uploadTask.on('state_changed', function progress(snapshot){
+          var precentage = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+
+        },
+
+
+        function error(err){
+
+        },
+        function (){
+
+          var newImageKey = firebase.database().ref().child('imageDraft/').push().key;
+          var user = firebase.auth().currentUser;
+          var downloadURL = uploadTask.snapshot.downloadURL;
+          var updates = {};
+          var imageData = {
+            url: downloadURL,
+            user: user.uid,
+            shop: shopName
+          };
+
+          updates['/imageDraft/'+ user.uid + '/' + newImageKey] = imageData;
+          updates['/users/' + user.uid + "/image/" + newImageKey] = imageData;
+          firebase.database().ref().update(updates);
+
+        })
+     },
+
+
+     _uploadShopClick: function(e) {
+       //check to see if the form is correctly filled out.
+
+         var user = firebase.auth().currentUser;
+
+         if (user == null || !this.items || !this.shopName  || !this.itemName || !this.theme || !this.shopTags){
+            if (user == null){
+               console.log(user)
+               this.toast1Text = "You need to be logged in"
+               toast1.open()
+             }
+          else if (this.items.length == 0) {
+              console.log(this.items)
+              this.toast1Text = "You need to be upload an image"
+              toast1.open()
+          }
+
+          else if (!this.shopName) {
+              this.toast1Text = "You need to be add the shop name"
+              toast1.open()
+          }
+
+          else if (!this.itemName) {
+              this.toast1Text = "You need to be add the item name"
+              toast1.open()
+          }
+
+          else if (!this.theme) {
+              this.toast1Text = "You need to be select a theme"
+              toast1.open()
+          }
+
+          else if (!this.shopTags) {
+              this.toast1Text = "You need to be create a tag"
+              toast1.open()
+          }
+
+          else {
+            this.toast1Text = "Uploading post"
+            toast1.open()
+          }
+
+       }
+
+       else {
+         var newTagKey = firebase.database().ref().child('imageDraft/').push().key;
+         var newItemKey = firebase.database().ref().child('items').push().key;
+
+         var user = firebase.auth().currentUser;
+         var shopNames = this.shopName;
+         var blogs = this.blog;
+         var shopNameUniques = this.shopNameUnique;
+         var shopAddress = this.value;
+         var shopPhones = this.phone;
+         var itemNames = this.itemName;
+         var themes = this.theme;
+         var shopsTagss = this.shopTags.toLowerCase();
+         var shopLngs = this.longitude;
+         var shopLats = this.latitude;
+
+         if (this.geo.length == 0) {
+
+            if (user != null && !this.items == false && !this.shopName == false && !this.shopNameUnique == false && !this.theme == false && !this.shopTags == false){
+              var newGeoKey = firebase.database().ref().child('geo/'+this.theme).push().key;
+              updatesGeos = {};
+              var geoData = {
+                user: user.uid,
+                shopName: shopNames,
+                shopNameUnique: shopNameUniques,
+                shopAddres: shopAddress,
+                shopPhone: shopPhones,
+                lng: shopLngs,
+                lat: shopLats
+              };
+              updatesGeos['/geo/' + this.theme + '/' + this.shopNameUnique] = geoData;
+              if (this.usergeo.length == 0){
+              updatesGeos['/users/' + user.uid + "/geo/" + this.shopNameUnique] = geoData;
+              }
+              firebase.database().ref().update(updatesGeos);
+            };
+         }
+
+         updatesTags = {};
+
+         if (user != null && !this.items == false  && !this.shopNameUnique == false && !this.shopTags == false){
+          var newTagsKey = firebase.database().ref().child('tags').push().key;
+          var newTagKey = firebase.database().ref().child('tags/shopNameUnique/'+this.shopNameUnique).push().key;
+          var updatesTags = {};
+          var tagData = {
+            tag: shopsTagss
+          };
+          if (this.selectedTag.length == 0){
+            updatesTags['/tags/' + newTagsKey] = tagData;
+          };
+          if (this.tags.length == 0) {
+            updatesTags['/tags/shopNameUnique/' + this.shopNameUnique + '/' + newTagKey] = tagData;
+          };
+          firebase.database().ref().update(updatesTags);
+       };
+
+        if (this.shops.length > 0) {
+
+         if (user != null && !this.items == false && !this.shopName == false && !this.shopNameUnique == false && !this.theme == false && !this.shopTags == false) {
+             this.items.forEach(function (post) {
+               var urls = post.url;
+               var users = post.user;
+               var updates = {};
+               var itemData = {
+                 url: urls,
+                 user: post.user,
+                 shopNameUnique: shopNameUniques,
+                 shopName: shopNames,
+                 shopAddres: shopAddress,
+                 shopPhone: this.shopPhones,
+                 shopId: this.shopIds,
+                 itemName: itemNames,
+                 itemLng: shopLngs,
+                 itemLat: shopLats,
+                 theme: themes,
+                 blog: blogs,
+                 shopsTags: shopsTagss,
+                 itemid: newItemKey
+                };
+                updates['/items/' + this.shopNameUnique] = itemData;
+                firebase.database().ref().update(updates);
+                firebase.database().ref().child('imageDraft').remove();
+             }, this);
+           }
+
+
+        }  else  {
+
+          if (shopPhones == null) {shopPhones = "";}
+
+          if (user != null && !this.items == false && !this.shopName == false && !this.shopNameUnique == false && !this.theme == false && !this.shopTags == false) {
+            var newShopKey = firebase.database().ref().child('shops').push().key;
+            var updatesShops = {};
+            var shopData = {
+              shopNameUnique: shopNameUniques,
+              shopName: shopNames,
+              shopAddres: shopAddress,
+              shopPhone: shopPhones,
+              shopLng: shopLngs,
+              shopLat: shopLats,
+              shopId: newShopKey,
+            };
+            updatesShops['/shops/' + this.shopNameUnique] = shopData;
+            firebase.database().ref().update(updatesShops);
+            };
+
+
+         if (user != null && !this.items == false && !this.shopName == false && !this.shopNameUnique == false && !this.theme == false && !this.shopTags == false) {
+             this.items.forEach(function (post) {
+               var urls = post.url;
+               var users = post.user;
+               var updates = {};
+               var itemData = {
+                 url: urls,
+                 user: post.user,
+                 shopNameUnique: shopNameUniques,
+                 shopName: shopNames,
+                 shopAddres: shopAddress,
+                 shopPhone: shopPhones,
+                 shopId: newShopKey,
+                 itemName: itemNames,
+                 itemLng: shopLngs,
+                 itemLat: shopLats,
+                 theme: themes,
+                 blog: blogs,
+                 shopsTags: shopsTagss,
+                 itemid: newItemKey
+                };
+                updates['/items/' + newItemKey] = itemData;
+                firebase.database().ref().update(updates);
+                firebase.database().ref().child('imageDraft').remove();
+             });
+           }
+
+          };
+
+           this.itemName = '';
+           this.value = '';
+           this.phone = '';
+           this.shopName = '';
+           this.theme = '';
+           this.shopTags = '';
+           this.blog = '';
+           this.shopNameUnique = '9999';
+       }
+
+
+       },
+
+       computeFilter: function(string) {
+       if (!string) {
+         // set filter to null to disable filtering
+         return null;
+       } else {
+         // return a filter function for the current search string
+         string = string.toLowerCase();
+         return function(item) {
+           var tittle = item.title.toLowerCase();
+           var name = item.name.toLowerCase();
+
+           return (tittle.indexOf(string) != -1 ||
+               name.indexOf(string) != -1);
+         };
+       }
+     },
+
+     computeFilterTags: function(string) {
+     if (!string) {
+       // set filter to null to disable filtering
+       return null;
+     } else {
+
+       // return a filter function for the current search string
+       string = string.toLowerCase();
+       this.shopTags.toLowerCase();
+       console.log(this.shopTags)
+       return function(tag) {
+         var english_name = tag.tag.toLowerCase();
+         return (
+             english_name.indexOf(string) != -1);
+       };
+     }
+   },
+
+     on_api_load: function () {
+       this.autocomplete = new google.maps.places.Autocomplete(this.$.input, this.options);
+       google.maps.event.addListener(this.autocomplete, 'place_changed', this.on_change_place.bind(this));
+
+     },
+
+     on_change_place: function () {
+       this.place = this.autocomplete.getPlace();
+       if (!this.place.address_components) {
+         return;
+       }
+
+       this.value = this.place.formatted_address;
+       this.phone = this.place.formatted_phone_number;
+       this.shopName = this.place.name;
+       this.longitude = this.place.geometry.location.lng();
+       this.latitude= this.place.geometry.location.lat();
+       var gpsHash = parseInt((Math.abs(this.latitude)*10)) + parseInt((Math.abs(this.longitude)*10));
+       this.shopNameUnique = this.shopName + '-'+ gpsHash;
+       this.reveseAddres = this.place.geometry.location.lat();
+
+       var latlng = {lat: parseFloat(this.latitude), lng: parseFloat(this.longitude)};
+
+
+       this.geocoder = new google.maps.Geocoder();
+       this.geocoder.geocode({'location': latlng}, function(results, status) {
+          if (status == google.maps.GeocoderStatus.OK) {
+            this.reveseAddres = results[1].formatted_address;
+          }
+        }.bind(this));
+     },
+
+     toggleSelection: function(e) {
+      var item = this.$.categories.itemForElement(e.target);
+      this.$.selector.select(item.title)
+      this.theme = item.name
+    },
+
+    });
+
+  </script>
+
+</dom-module>
+</body></html>

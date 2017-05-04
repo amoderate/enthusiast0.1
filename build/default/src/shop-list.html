@@ -1,0 +1,384 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/google-map/google-map-directions.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="shop-category-data.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-list-menu.html">
+
+</head><body><dom-module id="shop-list">
+
+  <template>
+
+    <style include="shop-common-styles">
+
+      .hero-image {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        margin-bottom: 32px;
+      }
+
+      .hero-image {
+        --shop-image-img: {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+        };
+      }
+
+      .grid {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-justified);
+        margin: 0 10px 32px 10px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .grid li {
+        -webkit-flex: 1 1;
+        flex: 1 1;
+        -webkit-flex-basis: 33%;
+        flex-basis: 33%;
+        max-width: 33%;
+        padding: 3px;
+      }
+
+      .grid a {
+        display:block;
+        text-decoration: none;
+      }
+
+      google-map {
+        height: 600px;
+      }
+
+      #content {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        margin: 0 10px 32px 10px;
+
+      }
+      .tab-layout {
+        @apply(--layout-block);
+        @apply(--layout-self-center);
+
+        width: 75%;
+        max-width: 700px;
+        transition: opacity 0.4s;
+        opacity: 1;
+      }
+
+      .layout-center {
+        @apply(--layout-block);
+        @apply(--layout-self-center);
+
+        width: 75%;
+        max-width: 700px;
+        transition: opacity 0.4s;
+        opacity: 1;
+      }
+
+      paper-tabs {
+        @apply(--layout-block);
+        @apply(--layout-self-center);
+        --paper-tab-ink: #E57373;
+        font-family: 'Roboto', 'Noto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        width: 45%;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+
+      paper-tab.iron-selected {
+        color: #E57373;
+
+      }
+
+      paper-button {
+        margin-top: 3px;
+      }
+
+      paper-tab {
+      --paper-tab-ink: #E57373;
+      }
+
+      #repostButton {
+        font-weight: bold;
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+
+      @media (max-width: 767px) {
+        .hero-image {
+          display: none;
+        }
+        .grid{
+          @apply(--layout-vertical);
+          margin: 0 0px 32px 0px;
+
+        }
+
+        .grid  li {
+          -webkit-flex-basis: 100%;
+          flex-basis: 100%;
+          max-width: 100%;
+
+
+        }
+
+        .logo {
+          text-align: center;
+          @apply(--layout-center);
+          padding-left: 7px;
+        }
+
+        paper-tabs {
+          @apply(--layout-center);
+          font-family: 'Roboto', 'Noto', sans-serif;
+          -webkit-font-smoothing: antialiased;
+          width: 75%;
+          text-transform: uppercase;
+          margin-bottom: 1px;
+        }
+      }
+
+    </style>
+
+    <!--
+      app-route provides the name of the category.
+    -->
+    <app-route route="[[route]]" pattern="/:category" data="{{routeData}}">
+    </app-route>
+
+    <firebase-auth id="auth" user="{{user}}" provider="google" on-error="showError">
+    </firebase-auth>
+
+    <shop-category-data id="categoryData" category-name="[[routeData.category]]" category="{{category}}" failure="{{failure}}">
+    </shop-category-data>
+
+    <firebase-query id="query" path="/items" data="{{itemList}}" order-by-child="/theme" start-at="[[category.title]]" end-at="[[category.title]]">
+    </firebase-query>
+
+    <firebase-query id="geo" path="/geo/[[category.title]]" data="{{geo}}" limit-to-first="30">
+    </firebase-query>
+
+    <firebase-query path="/users/[[user.uid]]/favorite" order-by-child="/itemid" data="{{favoriteList}}">
+    </firebase-query>
+
+
+    <shop-image alt="[[category.title]]" src="[[category.image]]" placeholder-img="[[category.placeholder]]" class="hero-image"></shop-image>
+
+    <header>
+      <h1>[[category.title]]</h1>
+      <span>[[_getPluralizedQuantity(itemList.length)]]</span>
+        <div id="content">
+          <paper-tabs selected="{{selected}}" no-bar="">
+              <paper-tab>Photos  写真</paper-tab>
+              <paper-tab>Maps  地図</paper-tab>
+          </paper-tabs>
+      </div>
+    </header>
+
+
+    <iron-pages selected="{{selected}}">
+
+      <div>
+          <div class="layout horizontal center-justified">
+            <ul class="grid" hidden$="[[failure]]">
+              <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
+                <li>
+                  <div>
+                      <a href$="[[_getItemHref(item)]]"><shop-list-menu item="[[item]]"></shop-list-menu></a>
+                      <div hidden$="[[_shared(item.userFavorites)]]">
+                        <paper-button id="repostButton" on-tap="repostItem">add to favorites</paper-button>
+                      </div>
+                      <div hidden$="[[!_shared(item.userFavorites)]]">
+                        <paper-button disabled="" id="repostButton" on-tap="repostItem">already added to favorites</paper-button>
+                      </div>
+                </div>
+                </li>
+              </template>
+            </ul>
+          </div>
+      </div>
+      <div>
+        <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers="" style="transit-layer">
+          <template is="dom-repeat" items="{{geo}}" as="geo" hidden$="[[failure]]">
+            <div>
+              <google-map-marker map="[[map]]" latitude="{{geo.lat}}" longitude="{{geo.lng}}" draggable="false"></google-map-marker>
+            </div>
+          </template>
+        </google-map>
+      </div>
+    </iron-pages>
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'shop-list',
+
+      properties: {
+
+        category: Object,
+
+        route: Object,
+
+        routeData: Object,
+
+        items: Object,
+
+        visible: Boolean,
+
+        shared: {
+          type: Boolean,
+        },
+
+        offline: {
+          type: Boolean,
+          observer: '_offlineChanged'
+        },
+
+        failure: Boolean
+
+      },
+
+      observers: [
+        '_categoryChanged(category, visible)'
+        ,'_modeChanged(category)'
+
+      ],
+
+
+      _getListItems: function(items) {
+        // Return placeholder items when the items haven't loaded yet.
+        return items || [{},{},{},{},{},{},{},{},{},{}];
+      },
+
+
+      repostItem: function(event) {
+        var item = event.model.item
+        console.log(item)
+        console.log("was clicked")
+
+        var user = firebase.auth().currentUser;
+
+        var updates = {};
+
+        var updateItem = {};
+
+        if (user.uid != null) {
+
+          var itemFavorites = {
+            user: user.uid
+          };
+
+          updateItem['/items/' + item.itemid + '/userFavorites/' + user.uid + '/'] = itemFavorites;
+          firebase.database().ref().update(updateItem);
+
+          var itemData = {
+            itemLng: item.itemLat,
+            itemLat: item.itemLng,
+            itemName: item.itemName,
+            shopAddres: item.shopAddres,
+            shopId: item.shopId,
+            shopName: item.shopName,
+            shopNameUnique: item.shopNameUnique,
+            shopPhone: item.shopPhone,
+            shopTags: item.shopsTags,
+            theme: item.theme,
+            url: item.url,
+            user: item.user,
+            itemid: item.itemid
+           };
+
+           updates['/users/' + user.uid + '/favorite/' + item.itemid + '/'] = itemData;
+           firebase.database().ref().update(updates);
+        };
+      },
+
+
+      _getItemHref: function(item) {
+        // By returning null when `itemId` is undefined, the href attribute won't be set and
+        // the link will be disabled.
+
+        return item.shopName ? ['/detail', item.shopNameUnique, item.itemName, item.itemid].join('/') : null;
+      },
+
+      _getPluralizedQuantity: function(quantity) {
+        if (!quantity) {
+          return '';
+        }
+        var pluralizedQ = quantity === 1 ? 'item' : 'items';
+        return  '(' + quantity + ' ' + pluralizedQ + ')';
+      },
+
+      _categoryChanged: function(category, visible) {
+        if (visible) {
+          this.debounce('change-section', function() {
+            // Notify the category and the page's title
+            this.fire('change-section', {
+              category: category.name,
+              title: category.title
+            });
+          });
+        }
+      },
+
+      _modeChanged: function(category) {
+          this.debounce('change-shop', function() {
+            // Notify the category and the page's title
+            this.fire('change-shop', {
+              shopName: 'EXPLORE'
+            });
+          });
+      },
+
+      _tryReconnect: function() {
+        this.$.categoryData.refresh();
+      },
+
+      _offlineChanged: function(offline) {
+        if (!offline) {
+          this._tryReconnect();
+        }
+      },
+
+      _shared: function(item) {
+        if (item) {
+          currentUser = firebase.auth().currentUser;
+          return currentUser.uid in item;
+          }
+        }
+
+    });
+
+  </script>
+
+</dom-module>
+</body></html>

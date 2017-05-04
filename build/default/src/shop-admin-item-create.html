@@ -1,0 +1,603 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/file-input/file-input.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/exif-from-image/exif-from-image.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+
+<link rel="import" href="shop-button.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-select.html">
+
+
+</head><body><dom-module id="shop-admin-item-create">
+
+  <template>
+
+    <style include="shop-common-styles shop-button shop-select">
+
+      :host {
+        display: block;
+      }
+
+      #content {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+      shop-image {
+        position: relative;
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 600px;
+        --shop-image-img: {
+          @apply(--layout-fit);
+        };
+      }
+
+      shop-image::before {
+        content: "";
+        display: block;
+        padding-top: 100%;
+      }
+
+      .detail {
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 400px;
+        transition: opacity 0.4s;
+        opacity: 1;
+      }
+      .pre {
+            white-space: pre;
+            unicode-bidi: embed;
+        }
+
+      FILE-INPUT { position: relative; margin: 64px 32px;
+      width: 30%;
+      max-width:4600px;
+      width: 50px;
+      height: 50px;
+      padding: 16px 0 16px 0;
+      width: calc(99.66% - 8px);
+      margin: 8px auto;}
+
+      h1 {
+        font-size: 24px;
+        font-weight: 500;
+        line-height: 28px;
+        margin: 0;
+      }
+
+      .giant {
+        margin: 64px 32px;
+        width: 50%;
+        max-width: 600px;
+        width: 100px;
+        height: 100px;
+        padding: 16px 0 16px 0;
+        width: calc(99.66% - 8px);
+        margin: 8px auto;
+        background: white;
+      }
+
+      .description {
+        margin: 32px 0;
+      }
+
+      .description > h2 {
+        margin: 16px 0;
+        font-size: 13px;
+      }
+
+      .description > p {
+        margin: 0;
+        color: var(--app-secondary-color);
+      }
+
+      .pickers {
+        @apply(--layout-vertical);
+        border-top: 1px solid #ccc;
+      }
+
+      .centered{
+        height: 100%;
+        padding: 16px 0 16px 0;
+        width: calc(99.66% - 8px);
+        margin: 8px auto;
+        background: white;
+      }
+
+      shop-select > select {
+        font-size: 16px;
+        padding: 16px 24px 16px 70px;
+      }
+
+      @media (max-width: 767px) {
+
+        #content {
+          @apply(--layout-vertical);
+          @apply(--layout-center);
+        }
+
+        shop-image {
+          margin: 0;
+          width: 80%;
+        }
+
+        .detail {
+          box-sizing: border-box;
+          margin: 32px 0;
+          padding: 0 24px;
+          width: 100%;
+          max-width: 600px;
+        }
+
+        h1 {
+          font-size: 20px;
+          line-height: 24px;
+        }
+
+      }
+
+    </style>
+   
+
+    <app-route route="[[route]]" pattern="/:shop" data="{{routeData}}" tail="{{subroute}}">
+    </app-route>    
+
+    <firebase-auth id="auth" user="{{user}}" provider="google" on-error="showError">
+    </firebase-auth>
+
+    <firebase-query id="query" path="/imageDraft/[[user.uid]]" data="{{items}}" limit-to-last="1">
+    </firebase-query>
+
+    <firebase-query id="queryShops" path="/shops/[[shopNameUnique]]" data="{{shops}}" order-by-child="/shopNameUnique" equal-to="[[shopNameUnique]]" limit-to-last="1">
+    </firebase-query>
+
+    <firebase-query id="queryAddress" path="/shops/[[routeData.shop]]" order-by-child="/shopNameUnique" start-at="{{routeData.shop}}" end-at="{{routeData.shop}}" data="{{shopData}}">
+    </firebase-query>
+
+    <firebase-query id="queryTags" path="/tagsAdmin/[[routeData.shop]]" data="{{tags}}" order-by-child="/tagsAdmin" start-at="[[shopTags]]" end-at="[[shopTags]]" limit-to-first="10">
+    </firebase-query>    
+
+    <firebase-query id="searchSuggestTags" path="/tagsAdmin/[[routeData.shop]]" data="{{tagsSeach}}" order-by-child="/tag" start-at="[[shopTags]]" end-at="[[shopTags+'\uf8ff']]" limit-to-first="30">
+    </firebase-query>
+
+    <div id="content" hidden$="[[failure]]">
+
+      <template is="dom-repeat" items="{{items}}" as="item" hidden$="[[failure]]">
+        <shop-image alt="[[item.shopName]]" src="[[item.url]]"></shop-image>
+        <exif-from-image imgpath="{{filePath}}"></exif-from-image>
+      </template>
+
+      <div class="detail">
+
+      [[routeData.shop]] Official Items
+
+
+        <paper-textarea label="Item" value="{{itemName}}"></paper-textarea>
+
+        <paper-textarea label="Price" value="{{itemPrice}}"></paper-textarea>
+
+        <paper-textarea label="Desc" value="{{itemDesc}}"></paper-textarea>
+
+        <paper-input label="#Tags" value="{{shopTags}}"></paper-input>
+
+        <paper-tabs scrollable="" selected="{{shopTags}}" attr-for-selected="label">
+          <template is="dom-repeat" items="[[tagsSeach]]" as="tag" initial-count="10" filter="{{computeFilterTags(shopTags)}}">
+            <paper-tab label="{{tag.tag}}">
+              {{tag.tag}}
+            </paper-tab>
+          </template>
+        </paper-tabs>
+
+        <shop-button responsive="">
+          <button on-tap="_uploadShopClick" aria-label="update item description">Update Item Description</button>
+        </shop-button>
+
+        <div class="centered">
+          <file-input id="file-input">
+            <iron-icon icon="image:photo-camera" class="giant"></iron-icon>
+          </file-input>
+        </div>
+
+      </div>
+
+    </div>
+    <!--
+      shop-network-warning shows a warning message when the items can't be rendered due
+      to network conditions.
+    -->
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'shop-admin-item-create',
+
+      properties: {
+
+        item: Object,
+
+        route: Object,
+
+        routeData: Object,
+
+        visible: Boolean,
+
+        latitude: {
+          type: String,
+          notify: true
+        },
+
+        longitude: {
+          type: String,
+          notify: true
+        },
+
+        offline: {
+          type: Boolean,
+          observer: '_offlineChanged'
+        },
+        items: {
+          type: Object,
+          notify: true
+        },
+
+        shopName: {
+          type: String,
+          notify: true
+
+        },
+        itemName: {
+          type: String,
+          notify: true
+
+        },
+
+        phone: {
+          type: String,
+          notify: true
+        },
+
+        value: {
+          type: String,
+          notify: true
+        },
+
+        theme:{
+          type: String,
+          notify: true
+        },
+
+        shops: {
+          type: Array,
+          notify: true
+        },
+
+        shopTags:{
+          type: String,
+          value:'',
+          notify: true
+        },
+
+        tags:{
+          type: Object,
+          notify: true
+        },
+
+        tokens: {
+          type: Array,
+          notify: true
+        },
+
+        shoptypes:{
+          type: String,
+          notify: true
+        },
+
+        searchString: {
+          type: String,
+          value: 'For the love of beer',
+          notify: true
+        },
+
+        shopNameUnique: {
+          type: String,
+          notify: true,
+          value: '9999'
+        },
+
+        shopIds: {
+          type: String,
+          notify: true
+        },
+        filePath: {
+          type: String,
+          notify: true
+        },
+
+        shopPhones: {
+          type: String,
+          notify: true
+        },
+
+        failure: Boolean
+
+      },
+
+
+      observers: [
+        '_itemChanged(item, visible)',
+        '_shopQueryResultChanged(shops.splices)'
+      ],
+
+      listeners: {
+        'file-input.change': 'imageUploadTap',
+      },
+
+      _shopQueryResultChanged: function(changeRecord) {
+        console.log("here we go!!");
+        console.log(changeRecord);
+        if (changeRecord) {
+          changeRecord.indexSplices.forEach(function(s) {
+              s.object.forEach(function(shop) {
+                 // console.log(shop.shopNameUnique);
+                 this.shopIds = shop.shopId;
+                 this.shopPhones = shop.shopPhone;
+              }, this);
+          }, this);
+        }
+      },
+
+      _itemChanged: function(item, visible) {
+        if (visible) {
+          this.debounce('item-change', function() {
+            // The item description contains escaped HTML (e.g. "&lt;br&gt;"), so we need to
+            // unescape it ("<br>") and set it as innerHTML.
+            var text = item ? item.description : '';
+            this.$.desc.innerHTML = this._unescapeText(text);
+
+            // Reset the select menus.
+            this.$.quantitySelect.value = '1';
+            this.$.sizeSelect.value = 'M';
+
+            this.fire('change-section', {
+              category: item.category,
+              title: item.title
+            });
+          });
+        }
+      },
+
+      _unescapeText: function(text) {
+        var elem = document.createElement('textarea');
+        elem.innerHTML = text;
+        return elem.textContent;
+      },
+
+      _addToCart: function() {
+        // This event will be handled by shop-app.
+        this.fire('add-cart-item', {
+          item: this.item,
+          quantity: parseInt(this.$.quantitySelect.value, 10),
+          size: this.$.sizeSelect.value
+        });
+      },
+
+      _isDefined: function(item) {
+        return item != null;
+      },
+
+
+      imageUploadTap: function(e) {
+        var file = e.target.files[0];
+        console.log(file);
+        this.filePath = file
+        // get EXIF data
+
+
+        var storageRef = firebase.storage().ref('image/' + file.name);
+
+        var uploadTask = storageRef.put(file);
+        var shopName = this.routeData.shop;
+        console.log(shopName);
+
+        uploadTask.on('state_changed', function progress(snapshot){
+          var precentage = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+
+        },
+        function error(err){
+
+        },
+        function (){
+
+          var newImageKey = firebase.database().ref().child('imageDraft/').push().key;
+          var user = firebase.auth().currentUser;
+          var downloadURL = uploadTask.snapshot.downloadURL;
+          var updates = {};
+          var imageData = {
+            url: downloadURL,
+            user: user.uid,
+            shop: shopName
+          };
+          
+          updates['/imageDraft/'+ user.uid + '/' + newImageKey] = imageData;
+          updates['/users/' + user.uid + "/image/" + newImageKey] = imageData;
+          console.log(downloadURL)
+          firebase.database().ref().update(updates);
+
+        })
+      },
+
+      _uploadShopClick: function(e) {
+        var newTagKey = firebase.database().ref().child('imageDraft/').push().key;
+        var newItemKey = firebase.database().ref().child('itemsAdmin').push().key;
+
+        updatesTags = {};
+        var user = firebase.auth().currentUser;
+        // var shopNames = this.shopName;
+        var shopNameUniques = this.routeData.shop;
+        // var shopAddress = this.value;
+        // var shopPhones = this.phone;
+        var itemNames = this.itemName;
+        // var themes = this.theme;
+        var prices = this.itemPrice;
+        var itemDescs = this.itemDesc;
+        var shopsTagss = this.shopTags;
+        // var shopLngs = this.longitude;
+        // var shopLats = this.latitude;
+
+
+        if (user != null && !itemNames == false && !shopNameUniques == false && !prices == false && !shopsTagss == false) {
+          // var newTagsKey = firebase.database().ref().child('tagsAdmin').push().key;
+          var newTagsKey = firebase.database().ref().child('tagsAdmin/'+ shopNameUniques).push().key;
+          var updatesTags = {};
+          var tagData = {
+            tag: shopsTagss
+          };
+          if (this.tagsSeach.length == 0) {
+            updatesTags['/tagsAdmin/' + shopNameUniques + '/' + newTagsKey] = tagData;
+          };
+
+          // if (this.tags.length == 0) {
+          //   updatesTags['/tagsAdmin/shopNameUnique/' + shopNameUniques + '/' + newTagKey] = tagData;
+          // };
+
+          firebase.database().ref().update(updatesTags);
+        };
+
+        console.log(this.items);
+        console.log(!this.items);
+
+        if (user != null && !itemNames == false && !shopNameUniques == false && !prices == false && !shopsTagss == false) {
+          this.items.forEach(function (post) {
+           var urls = post.url;
+           var users = post.user;
+           var updates = {};
+           var itemData = {
+             url: urls,
+             user: post.user,
+             shopNameUnique: shopNameUniques,
+             // shopName: shopNames,
+             // shopAddres: shopAddress,
+             // shopPhone: this.shopPhones,
+             // shopId: this.shopIds,
+             itemName: itemNames,
+             itemPrice: prices,
+             itemDesc: itemDescs,
+             // theme: themes,
+             shopsTags: shopsTagss,
+             itemid: newItemKey
+            };
+            updates['/itemsAdmin/' + this.routeData.shop + '/' + newItemKey] = itemData;
+            console.log(updates);
+            firebase.database().ref().update(updates);
+            firebase.database().ref().child('imageDraft').remove();
+          }, this);
+        }
+
+        this.itemName = '';
+        this.value = '';
+        this.phone = '';
+        this.shopName = '';
+        this.theme = '';
+        this.shopTags = '';
+        this.itemPrice = '';
+        this.itemDesc = '';
+        this.shopNameUnique = '9999';
+      },
+
+       computeFilter: function(string) {
+       if (!string) {
+         // set filter to null to disable filtering
+         return null;
+       } else {
+         // return a filter function for the current search string
+         string = string.toLowerCase();
+         return function(item) {
+           var japaneseName = item.title.toLowerCase();
+           var enghlishName = item.name.toLowerCase();
+           return (japaneseName.indexOf(string) != -1 ||
+               enghlishName.indexOf(string) != -1);
+         };
+       }
+     },
+
+     computeFilterTags: function(string) {
+     if (!string) {
+       // set filter to null to disable filtering
+       return null;
+     } else {
+
+       // return a filter function for the current search string
+       string = string.toLowerCase();
+       return function(tag) {
+         var japanese_name = tag.tag.toLowerCase();
+         var english_name = tag.tag.toLowerCase();
+         return (japanese_name.indexOf(string) != -1 ||
+             english_name.indexOf(string) != -1);
+       };
+     }
+   },
+
+     on_api_load: function () {
+       this.autocomplete = new google.maps.places.Autocomplete(this.$.input, this.options);
+       google.maps.event.addListener(this.autocomplete, 'place_changed', this.on_change_place.bind(this));
+     },
+
+     on_change_place: function () {
+       this.place = this.autocomplete.getPlace();
+       if (!this.place.address_components) {
+         return;
+       }
+
+       this.value = this.place.formatted_address;
+       this.phone = this.place.formatted_phone_number;
+       this.shopName = this.place.name;
+       this.longitude = this.place.geometry.location.lng();
+       this.latitude= this.place.geometry.location.lat();
+       var gpsHash = parseInt((Math.abs(this.latitude)*10)) + parseInt((Math.abs(this.longitude)*10));
+       this.shopNameUnique = this.shopName + '-'+ gpsHash;
+
+       console.log(this.longitude);
+       console.log(this.latitude);
+       console.log(this.shopNameUnique);
+     },
+
+     toggleSelection: function(e) {
+       console.log("it's selected");
+      var item = this.$.categories.itemForElement(e.target);
+      this.$.selector.select(item.title)
+      this.theme = item.name
+    },
+
+    });
+
+  </script>
+
+</dom-module>
+</body></html>

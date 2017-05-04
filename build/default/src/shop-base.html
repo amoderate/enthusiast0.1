@@ -1,0 +1,679 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+  <link rel="import" href="../bower_components/google-map/google-map.html">
+  <link rel="import" href="../bower_components/google-map/google-map-directions.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-chip/paper-chip.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-list-menu.html">
+
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+<link rel="import" href="shop-admin.html">
+
+<link rel="import" href="shop-button.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-select.html">
+
+
+
+</head><body><dom-module id="shop-base">
+  <template>
+    <style include="shop-common-styles">
+
+      .hero-image {
+        position: relative;
+        height: 160px;
+        overflow: hidden;
+        margin-bottom:10px;
+      }
+
+      google-map {
+        height: 600px;
+      }
+
+      .hero-image {
+        --shop-image-img: {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+        };
+      }
+
+      paper-tabs {
+        @apply(--layout-center);
+        --paper-tab-ink: #E57373;
+        font-family: 'Roboto', 'Noto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        width: 45%;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+
+      #content {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        margin: 0 10px 32px 10px;
+
+      }
+
+      .footer{
+        @apply(--layout-fixed-bottom);
+        height: 64px;
+        background-color: white;
+
+      }
+      .layout-center {
+        @apply(--layout-block);
+        @apply(--layout-self-center);
+
+        width: 75%;
+        max-width: 700px;
+        transition: opacity 0.4s;
+        opacity: 1;
+      }
+
+      #message-input{
+        @apply(--layout-fixed-bottom);
+        height: 64px;
+        z-index: 1;
+        color: white;
+      }
+
+      paper-tab.iron-selected {
+        color: #E57373;
+
+      }
+
+      paper-tab {
+      --paper-tab-ink: #E57373;
+      }
+
+      shop-image::before {
+        content: "";
+        display: block;
+        padding-top: 100%;
+      }
+
+      --paper-tab-ink: #E57373;
+
+      .grid {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-justified);
+        margin: 0 10px 32px 10px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .grid li {
+        -webkit-flex: 1 1;
+        flex: 1 1;
+        -webkit-flex-basis: 33%;
+        flex-basis: 33%;
+        max-width: 33%;
+      }
+
+      .grid a {
+        display:block;
+        text-decoration: none;
+      }
+
+      .list {
+       @apply(--layout-flex);
+       overflow: auto;
+     }
+
+      @media (max-width: 767px) {
+        .hero-image {
+          /*display: none;*/
+        }
+        .grid{
+          @apply(--layout-vertical);
+        }
+
+        .grid  li {
+          -webkit-flex-basis: 100%;
+          flex-basis: 100%;
+          max-width: 100%;
+        }
+        paper-tabs {
+          @apply(--layout-center);
+          font-family: 'Roboto', 'Noto', sans-serif;
+          -webkit-font-smoothing: antialiased;
+          width: 75%;
+          text-transform: uppercase;
+          margin-bottom: 1px;
+        }
+      }
+    </style>
+
+    <app-route route="[[route]]" pattern="/:shop" data="{{routeData}}" tail="{{subroute}}">
+    </app-route>
+
+    <firebase-document path="/shops/[[routeData.shop]]" data="{{form}}"></firebase-document>
+
+    <firebase-auth id="auth" user="{{user}}" provider="google" on-error="showError">
+    </firebase-auth>
+
+    <firebase-query id="query" path="/items" data="{{items}}" order-by-child="/shopNameUnique" start-at="{{routeData.shop}}" end-at="{{routeData.shop}}">
+    </firebase-query>
+
+    <firebase-query id="query2" path="/itemsAdmin/[[routeData.shop]]" data="{{itemList}}">
+    </firebase-query>
+
+    <firebase-query id="menuTags" path="/tags/shopNameUnique/[[routeData.shop]]" data="{{tags}}">
+    </firebase-query>
+
+    <firebase-query id="shopMessage" path="/shopMessage/[[routeData.shop]]" data="{{shopMessage}}" order-by-child="/chatTime" limit-to-last="10">
+    </firebase-query>
+
+    <firebase-query id="shopAdmin" path="/shopAdmins/[[routeData.shop]]" data="{{shopAdmin}}" order-by-child="/adminUserId" equal-to="[[user.uid]]" limit-to-last="1">
+    </firebase-query>
+
+    <firebase-document id="aboutDocument" path="/shopAdminsResources/[[routeData.shop]]" data="{{editableAboutData}}">
+    </firebase-document>
+
+    <firebase-document id="shopAdminsResources" path="/shopAdminsResources/[[routeData.shop]]" data="{{shopAdminsResources}}">
+    </firebase-document>
+
+
+
+    <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
+      <div class="layout horizontal center-justified">
+          <paper-tabs scrollable="" selected="{{selected}}" no-bar="">
+              <paper-tab>Images</paper-tab>
+              <paper-tab>About</paper-tab>
+              <paper-tab>Maps</paper-tab>
+              <paper-tab>Chat</paper-tab>
+              <paper-tab>Official Menu</paper-tab>
+          </paper-tabs>
+      </div>
+      <div id="content" hidden$="[[!isShopAdmin]]">
+          You are admin of this shop. &nbsp; <a href="/admin/[[routeData.shop]]" tabindex="-1">Go to admin space</a>
+      </div>
+    </app-header>
+
+    <div hidden$="[[!hasCoverImage]]">
+      <shop-image src="[[shopAdminsResources.imageCover]]" class="hero-image">
+      </shop-image>
+    </div>
+      <iron-pages selected="{{selected}}">
+        <div>
+          <div class="layout horizontal center-justified">
+            <paper-tabs id="menu" scrollable="" selected="{{displayTag}}" no-bar="" attr-for-selected="label">
+                <template is="dom-repeat" items="[[tags]]" as="tag">
+                    <paper-tab label="{{tag.tag}}">[[tag.tag]]</paper-tab>
+                </template>
+            </paper-tabs>
+          </div>
+          <iron-pages selected="{{displayTag}}" attr-for-selected="name">
+            <div name="{{displayTag}}">
+              <ul class="grid">
+                <template is="dom-repeat" items="[[items]]" as="item" filter="{{computeFilterTags(displayTag)}}">
+                  <li>
+                    [[item.name]]
+                    <a href$="[[_getItemHref(item)]]">
+                      <shop-list-menu item="[[item]]"></shop-list-menu>
+                    </a>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </iron-pages>
+        </div>
+        <div>
+          <div id="content" hidden$="[[!isShopAdmin]]">
+            <div class="layout-center">
+              <paper-input id="input" placeholder="" label="Shop Name ショップ名" class="input" type="text" value="{{form.shopName}}">
+              </paper-input>
+              <paper-input label="Address  場所" value="{{form.shopAddres}}">
+              </paper-input>
+              <paper-input label="Phone  電話番号" value="{{form.shopPhone}}">
+              </paper-input>
+                <paper-menu>
+                  <paper-icon-item>
+                    <div item-icon="">日</div>
+                    <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.sundayAmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.sundayAmClose}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.sundayPmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.sundayPmClose}}">&gt;
+                    </paper-input>
+                  </paper-icon-item>
+                  <paper-icon-item>
+                    <div item-icon="">月</div>
+                    <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.mondayAmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.mondayAmClose}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.mondayPmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.mondayPmClose}}">
+                    </paper-input>
+                  </paper-icon-item>
+                  <paper-icon-item>
+                    <div item-icon="">火</div>
+                    <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.tuesdayAmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.tuesdayAmClose}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.tuesdayPmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.tuesdayPmClose}}">
+                    </paper-input>
+                  </paper-icon-item>
+                  <paper-icon-item>
+                    <div item-icon="">水</div>
+                    <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.wednesdayAmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.wednesdayAmClose}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.wednesdayPmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.wednesdayPmClose}}">
+                    </paper-input>
+                  </paper-icon-item>
+                  <paper-icon-item>
+                    <div item-icon="">木</div>
+                    <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.thursdayAmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.thursdayAmClose}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.thursdayPmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.thursdayPmClose}}">
+                    </paper-input>
+                  </paper-icon-item>
+                  <paper-icon-item>
+                    <div item-icon="">金</div>
+                    <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.fridayAmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.fridayAmClose}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.fridayPmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.fridayPmClose}}">
+                    </paper-input>
+                  </paper-icon-item>
+                  <paper-icon-item>
+                    <div item-icon="">土</div>
+                    <paper-input label="am open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.saturdayAmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.saturdayAmClose}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="pm open" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.saturdayPmOpen}}">
+                    </paper-input>
+                      &nbsp;   &nbsp;
+                    <paper-input label="close" auto-validate="" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" error-message="HH:MM" value="{{form.saturdayPmClose}}">
+                    </paper-input>
+                  </paper-icon-item>
+              </paper-menu>
+              <paper-textarea label="About your shop" value="{{form.about}}">
+              </paper-textarea>
+            </div>
+          </div>
+          <div id="content" hidden$="[[isShopAdmin]]">
+            <div class="layout-center">
+              Name  ショップ名: &nbsp;  &nbsp; [[form.shopName]]
+              <br>
+              <br>
+              Address 場所": &nbsp;  &nbsp; [[form.shopAddres]]
+              <br>
+              <br>
+              Phone Number 電話番号: &nbsp;   &nbsp; [[form.shopPhone]]
+            </div>
+          </div>
+        </div>
+        <div>
+          <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers="" style="transit-layer">
+              <google-map-marker map="[[map]]" latitude="[[lat]]" longitude="[[long]]" title="{{routeData.shop}}" draggable="false"></google-map-marker>
+          </google-map>
+        </div>
+        <div>
+          <div>
+            <div class="list">
+              <template is="dom-repeat" items="[[shopMessage]]" as="message">
+                <paper-item>
+                  <paper-item-body two-line="">
+                    <div>{{message.displayName}}</div>
+                    <div secondary="">{{message.chatText}}</div>
+                  </paper-item-body>
+                </paper-item>
+              </template>
+            </div>
+            <paper-material elevation="1" class="footer">
+              <paper-input id="message-input" label="New Message:" on-keyup="_handleInput"></paper-input>
+            </paper-material>
+          </div>
+        </div>
+        <div>
+            <div id="content">
+             Owner of this shop? [[isShopAdmin]]
+           </div>
+           <!-- Owner of this shop? [[isShopAdmin]] -->
+          <ul class="grid" hidden$="[[failure]]">
+            <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
+              <li>
+                <a href$="[[_getItemHrefB(item)]]"><shop-list-menu item="[[item]]"></shop-list-menu></a>
+                [[item.shopsTags]]
+                [[item.itemPrice]]
+              </li>
+            </template>
+          </ul>
+        </div>
+      </iron-pages>
+  </template>
+  <script>
+
+    Polymer({
+
+      is: 'shop-base',
+
+      properties: {
+
+        category: Object,
+
+        shopName: String,
+
+        shopNameUnique: String,
+
+        visible: Boolean,
+
+        route: Object,
+
+        routeData:{
+          type: Object,
+          notify: true
+
+        } ,
+
+        item: Object,
+
+        menuTitles: {
+          type: Object,
+          notify: true
+        },
+
+        addressQueryResult: {
+          type: Array,
+          notify: true
+        },
+
+        shopAbout: {
+          type: String,
+          notify: true,
+        },
+
+        shopAddress: {
+          type: Number,
+          notify: true,
+        },
+
+        displayTag: {
+          type: String,
+          notify: true
+        },
+
+        messageTextCheck: {
+          type: String,
+          notify: true
+        },
+
+        form: {
+          type: Object,
+          notify: true
+        },
+        long:  {
+          type: Number,
+          value: 35.6895,
+          notify: true
+        },
+
+        lat:  {
+          type: Number,
+          value: 139.6917,
+          notify: true
+        },
+
+        tags: {
+          type: Object,
+          notify: true
+        },
+
+        shopAdmin: {
+          type: Array,
+          notify: true
+        },
+
+        isShopAdmin: {
+          type: Boolean,
+          notify: true,
+          value: false,
+        },
+
+        shopAdminsResources: {
+          type: Object,
+          notify: true
+        },
+
+        hasCoverImage: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+      },
+
+      observers: [
+        '_shopChanged(routeData.shop)',
+        '_shopAdminQueryResultChanged(shopAdmin.splices)',
+        '_shopLoaded(form)',
+        '_imageCoverLoaded(shopAdminsResources)'
+
+      ],
+
+      _shopAdminQueryResultChanged: function(changeRecord) {
+        this.isShopAdmin = false;
+
+        if (changeRecord) {
+          changeRecord.indexSplices.forEach(function(s) {
+            this.isShopAdmin = true;
+          }, this);
+        }
+      },
+
+      ready: function() {
+        document.title = this.routeData.shop + ' - SHOP';
+        shopName = this.routeData.shop;
+
+        this.selected = "0";
+
+
+        this.menuTitles = [
+          {
+            name: 'menu',
+            title: 'Our Offerings'
+          },
+          {
+            name: 'about',
+            title: 'About Us'
+          },
+          {
+            name: 'location',
+            title: 'Our Location'
+          },
+          {
+            name: 'chat',
+            title: 'Chat with Us'
+          }
+        ];
+
+      },
+
+      _getListItems: function(items) {
+        // Return placeholder items when the items haven't loaded yet.
+        return items || [{},{},{},{},{},{},{},{},{},{}];
+      },
+
+      _getItemHref: function(item) {
+        // By returning null when `itemId` is undefined, the href attribute won't be set and
+        // the link will be disabled.
+        // console.log(this.routeData.shop);
+        return item.shopNameUnique ? ['/detail', item.shopNameUnique, item.itemName, item.itemid].join('/') : null;
+      },
+
+      _getItemHrefB: function(item) {
+        // By returning null when `itemId` is undefined, the href attribute won't be set and
+        // the link will be disabled.
+        // console.log(this.routeData.shop);
+        return item.shopNameUnique ? ['/detailofficialmenu', item.shopNameUnique, item.itemName, item.itemid].join('/') : null;
+      },
+
+      _shopChanged: function(shopName) {
+
+          this.debounce('change-shop', function() {
+            // Notify the category and the page's title
+            this.fire('change-shop', {
+              shopName: shopName.toUpperCase()
+            });
+          });
+
+          this.selected = "0";
+      },
+
+
+      _shopLoaded: function(form){
+        if (!form.shopLat == false && !form.shopLng == false){
+          this.lat = form.shopLat;
+          this.long = form.shopLng;
+        };
+      },
+
+      _imageCoverLoaded: function(shopAdminsResources){
+
+        if(!shopAdminsResources.imageCover == false){
+          this.hasCoverImage = true;
+
+        }
+      },
+
+      _getPluralizedQuantity: function(quantity) {
+        if (!quantity) {
+          return '';
+        }
+        var pluralizedQ = quantity === 1 ? 'item' : 'items';
+        return  '(' + quantity + ' ' + pluralizedQ + ')';
+      },
+
+      _notifyNetworkStatus: function() {
+        var oldOffline = this.offline;
+        this.offline =  !navigator.onLine;
+        // Show the snackbar if the user is offline when starting a new session
+        // or if the network status changed.
+        if (this.offline || (!this.offline && oldOffline === true)) {
+          if (!this._networkSnackbar) {
+            this._networkSnackbar = document.createElement('shop-snackbar');
+            Polymer.dom(this.root).appendChild(this._networkSnackbar);
+          }
+          Polymer.dom(this._networkSnackbar).innerHTML = this.offline ?
+              'You are offline' : 'You are online';
+          this._networkSnackbar.open();
+        }
+      },
+
+      computeFilterTags: function(string) {
+      if (!string) {
+        // set filter to null to disable filtering
+        return null;
+      } else {
+        // return a filter function for the current search string
+        string = string.toLowerCase();
+        return function(item) {
+          var japanese_name = item.shopsTags.toLowerCase();
+          var english_name = item.shopsTags.toLowerCase();
+          return (japanese_name.indexOf(string) != -1 ||
+              english_name.indexOf(string) != -1);
+
+        };
+      }
+    },
+
+    _handleInput: function(e) {
+       if (e.keyCode == 13) {
+
+        var timestamp = new Date().getTime()
+
+         var chatTexts = e.target.value;
+         var users = firebase.auth().currentUser;
+         var shopName = this.routeData.shop;
+         if (users != null && !this.routeData.shop == false && !e.target.value == false) {
+           var newChatKey = firebase.database().ref().child('/shopMessage/' + this.routeData.shop).push().key;
+           var updates = {};
+           var chatData = {
+             userid: users.uid,
+             displayName: users.displayName,
+             chatTime: timestamp,
+             chatText: chatTexts
+           };
+           updates['/shopMessage/'+ shopName + '/' + newChatKey] = chatData;
+           firebase.database().ref().update(updates);
+         };
+         e.target.value = ''
+       };
+     },
+    });
+
+  </script>
+
+</dom-module>
+</body></html>

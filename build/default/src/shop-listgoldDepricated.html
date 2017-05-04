@@ -1,0 +1,240 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="shop-category-data.html">
+<link rel="import" href="shop-menu.html">
+
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-gold-data.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+
+
+</head><body><dom-module id="shop-listgold">
+
+  <template>
+
+    <style include="shop-common-styles">
+
+      .hero-image {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        margin-bottom: 32px;
+      }
+
+      .hero-image {
+        --shop-image-img: {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+        };
+      }
+
+      .grid {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-justified);
+        margin: 0 10px 32px 10px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .grid li {
+        -webkit-flex: 1 1;
+        flex: 1 1;
+        -webkit-flex-basis: 33%;
+        flex-basis: 33%;
+        max-width: 33%;
+      }
+
+      .grid a {
+        display:block;
+        text-decoration: none;
+      }
+
+      @media (max-width: 767px) {
+/*        .hero-image {
+          display: none;
+        }*/
+
+        .grid  li {
+          -webkit-flex-basis: 50%;
+          flex-basis: 50%;
+          max-width: 50%;
+        }
+      }
+
+      shop-tabs, shop-tab {
+        --shop-tab-overlay: {
+          border-bottom: 2px solid var(--app-accent-color);
+        };
+      }
+
+      shop-tabs {
+        height: 100%;
+      }
+
+      shop-tab {
+        margin: 0 10px;
+      }
+
+      shop-tab a {
+        display: inline-block;
+        outline: none;
+        padding: 9px 5px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        color: var(--app-primary-color);
+      }
+
+    </style>
+
+    <!--
+      app-route provides the name of the shop.
+    -->
+    <app-route route="[[route]]" pattern="/:shop/:page" data="{{routeData}}">
+    </app-route>
+
+    <!--
+      shop-category-data provides the shop data for a given shop name.
+    -->
+    <header>
+      <h1>Welcome to [[routeData.shop]]!</h1>
+
+      <shop-tabs selected="menu" attr-for-selected="name">
+        <template is="dom-repeat" items="{{gold_categories}}" as="goldcats" initial-count="4">
+          <shop-tab name="[[goldcats.name]]">
+            <a href="[[goldcats.name]]">[[goldcats.title]]</a>
+          </shop-tab>
+        </template>
+      </shop-tabs>
+
+    </header>
+
+
+    <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
+      <shop-menu name="menu" route="[[routeData.shop]]"></shop-menu>
+      <shop-about name="about" route="[[routeData.shop]]"></shop-about>
+      <shop-location name="location" route="[[routeData.shop]]"></shop-location>
+      <shop-chat name="chat" route="[[routeData.shop]]"></shop-chat>
+    </iron-pages>
+
+
+    <!--
+      shop-network-warning shows a warning message when the items can't be rendered due
+      to network conditions.
+    -->
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'shop-listgold',
+
+      ready: function() {
+        document.title = this.routeData.shop + ' - SHOP';
+
+        this.gold_categories = [
+          {
+            name: 'menu',
+            title: 'Our Offerings'
+          },
+          {
+            name: 'about',
+            title: 'About Us'
+          },
+          {
+            name: 'location',
+            title: 'Our Location'
+          },
+          {
+            name: 'chat',
+            title: 'Chat with Us'
+          }
+        ];
+      },
+
+      properties: {
+
+        shop: Object,
+
+        route: Object,
+
+        routeData: Object,
+
+        visible: Boolean,
+
+        page: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_pageChanged'
+        },
+
+        offline: {
+          type: Boolean,
+          observer: '_offlineChanged'
+        },
+
+        failure: Boolean
+
+      },
+
+      observers: [
+        '_shopChanged(shop, visible)'
+      ],
+
+
+      _getItemHref: function(item) {
+        // By returning null when `itemId` is undefined, the href attribute won't be set and
+        // the link will be disabled.
+        return item.itemName ? ['/detail', item.shopName, item.itemName, item.itemid].join('/') : null;
+      },
+
+      _getPluralizedQuantity: function(quantity) {
+        if (!quantity) {
+          return '';
+        }
+        var pluralizedQ = quantity === 1 ? 'item' : 'items';
+        return  '(' + quantity + ' ' + pluralizedQ + ')';
+      },
+
+      _shopChanged: function(shop, visible) {
+        if (visible) {
+          this.debounce('change-section', function() {
+            // Notify the shop and the page's shopTitle
+            this.fire('change-section', {
+              shop: shop.shopName,
+              shopTitle: shop.shopTitle
+            });
+          });
+        }
+      },
+
+      _offlineChanged: function(offline) {
+        if (!offline) {
+
+        }
+      }
+
+    });
+
+  </script>
+
+</dom-module>
+</body></html>

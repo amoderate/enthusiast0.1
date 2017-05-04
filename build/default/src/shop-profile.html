@@ -1,0 +1,356 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-icons/maps-icons.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/google-map/google-map-directions.html">
+
+<link rel="import" href="shop-category-data.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-list-menu.html">
+
+
+</head><body><dom-module id="shop-profile">
+
+  <template>
+
+    <style include="shop-common-styles">
+
+      .hero-image {
+        position: relative;
+        height: 320px;
+        overflow: hidden;
+        margin-bottom: 32px;
+      }
+
+      .hero-image {
+        --shop-image-img: {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+        };
+      }
+      .actions {
+        color: var(--paper-red-a200);
+
+        font-weight: bold;
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+      }
+
+      .grid {
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+        @apply(--layout-justified);
+        margin: 0 10px 32px 10px;
+        padding: 0;
+        list-style: none;
+      }
+
+
+      .grid li {
+        -webkit-flex: 1 1;
+        flex: 1 1;
+        -webkit-flex-basis: 33%;
+        flex-basis: 33%;
+        max-width: 33%;
+        padding: 15px;
+
+      }
+
+      .grid a {
+        display:block;
+        text-decoration: none;
+      }
+
+      google-map {
+        height: 600px;
+      }
+
+      #content {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+        margin: 0 10px 32px 10px;
+
+      }
+
+      .tab-layout {
+        @apply(--layout-block);
+        @apply(--layout-self-center);
+
+        width: 75%;
+        max-width: 700px;
+        transition: opacity 0.4s;
+        opacity: 1;
+      }
+
+
+      paper-tabs {
+        @apply(--layout-block);
+        @apply(--layout-self-center);
+        --paper-tab-ink: #E57373;
+        font-family: 'Roboto', 'Noto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        width: 45%;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+
+      paper-tab.iron-selected {
+        color: #E57373;
+
+      }
+
+      paper-tab {
+      --paper-tab-ink: #E57373;
+      }
+
+
+      @media (max-width: 767px) {
+        .hero-image {
+          display: none;
+        }
+
+
+        .grid{
+          @apply(--layout-vertical);
+          margin: 0 0px 32px 0px;
+
+        }
+
+        .grid  li {
+          -webkit-flex-basis: 100%;
+          flex-basis: 100%;
+          max-width: 100%;
+        }
+
+
+        .logo {
+          text-align: center;
+          @apply(--layout-center);
+          padding-left: 7px;
+        }
+
+        paper-tabs {
+          @apply(--layout-center);
+          font-family: 'Roboto', 'Noto', sans-serif;
+          -webkit-font-smoothing: antialiased;
+          width: 85%;
+          text-transform: uppercase;
+          margin-bottom: 1px;
+        }
+      }
+
+    </style>
+
+    <!--
+      app-route provides the name of the category.
+    -->
+    <app-route route="[[route]]" pattern="/:user" data="{{routeData}}">
+    </app-route>
+
+    <firebase-auth user="{{user}}" provider="google" on-error="showError">
+    </firebase-auth>
+
+    <firebase-query path="/items" data="{{itemList}}" order-by-child="/user" equal-to="[[user.uid]]">
+    </firebase-query>
+
+
+    <firebase-query id="shopList" path="/items" data="{{shoplist}}" order-by-child="/shopNameUnique" start-at="[[shopNameUnique]]" end-at="[[shopNameUnique]]" limit-to-first="30">
+    </firebase-query>
+
+
+    <firebase-query path="/users/[[user.uid]]/favorite" data="{{favoriteList}}" order-by-child="/itemid">
+    </firebase-query>
+
+
+    <firebase-query id="geo" path="/geo" data="{{geo}}" order-by-child="/shopNameUnique" start-at="[[shopNameUnique]]" end-at="[[shopNameUnique]]" limit-to-first="30">
+    </firebase-query>
+
+
+    <firebase-query id="UserGeo" path="/users/[[user.uid]]/geo" data="{{usergeo}}" order-by-child="/shopNameUnique" start-at="[[shopNameUnique]]" end-at="[[shopNameUnique]]" limit-to-first="30">
+    </firebase-query>
+
+    <header>
+        <div id="content">
+          <paper-tabs selected="{{selected}}" no-bar="">
+              <paper-tab>My Uploads</paper-tab>
+              <paper-tab>My Favorites</paper-tab>
+              <paper-tab>Maps</paper-tab>
+          </paper-tabs>
+      </div>
+    </header>
+
+    <iron-pages selected="{{selected}}">
+      <div>
+          <div class="layout horizontal center-justified">
+            <ul class="grid" hidden$="[[failure]]">
+              <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
+                <li>
+                    <div>
+                      <a href$="[[_getItemHref(item)]]"><shop-list-menu item="[[item]]"></shop-list-menu></a>
+                      <div class="actions"> <paper-button toggles="" hidden$="[[!user]]" on-tap="deleteItem">Delete Item</paper-button> </div>
+                  </div>
+                </li>
+              </template>
+            </ul>
+          </div>
+      </div>
+      <div>
+          <div class="layout horizontal center-justified">
+            <ul class="grid" hidden$="[[failure]]">
+              <template is="dom-repeat" items="{{favoriteList}}" as="item" hidden$="[[failure]]">
+                <li>
+                  <a href$="[[_getItemHref(item)]]"><shop-list-menu item="[[item]]"></shop-list-menu></a>
+                  <div class="actions"> <paper-button toggles="" hidden$="[[!user]]" on-tap="unFavorite">remove from favorites</paper-button> </div>
+                </li>
+              </template>
+            </ul>
+          </div>
+      </div>
+      <div>
+        <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers="" style="transit-layer">
+          <template is="dom-repeat" items="{{geo}}" as="geo" hidden$="[[failure]]">
+            <google-map-marker map="[[map]]" latitude="{{geo.lat}}" longitude="{{geo.lng}}" draggable="false"></google-map-marker>
+          </template>
+        </google-map>
+      </div>
+    </iron-pages>
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'shop-profile',
+
+      properties: {
+
+        category: Object,
+
+        route: Object,
+
+        routeData: Object,
+
+        favoriteList: {
+          type: Object,
+          notify: true
+        },
+
+
+        shoplist: {
+          type: Object,
+          observer: 'shopCountChanged'
+        },
+
+        itemCategory: {
+          type: String,
+          value: "",
+          notify: true
+        },
+
+        visible: Boolean,
+
+        offline: {
+          type: Boolean,
+          observer: '_offlineChanged'
+        },
+
+        shopNameUnique: {
+          type: String,
+          value: "99999",
+          notify: true
+        },
+
+        failure: Boolean
+
+      },
+
+      _getListItems: function(items) {
+        // Return placeholder items when the items haven't loaded yet.
+        return items || [{},{},{},{},{},{},{},{},{},{}];
+      },
+
+      _getItemHref: function(item) {
+        // By returning null when `itemId` is undefined, the href attribute won't be set and
+        // the link will be disabled.
+        console.log(item)
+        return item.shopName ? ['/detail', item.shopNameUnique, item.itemName, item.itemid].join('/') : null;
+      },
+
+      deleteItem: function(event) {
+        var item = event.model.item
+        this.shopNameUnique = item.shopNameUnique;
+
+        firebase.database().ref().child('/items/' + item.itemid).remove();
+
+        this.itemCategory = item.theme
+        console.log(this.itemCategory)
+        console.log(this.usergeo)
+        console.log(this.itemList.shopNameUnique)
+
+
+        if (this.itemList.shopNameUnique == item.shopNameUnique) {
+          console.log("it's there")
+          //firebase.database().ref().child('/users/' + user.uid + "/geo/" + item.shopNameUnique).remove();
+          //firebase.database().ref().child('/geo/' + this.itemCategory +  "/" + item.shopNameUnique).remove();
+
+        }
+
+      },
+
+      unFavorite: function(event) {
+
+        var item = event.model.item
+
+        console.log('/items/' + item.itemid + '/userFavorites/' + this.user.uid);
+
+        firebase.database().ref().child('/items/' + item.itemid + '/userFavorites/' + this.user.uid).remove();
+
+        firebase.database().ref().child('/users/' + this.user.uid + '/favorite/' + item.itemid).remove();
+      },
+
+      _getPluralizedQuantity: function(quantity) {
+        if (!quantity) {
+          return '';
+        }
+        var pluralizedQ = quantity === 1 ? 'item' : 'items';
+        return  '(' + quantity + ' ' + pluralizedQ + ')';
+      },
+
+
+      _tryReconnect: function() {
+        this.$.categoryData.refresh();
+      },
+
+      _offlineChanged: function(offline) {
+        if (!offline) {
+          this._tryReconnect();
+        }
+      },
+
+      shopCountChanged: function(newData, oldData) {
+        console.log(newData)
+
+        }
+
+    });
+
+  </script>
+
+</dom-module>
+</body></html>

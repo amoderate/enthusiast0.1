@@ -1,0 +1,158 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="shop-button.html">
+<link rel="import" href="shop-category-data.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-select.html">
+<link rel="import" href="shop-list-item-detail.html">
+<link rel="import" href="shop-list-detail-image.html">
+<link rel="import" href="../bower_components/marked-element/marked-element.html">
+
+
+
+</head><body><dom-module id="shop-detail">
+
+  <template>
+
+    <style include="shop-common-styles shop-button shop-select">
+
+    a {
+      text-decoration: none;
+      color: var(--app-primary-color);
+    }
+
+      shop-button {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+
+      }
+
+      #blog {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+
+      }
+
+
+      @media (max-width: 767px) {
+
+      }
+
+    </style>
+
+    <!--
+      app-route provides the name of the category and the item.
+    -->
+
+    <app-route route="[[route]]" pattern="/:shop/:item/:itemid" data="{{routeData}}">
+      </app-route>
+
+    <!--
+      shop-category-data provides the item data for a given category and item name.
+    -->
+
+    <firebase-query id="query" path="/items" data="{{items}}" order-by-child="/itemid" start-at="{{routeData.itemid}}" end-at="{{routeData.itemid}}">
+    </firebase-query>
+
+    <div id="content">
+      <template is="dom-repeat" items="{{items}}" as="item">
+        <shop-list-detail-image item="[[item]]"> </shop-list-detail-image>
+
+          <div id="blog">
+            <paper-material elevation="0">
+              <marked-element markdown="{{item.blog}}">
+                <div class="markdown-html"></div>
+              </marked-element>
+            </paper-material>
+          </div>
+
+        <shop-button>
+          <button on-tap="_goToShopPage" aria-label="Visit Shop">
+            <a href$="[[_getItemHref(item)]]">Visit [[item.shopName]]</a>
+          </button>
+        </shop-button>
+      
+    </template>
+    </div>
+    <!--
+      shop-network-warning shows a warning message when the items can't be rendered due
+      to network conditions.
+    -->
+
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'shop-detail',
+
+      properties: {
+
+        item: Object,
+
+        route: Object,
+
+        routeData: Object,
+
+        visible: Boolean,
+
+        failure: Boolean
+
+      },
+
+      observers: [
+      ],
+
+      _unescapeText: function(text) {
+        var elem = document.createElement('textarea');
+        elem.innerHTML = text;
+        return elem.textContent;
+      },
+
+      _formatPrice: function(price) {
+        return price ? '$' + price.toFixed(2) : '';
+      },
+
+      _addToCart: function() {
+        // This event will be handled by shop-app.
+        this.fire('add-cart-item', {
+          item: this.items,
+          quantity: parseInt(this.$.quantitySelect.value, 10),
+          size: this.$.sizeSelect.value
+        });
+      },
+
+      _getItemHref: function(item) {
+        // By returning null when `itemId` is undefined, the href attribute won't be set and
+        // the link will be disabled.
+        //console.log(['/base', item.shopName].join('/'))
+        return item.shopName ? ['/base', item.shopNameUnique].join('/') : null;
+      },
+
+      _isDefined: function(item) {
+        return item != null;
+      },
+
+      _goToShopPage: function() {
+        //console.log("SHOP PAGE: " + this.routeData.shopName);
+        //console.log(this.routeData.shop)
+      },
+
+
+    });
+
+  </script>
+
+</dom-module>
+</body></html>
