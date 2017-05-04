@@ -332,6 +332,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     >
     </firebase-query>
 
+    <firebase-query id="UserGeo"
+      path="/users/[[user.uid]]/geo"
+      data="{{usergeo}}"
+      order-by-child="/shopNameUnique"
+      start-at="[[shopNameUnique]]"
+      end-at="[[shopNameUnique]]"
+      limit-to-first=30
+    >
+    </firebase-query>
+
     <div id="content" hidden$="[[failure]]">
 
       <template is="dom-repeat" items="{{items}}" as="item" hidden$="[[failure]]">
@@ -693,12 +703,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      _uploadShopClick: function(e) {
        //check to see if the form is correctly filled out.
 
-         if (!!user || !this.items || !this.shopName  || !this.itemName || !this.theme || !this.shopTags){
-             if (!!user){
-               this.toast1Text = "You need to be logged in"
-             }
+         var user = firebase.auth().currentUser;
 
-          else if (!this.items) {
+         if (user == null || !this.items || !this.shopName  || !this.itemName || !this.theme || !this.shopTags){
+            if (user == null){
+               console.log(user)
+               this.toast1Text = "You need to be logged in"
+               toast1.open()
+             }
+          else if (this.items.length == 0) {
               console.log(this.items)
               this.toast1Text = "You need to be upload an image"
               toast1.open()
@@ -724,10 +737,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               toast1.open()
           }
 
+          else {
+            this.toast1Text = "Uploading post"
+            toast1.open()
+          }
+
        }
 
-       else
-       {
+       else {
          var newTagKey = firebase.database().ref().child('imageDraft/').push().key;
          var newItemKey = firebase.database().ref().child('items').push().key;
 
@@ -757,12 +774,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 lng: shopLngs,
                 lat: shopLats
               };
-              updatesGeos['/geo/' + this.theme + '/' + newGeoKey] = geoData;
-              updatesGeos['/users/' + user.uid + "/geo/" + newGeoKey] = geoData;
-
+              updatesGeos['/geo/' + this.theme + '/' + this.shopNameUnique] = geoData;
+              if (this.usergeo.length == 0){
+              updatesGeos['/users/' + user.uid + "/geo/" + this.shopNameUnique] = geoData;
+              }
               firebase.database().ref().update(updatesGeos);
             };
-
          }
 
          updatesTags = {};

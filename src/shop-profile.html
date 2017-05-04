@@ -69,6 +69,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         -webkit-flex-basis: 33%;
         flex-basis: 33%;
         max-width: 33%;
+        padding: 15px;
+
       }
 
       .grid a {
@@ -172,15 +174,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       >
     </firebase-auth>
 
-    <!--
-      shop-category-data provides the category data for a given category name.
-    -->
-    <shop-category-data
-        category-name="[[routeData.category]]"
-        category="{{category}}"
-        failure="{{failure}}">
-    </shop-category-data>
-
     <firebase-query
       path="/items"
       data="{{itemList}}"
@@ -190,9 +183,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </firebase-query>
 
 
+    <firebase-query id="shopList"
+      path="/items"
+      data="{{shoplist}}"
+      order-by-child="/shopNameUnique"
+      start-at="[[shopNameUnique]]"
+      end-at="[[shopNameUnique]]"
+      limit-to-first=30
+
+      >
+    </firebase-query>
+
+
     <firebase-query
       path="/users/[[user.uid]]/favorite"
-      order-by-child="/itemid"
       data="{{favoriteList}}"
       order-by-child="/itemid"
     >
@@ -200,8 +204,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
     <firebase-query id="geo"
-      path="/geo/[[category.title]]"
+      path="/geo"
       data="{{geo}}"
+      order-by-child="/shopNameUnique"
+      start-at="[[shopNameUnique]]"
+      end-at="[[shopNameUnique]]"
+      limit-to-first=30
+    >
+    </firebase-query>
+
+
+    <firebase-query id="UserGeo"
+      path="/users/[[user.uid]]/geo"
+      data="{{usergeo}}"
+      order-by-child="/shopNameUnique"
+      start-at="[[shopNameUnique]]"
+      end-at="[[shopNameUnique]]"
       limit-to-first=30
     >
     </firebase-query>
@@ -273,11 +291,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           notify: true
         },
 
+
+        shoplist: {
+          type: Object,
+          observer: 'shopCountChanged'
+        },
+
+        itemCategory: {
+          type: String,
+          value: "",
+          notify: true
+        },
+
         visible: Boolean,
 
         offline: {
           type: Boolean,
           observer: '_offlineChanged'
+        },
+
+        shopNameUnique: {
+          type: String,
+          value: "99999",
+          notify: true
         },
 
         failure: Boolean
@@ -298,17 +334,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       deleteItem: function(event) {
         var item = event.model.item
-        console.log(item)
-        firebase.database().ref().child('items/' + item.itemid).remove();
+        this.shopNameUnique = item.shopNameUnique;
+
+        firebase.database().ref().child('/items/' + item.itemid).remove();
+
+        this.itemCategory = item.theme
+        console.log(this.itemCategory)
+        console.log(this.usergeo)
+        console.log(this.itemList.shopNameUnique)
+
+
+        if (this.itemList.shopNameUnique == item.shopNameUnique) {
+          console.log("it's there")
+          //firebase.database().ref().child('/users/' + user.uid + "/geo/" + item.shopNameUnique).remove();
+          //firebase.database().ref().child('/geo/' + this.itemCategory +  "/" + item.shopNameUnique).remove();
+
+        }
+
       },
 
       unFavorite: function(event) {
 
         var item = event.model.item
+
         console.log('/items/' + item.itemid + '/userFavorites/' + this.user.uid);
 
         firebase.database().ref().child('/items/' + item.itemid + '/userFavorites/' + this.user.uid).remove();
-
 
         firebase.database().ref().child('/users/' + this.user.uid + '/favorite/' + item.itemid).remove();
       },
@@ -330,7 +381,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!offline) {
           this._tryReconnect();
         }
-      }
+      },
+
+      shopCountChanged: function(newData, oldData) {
+        console.log(newData)
+
+        }
 
     });
 

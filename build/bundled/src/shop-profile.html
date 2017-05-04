@@ -38,12 +38,15 @@
         list-style: none;
       }
 
+
       .grid li {
         -webkit-flex: 1 1;
         flex: 1 1;
         -webkit-flex-basis: 33%;
         flex-basis: 33%;
         max-width: 33%;
+        padding: 15px;
+
       }
 
       .grid a {
@@ -98,8 +101,11 @@
         .hero-image {
           display: none;
         }
+
+
         .grid{
           @apply(--layout-vertical);
+          margin: 0 0px 32px 0px;
 
         }
 
@@ -108,6 +114,7 @@
           flex-basis: 100%;
           max-width: 100%;
         }
+
 
         .logo {
           text-align: center;
@@ -134,19 +141,23 @@
     <firebase-auth user="{{user}}" provider="google" on-error="showError">
     </firebase-auth>
 
-    
-    <shop-category-data category-name="[[routeData.category]]" category="{{category}}" failure="{{failure}}">
-    </shop-category-data>
-
     <firebase-query path="/items" data="{{itemList}}" order-by-child="/user" equal-to="[[user.uid]]">
     </firebase-query>
 
 
-    <firebase-query path="/users/[[user.uid]]/favorite" order-by-child="/itemid" data="{{favoriteList}}">
+    <firebase-query id="shopList" path="/items" data="{{shoplist}}" order-by-child="/shopNameUnique" start-at="[[shopNameUnique]]" end-at="[[shopNameUnique]]" limit-to-first="30">
     </firebase-query>
 
 
-    <firebase-query id="geo" path="/geo/[[category.title]]" data="{{geo}}" limit-to-first="30">
+    <firebase-query path="/users/[[user.uid]]/favorite" data="{{favoriteList}}" order-by-child="/itemid">
+    </firebase-query>
+
+
+    <firebase-query id="geo" path="/geo" data="{{geo}}" order-by-child="/shopNameUnique" start-at="[[shopNameUnique]]" end-at="[[shopNameUnique]]" limit-to-first="30">
+    </firebase-query>
+
+
+    <firebase-query id="UserGeo" path="/users/[[user.uid]]/geo" data="{{usergeo}}" order-by-child="/shopNameUnique" start-at="[[shopNameUnique]]" end-at="[[shopNameUnique]]" limit-to-first="30">
     </firebase-query>
 
     <header>
@@ -165,8 +176,10 @@
             <ul class="grid" hidden$="[[failure]]">
               <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
                 <li>
-                  <a href$="[[_getItemHref(item)]]"><shop-list-profile item="[[item]]"></shop-list-profile></a>
-                  <div class="actions"> <paper-button toggles="" hidden$="[[!user]]" on-tap="deleteItem">Delete Item</paper-button> </div>
+                    <div>
+                      <a href$="[[_getItemHref(item)]]"><shop-list-menu item="[[item]]"></shop-list-menu></a>
+                      <div class="actions"> <paper-button toggles="" hidden$="[[!user]]" on-tap="deleteItem">Delete Item</paper-button> </div>
+                  </div>
                 </li>
               </template>
             </ul>
@@ -177,7 +190,7 @@
             <ul class="grid" hidden$="[[failure]]">
               <template is="dom-repeat" items="{{favoriteList}}" as="item" hidden$="[[failure]]">
                 <li>
-                  <a href$="[[_getItemHref(item)]]"><shop-list-profile item="[[item]]"></shop-list-profile></a>
+                  <a href$="[[_getItemHref(item)]]"><shop-list-menu item="[[item]]"></shop-list-menu></a>
                   <div class="actions"> <paper-button toggles="" hidden$="[[!user]]" on-tap="unFavorite">remove from favorites</paper-button> </div>
                 </li>
               </template>
@@ -195,7 +208,7 @@
 
   </template>
 
-  <script>Polymer({is:"shop-profile",properties:{category:Object,route:Object,routeData:Object,favoriteList:{type:Object,notify:!0},visible:Boolean,offline:{type:Boolean,observer:"_offlineChanged"},failure:Boolean},_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(e){return console.log(e),e.shopName?["/detail",e.shopNameUnique,e.itemName,e.itemid].join("/"):null},deleteItem:function(e){var t=e.model.item;console.log(t),firebase.database().ref().child("items/"+t.itemid).remove()},unFavorite:function(e){var t=e.model.item;console.log("/items/"+t.itemid+"/userFavorites/"+this.user.uid),firebase.database().ref().child("/items/"+t.itemid+"/userFavorites/"+this.user.uid).remove(),firebase.database().ref().child("/users/"+this.user.uid+"/favorite/"+t.itemid).remove()},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_tryReconnect:function(){this.$.categoryData.refresh()},_offlineChanged:function(e){e||this._tryReconnect()}});</script>
+  <script>Polymer({is:"shop-profile",properties:{category:Object,route:Object,routeData:Object,favoriteList:{type:Object,notify:!0},shoplist:{type:Object,observer:"shopCountChanged"},itemCategory:{type:String,value:"",notify:!0},visible:Boolean,offline:{type:Boolean,observer:"_offlineChanged"},shopNameUnique:{type:String,value:"99999",notify:!0},failure:Boolean},_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(e){return console.log(e),e.shopName?["/detail",e.shopNameUnique,e.itemName,e.itemid].join("/"):null},deleteItem:function(e){var t=e.model.item;this.shopNameUnique=t.shopNameUnique,firebase.database().ref().child("/items/"+t.itemid).remove(),this.itemCategory=t.theme,console.log(this.itemCategory),console.log(this.usergeo),console.log(this.itemList.shopNameUnique),this.itemList.shopNameUnique==t.shopNameUnique&&console.log("it's there")},unFavorite:function(e){var t=e.model.item;console.log("/items/"+t.itemid+"/userFavorites/"+this.user.uid),firebase.database().ref().child("/items/"+t.itemid+"/userFavorites/"+this.user.uid).remove(),firebase.database().ref().child("/users/"+this.user.uid+"/favorite/"+t.itemid).remove()},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_tryReconnect:function(){this.$.categoryData.refresh()},_offlineChanged:function(e){e||this._tryReconnect()},shopCountChanged:function(e,t){console.log(e)}});</script>
 
 </dom-module>
 </body></html>

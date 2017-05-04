@@ -116,6 +116,7 @@
         -webkit-flex-basis: 33%;
         flex-basis: 33%;
         max-width: 33%;
+        padding: 3px;
       }
 
       .grid a {
@@ -169,6 +170,10 @@
 
       }
 
+      paper-button {
+        margin-top: 3px;
+      }
+
       paper-tab {
       --paper-tab-ink: #E57373;
       }
@@ -176,7 +181,7 @@
       #repostButton {
         font-weight: bold;
         @apply(--layout-horizontal);
-        @apply(--layout-center-justified);;
+        @apply(--layout-center-justified);
       }
 
 
@@ -190,20 +195,12 @@
 
         }
 
-
-        .grid li {
-          -webkit-flex: 1 1;
-          flex: 1 1;
-          -webkit-flex-basis: 33%;
-          flex-basis: 33%;
-          max-width: 33%;
-        }
-
-
         .grid  li {
           -webkit-flex-basis: 100%;
           flex-basis: 100%;
           max-width: 100%;
+
+
         }
 
         .logo {
@@ -230,6 +227,7 @@
 
     <firebase-auth id="auth" user="{{user}}" provider="google" on-error="showError">
     </firebase-auth>
+
     <shop-category-data id="categoryData" category-name="[[routeData.category]]" category="{{category}}" failure="{{failure}}">
     </shop-category-data>
 
@@ -244,7 +242,6 @@
 
 
     <shop-image alt="[[category.title]]" src="[[category.image]]" placeholder-img="[[category.placeholder]]" class="hero-image"></shop-image>
-
 
     <header>
       <h1>[[category.title]]</h1>
@@ -282,7 +279,9 @@
       <div>
         <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers="" style="transit-layer">
           <template is="dom-repeat" items="{{geo}}" as="geo" hidden$="[[failure]]">
-            <google-map-marker map="[[map]]" latitude="{{geo.lat}}" longitude="{{geo.lng}}" draggable="false"></google-map-marker>
+            <div>
+              <google-map-marker map="[[map]]" latitude="{{geo.lat}}" longitude="{{geo.lng}}" draggable="false"></google-map-marker>
+            </div>
           </template>
         </google-map>
       </div>
@@ -290,7 +289,7 @@
 
   </template>
 
-  <script>Polymer({is:"shop-list",properties:{category:Object,route:Object,routeData:Object,items:Object,visible:Boolean,shared:{type:Boolean},offline:{type:Boolean,observer:"_offlineChanged"},failure:Boolean},observers:["_categoryChanged(category, visible)","_modeChanged(category)"],_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},repostItem:function(e){var t=e.model.item;console.log(t),console.log("was clicked");var o=firebase.auth().currentUser,i={},r={};if(null!=o.uid){var n={user:o.uid};r["/items/"+t.itemid+"/userFavorites/"+o.uid+"/"]=n,firebase.database().ref().update(r);var s={itemLng:t.itemLat,itemLat:t.itemLng,itemName:t.itemName,shopAddres:t.shopAddres,shopId:t.shopId,shopName:t.shopName,shopNameUnique:t.shopNameUnique,shopPhone:t.shopPhone,shopTags:t.shopsTags,theme:t.theme,url:t.url,user:t.user,itemid:t.itemid};i["/users/"+o.uid+"/favorite/"+t.itemid+"/"]=s,firebase.database().ref().update(i)}},_getItemHref:function(e){return e.shopName?["/detail",e.shopNameUnique,e.itemName,e.itemid].join("/"):null},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_categoryChanged:function(e,t){t&&this.debounce("change-section",function(){this.fire("change-section",{category:e.name,title:e.title})})},_modeChanged:function(e){this.debounce("change-shop",function(){this.fire("change-shop",{shopName:"EXPLORE"})})},_tryReconnect:function(){this.$.categoryData.refresh()},_offlineChanged:function(e){e||this._tryReconnect()},_shared:function(e){return currentUser=firebase.auth().currentUser,console.log(currentUser.uid),console.log(e),console.log(e[currentUser.uid]),currentUser.uid in e}});</script>
+  <script>Polymer({is:"shop-list",properties:{category:Object,route:Object,routeData:Object,items:Object,visible:Boolean,shared:{type:Boolean},offline:{type:Boolean,observer:"_offlineChanged"},failure:Boolean},observers:["_categoryChanged(category, visible)","_modeChanged(category)"],_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},repostItem:function(e){var t=e.model.item;console.log(t),console.log("was clicked");var i=firebase.auth().currentUser,o={},r={};if(null!=i.uid){var n={user:i.uid};r["/items/"+t.itemid+"/userFavorites/"+i.uid+"/"]=n,firebase.database().ref().update(r);var a={itemLng:t.itemLat,itemLat:t.itemLng,itemName:t.itemName,shopAddres:t.shopAddres,shopId:t.shopId,shopName:t.shopName,shopNameUnique:t.shopNameUnique,shopPhone:t.shopPhone,shopTags:t.shopsTags,theme:t.theme,url:t.url,user:t.user,itemid:t.itemid};o["/users/"+i.uid+"/favorite/"+t.itemid+"/"]=a,firebase.database().ref().update(o)}},_getItemHref:function(e){return e.shopName?["/detail",e.shopNameUnique,e.itemName,e.itemid].join("/"):null},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_categoryChanged:function(e,t){t&&this.debounce("change-section",function(){this.fire("change-section",{category:e.name,title:e.title})})},_modeChanged:function(e){this.debounce("change-shop",function(){this.fire("change-shop",{shopName:"EXPLORE"})})},_tryReconnect:function(){this.$.categoryData.refresh()},_offlineChanged:function(e){e||this._tryReconnect()},_shared:function(e){if(e)return currentUser=firebase.auth().currentUser,currentUser.uid in e}});</script>
 
 </dom-module>
 </body></html>

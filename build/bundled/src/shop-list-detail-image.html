@@ -1,0 +1,66 @@
+<html><head><link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+
+
+</head><body><dom-module id="shop-list-detail-image">
+
+  <template>
+
+    <style>
+
+      :host {
+        @apply(--layout-vertical);
+        @apply(--layout-center-justified);
+        text-align: center;
+        margin: 0 52px;
+      }
+
+      iron-image {
+        width:50%; height:250px; background-color: lightgray;
+        margin: 0px 0 0px;
+      }
+
+      .title {
+        color: var(--app-primary-color);
+        font-weight: bold;
+      }
+
+      .price {
+        color: var(--app-secondary-color);
+      }
+
+      @media (max-width: 767px) {
+        :host {
+          margin: 0 0px;
+        }
+        #img {
+          width: auto;
+        }
+        iron-image {
+            width:100%; height:250px; background-color: lightgray;
+            margin: 0px 0 0px;
+        }
+          iron-image::content img {
+            width: 100%;
+        }
+      }
+
+      css-small {
+        font-size: 10px;
+        color: var(--app-secondary-color);
+      }
+
+    </style>
+
+    <div id="img">
+        <iron-image sizing="cover" preload="" fade="" src="[[item.url]]"></iron-image>
+    </div>
+
+
+  </template>
+
+  <script>Polymer({is:"shop-list-detail-image",properties:{item:Object},_formatPrice:function(e){return e?"$"+e.toFixed(2):""}});</script>
+
+</dom-module>
+</body></html>

@@ -514,6 +514,81 @@
   <script>Polymer({is:"shop-shop-home",properties:{category:Object,route:Object,routeData:Object,item:Object,menuTitles:Object,visible:Boolean,page:{type:String,reflectToAttribute:!0,observer:"_pageChanged"},_shouldShowTabs:{computed:"_computeShouldShowTabs(page, smallScreen)"},failure:Boolean},listeners:{announce:"_onAnnounce"},ready:function(){document.title=this.routeData.shop+" - SHOP",this.menuTitles=[{name:"menu",title:"Our Offerings"},{name:"about",title:"About Us"},{name:"location",title:"Our Location"},{name:"chat",title:"Chat with Us"}]},_getListItems:function(e){return e||[{},{},{},{},{},{},{},{},{},{}]},_getItemHref:function(e){return console.log(e),e.shopName?["/detail",e.shopName,e.itemName,e.itemid].join("/"):null},_getMenuHref:function(e){return console.log(e),this.routeData.shop?["/shop-home",this.routeData.shop,e.name].join("/"):null},_getPluralizedQuantity:function(e){if(!e)return"";var t=1===e?"item":"items";return"("+e+" "+t+")"},_tryReconnect:function(){this.$.categoryData.refresh()},_pageLoaded:function(e){this._ensureLazyLoaded(),e&&this.async(function(){this.$.header.resetLayout()},1)},_notifyNetworkStatus:function(){var e=this.offline;this.offline=!navigator.onLine,(this.offline||!this.offline&&e===!0)&&(this._networkSnackbar||(this._networkSnackbar=document.createElement("shop-snackbar"),Polymer.dom(this.root).appendChild(this._networkSnackbar)),Polymer.dom(this._networkSnackbar).innerHTML=this.offline?"You are offline":"You are online",this._networkSnackbar.open())},_toggleDrawer:function(){this.drawerOpened=!this.drawerOpened},_onAnnounce:function(e){this._announce(e.detail)},_announce:function(e){this._a11yLabel="",this.debounce("_a11yAnnouncer",function(){this._a11yLabel=e},100)}});</script>
 
 </dom-module>
+<dom-module id="shop-list-profile" assetpath="/">
+
+  <template>
+
+    <style>
+
+      :host {
+        @apply(--layout-vertical);
+        @apply(--layout-center-justified);
+        text-align: center;
+        margin: 0 52px;
+      }
+      #img {
+        width: 250px;
+
+      }
+      iron-image {
+          width:100%; height:250px; background-color: lightgray;
+          margin: 32px 0 16px;
+          overflow: hidden;
+      }
+        iron-image::content img {
+          width: 100%;
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: -9999px;
+          right: -9999px;
+          max-width: none;
+      }
+
+      .title {
+        color: var(--app-primary-color);
+        font-weight: bold;
+      }
+
+      .price {
+        color: var(--app-secondary-color);
+      }
+
+      @media (max-width: 767px) {
+        :host {
+          margin: 0 12px;
+        }
+        #img {
+          width: auto;
+        }
+        iron-image {
+            width:100%; height:250px; background-color: lightgray;
+            margin: 0px 0 0px;
+        }
+          iron-image::content img {
+            width: 100%;
+        }
+      }
+
+      css-small {
+        font-size: 10px;
+        color: var(--app-secondary-color);
+      }
+
+    </style>
+
+    <div id="img">
+        <iron-image sizing="cover" preload="" fade="" src="[[item.url]]"></iron-image>
+    </div>
+
+    <div class="title">[[item.itemName]] by [[item.shopName]]</div>
+    <css-small>[[item.shopAddres]]</css-small>
+
+  </template>
+
+  <script>Polymer({is:"shop-list-profile",properties:{item:Object},_formatPrice:function(e){return e?"$"+e.toFixed(2):""}});</script>
+
+</dom-module>
 <dom-module id="iron-localstorage" assetpath="../bower_components/iron-localstorage/"></dom-module>
 <script>Polymer({is:"iron-localstorage",properties:{name:{type:String,value:""},value:{type:Object,notify:!0},useRaw:{type:Boolean,value:!1},autoSaveDisabled:{type:Boolean,value:!1},errorMessage:{type:String,notify:!0},_loaded:{type:Boolean,value:!1}},observers:["_debounceReload(name,useRaw)","_trySaveValue(autoSaveDisabled)","_trySaveValue(value.*)"],ready:function(){this._boundHandleStorage=this._handleStorage.bind(this)},attached:function(){window.addEventListener("storage",this._boundHandleStorage)},detached:function(){window.removeEventListener("storage",this._boundHandleStorage)},_handleStorage:function(e){e.key==this.name&&this._load(!0)},_trySaveValue:function(){this._doNotSave||this._loaded&&!this.autoSaveDisabled&&this.debounce("save",this.save)},_debounceReload:function(){this.debounce("reload",this.reload)},reload:function(){this._loaded=!1,this._load()},_load:function(e){try{var a=window.localStorage.getItem(this.name)}catch(e){this.errorMessage=e.message,this._error("Could not save to localStorage.  Try enabling cookies for this page.",e)}if(null===a)this._loaded=!0,this._doNotSave=!0,this.value=null,this._doNotSave=!1,this.fire("iron-localstorage-load-empty",{externalChange:e});else{if(!this.useRaw)try{a=JSON.parse(a)}catch(e){this.errorMessage="Could not parse local storage value",Polymer.Base._error("could not parse local storage value",a),a=null}this._loaded=!0,this._doNotSave=!0,this.value=a,this._doNotSave=!1,this.fire("iron-localstorage-load",{externalChange:e})}},save:function(){var e=this.useRaw?this.value:JSON.stringify(this.value);try{null===this.value||void 0===this.value?window.localStorage.removeItem(this.name):window.localStorage.setItem(this.name,e)}catch(e){this.errorMessage=e.message,Polymer.Base._error("Could not save to localStorage. Incognito mode may be blocking this action",e)}}});</script>
 <dom-module id="shop-cart-data" assetpath="/">
