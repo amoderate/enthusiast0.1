@@ -19,6 +19,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/google-map/google-map.html">
+
 <link rel="import" href="../bower_components/google-map/google-map-directions.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="shop-category-data.html">
@@ -268,10 +269,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </div>
       <div>
         <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers style="transit-layer">
-          <template is="dom-repeat" items="{{geo}}" as="geo" hidden$="[[failure]]">
-            <div>
-              <google-map-marker  map="[[map]]" latitude="{{geo.lat}}" longitude="{{geo.lng}}"  draggable="false"></google-map-marker>
-            </div>
+          <template is="dom-repeat" items="{{geo}}" hidden$="[[failure]]">
+              <google-map-marker  map="{{map}}" latitude="{{item.lat}}" longitude="{{item.lng}}"  draggable="false"  click-events="true" on-google-map-marker-click="google_map_marker_click">
+              </google-map-marker>
           </template>
         </google-map>
       </div>
@@ -294,6 +294,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         routeData: Object,
 
         items: Object,
+
+        geo: {
+          type: Object,
+          notify: true
+        },
 
         visible: Boolean,
 
@@ -322,6 +327,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return items || [{},{},{},{},{},{},{},{},{},{}];
       },
 
+
+
+      google_map_marker_click: function(event, detail, sender){
+        console.log("it was clicked");
+        console.log(event);
+        var marker = event.target.marker;
+        var item= event.model.item;
+        console.log(item)
+        var contentString = "<span>" + item.shopName + "</span>";
+        var infowindow = new google.maps.InfoWindow({
+            content: contentString
+        });
+        infowindow.open(this.$.map, marker);
+        lastOpened = infowindow;
+
+        },
 
       repostItem: function(event) {
         var item = event.model.item
@@ -421,5 +442,4 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     });
 
   </script>
-
 </dom-module>
