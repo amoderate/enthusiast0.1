@@ -275,7 +275,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div>
           <div id="contentsub" class="layout horizontal center-justified">
             <paper-tabs id="menu" scrollable selected="{{displayTag}}" no-bar attr-for-selected="label">
-                <template is="dom-repeat" items="[[tags]]" as="tag">
+                <template is="dom-repeat" items="[[tags]]" as="tag" filter="findItems">
                     <paper-tab label="{{tag.tag}}">[[tag.tag]]</paper-tab>
                 </template>
             </paper-tabs>
@@ -567,6 +567,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       ],
 
+
+
+
       _shopAdminQueryResultChanged: function(changeRecord) {
         this.isShopAdmin = false;
 
@@ -608,6 +611,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _getListItems: function(items) {
         // Return placeholder items when the items haven't loaded yet.
         return items || [{},{},{},{},{},{},{},{},{},{}];
+      },
+
+      failure: function(){
+
       },
 
       _getItemHref: function(item) {
@@ -676,7 +683,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
+
+      findItems: function(item){
+        if (!item) {
+          // set filter to null to disable filtering
+          return null;
+        } else {
+          var ref = this.items;
+          var exists = true;
+
+
+          ref.forEach(function(childSnapshot) {
+            var key = childSnapshot.key; // "ada"
+
+              console.log(item.tag)
+              console.log(childSnapshot.shopsTags)
+            // Cancel enumeration
+            exists = childSnapshot.shopsTags == item.tag;
+            return true;
+        });
+        return exists;
+        }
+      },
+
       computeFilterTags: function(string) {
+        console.log(string)
       if (!string) {
         // set filter to null to disable filtering
         return null;

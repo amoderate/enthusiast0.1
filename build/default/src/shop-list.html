@@ -74,6 +74,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         text-decoration: none;
       }
 
+
+
       google-map {
         height: 600px;
       }
@@ -303,8 +305,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         console.log(event);
         var marker = event.target.marker;
         var item= event.model.item;
-        console.log(item)
-        var contentString = "<span>" + item.shopName + "</span>";
+        var url = this._getShopHref(item);
+
+        var contentString = '<style> a {color: var(--app-primary-color); display:block;text-decoration: none;} </style> <a href="' + url + '">' + item.shopName + '</a>'
+        console.log(contentString);
         var infowindow = new google.maps.InfoWindow({
             content: contentString
         });
@@ -360,6 +364,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // the link will be disabled.
 
         return item.shopName ? ['/detail', item.shopNameUnique, item.itemName, item.itemid].join('/') : null;
+      },
+
+
+      _getShopHref: function(item) {
+        // By returning null when `itemId` is undefined, the href attribute won't be set and
+        // the link will be disabled.
+
+        return item.shopName ? ['/base', item.shopNameUnique].join('/') : null;
       },
 
       _getPluralizedQuantity: function(quantity) {

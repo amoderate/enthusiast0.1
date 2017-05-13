@@ -261,7 +261,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                       </div>
                       <div id="favDiv" hidden$="[[!_shared(item.userFavorites)]]">
                         <!-- <paper-button  disabled id="repostButton" on-tap="repostItem">already added to favorites</paper-button> -->
-                        <iron-icon icon="image:favorite" on-tap="repostItem" class="favIcon"></iron-icon>
+                        <iron-icon icon="image:favorite" on-tap="unFavorite" class="favIcon"></iron-icon>
                       </div>
                 </div>
                 </li>
@@ -336,11 +336,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         console.log(event);
         var marker = event.target.marker;
         var item= event.model.item;
-        console.log(item)
-
         var url = this._getShopHref(item);
-        console.log(url)
-
 
         var contentString = '<style> a {color: var(--app-primary-color); display:block;text-decoration: none;} </style> <a href="' + url + '">' + item.shopName + '</a>'
         console.log(contentString);
@@ -446,6 +442,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!offline) {
           this._tryReconnect();
         }
+      },
+
+      unFavorite: function(event) {
+
+        var item = event.model.item
+
+        console.log('/items/' + item.itemid + '/userFavorites/' + this.user.uid);
+
+        firebase.database().ref().child('/items/' + item.itemid + '/userFavorites/' + this.user.uid).remove();
+
+        firebase.database().ref().child('/users/' + this.user.uid + '/favorite/' + item.itemid).remove();
       },
 
       _shared: function(item) {
