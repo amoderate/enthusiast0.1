@@ -129,12 +129,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       --paper-tab-ink: #E57373;
       }
 
-      #repostButton {
+      #favDiv {
         font-weight: bold;
         @apply(--layout-horizontal);
         @apply(--layout-center-justified);
       }
-
 
       @media (max-width: 767px) {
         .hero-image {
@@ -171,14 +170,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       .favIcon {
-        --iron-icon-fill-color: #990000;          
+        --iron-icon-fill-color: #212121;
         text-align: center;
-      }        
+      }
 
-      #favDiv {
-        width: 20%;
-        margin: 0 auto;
-      }      
+
 
     </style>
 
@@ -258,7 +254,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                       <a href$="[[_getItemHref(item)]]"><shop-list-menu item="[[item]]" ></shop-list-menu></a>
                       <div id="favDiv" hidden$="[[_shared(item.userFavorites)]]">
                         <!-- <paper-button  id="repostButton" on-tap="repostItem">add to favorites</paper-button> -->
-                        <iron-icon icon="favorite-border" on-tap="repostItem" class="favIcon"></iron-icon>                        
+                        <iron-icon icon="image:favorite-border" on-tap="repostItem" class="favIcon"></iron-icon>
                       </div>
                       <div id="favDiv" hidden$="[[!_shared(item.userFavorites)]]">
                         <!-- <paper-button  disabled id="repostButton" on-tap="repostItem">already added to favorites</paper-button> -->
