@@ -83,7 +83,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       #content {
         @apply(--layout-horizontal);
         @apply(--layout-center-justified);
-        margin: 0 10px 32px 10px;
+
+      }
+
+      #contentsub {
+        @apply(--layout-horizontal);
+        @apply(--layout-center-justified);
+
 
       }
 
@@ -245,7 +251,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
     <app-header role="navigation" id="header" effects="waterfall" condenses="" reveals="">
-      <div class="layout horizontal center-justified">
+      <div id="content" class="layout horizontal center-justified">
           <paper-tabs  scrollable selected="{{selected}}" no-bar>
               <paper-tab>Images</paper-tab>
               <paper-tab>About</paper-tab>
@@ -267,7 +273,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </div>
       <iron-pages selected="{{selected}}">
         <div>
-          <div class="layout horizontal center-justified">
+          <div id="contentsub" class="layout horizontal center-justified">
             <paper-tabs id="menu" scrollable selected="{{displayTag}}" no-bar attr-for-selected="label">
                 <template is="dom-repeat" items="[[tags]]" as="tag">
                     <paper-tab label="{{tag.tag}}">[[tag.tag]]</paper-tab>
