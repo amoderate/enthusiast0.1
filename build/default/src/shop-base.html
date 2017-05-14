@@ -383,7 +383,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </div>
         </div>
         <div>
-          <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="16 " fit-to-markers="" style="transit-layer">
+          <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="16 " fit-to-markers="">
               <google-map-marker map="[[map]]" latitude="[[lat]]" longitude="[[long]]" title="{{routeData.shop}}" draggable="false"></google-map-marker>
           </google-map>
         </div>
@@ -438,6 +438,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         visible: Boolean,
 
         route: Object,
+
+        items: {
+          type: Object,
+          notify: true
+
+        },
 
         routeData:{
           type: Object,

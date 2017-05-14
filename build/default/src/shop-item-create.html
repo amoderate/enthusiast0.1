@@ -377,6 +377,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </file-input>
           </paper-button>
         </div>
+
       </div>
 
     </div>
@@ -598,45 +599,60 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return item != null;
       },
 
+      loggedIn: function(){
+        if (!firebase.auth().currentUser) {
+          return false
+        } else {
+          return true
+        }
+      },
 
       imageUploadTap: function(e) {
 
+        if (!firebase.auth().currentUser) {
+          this.toast1Text = "You need to be logged in"
+          toast1.open()
+        } else {
+          var file = e.target.files[0];
 
-        var file = e.target.files[0];
+          var storageRef = firebase.storage().ref('image/' + file.name);
 
-        var storageRef = firebase.storage().ref('image/' + file.name);
-
-        var uploadTask = storageRef.put(file);
-        var shopName = this.shopName;
-        toast2.open();
-
-
-        uploadTask.on('state_changed', function progress(snapshot){
-          var precentage = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-
-        },
+          var uploadTask = storageRef.put(file);
+          var shopName = this.shopName;
+          toast2.open();
 
 
-        function error(err){
+          uploadTask.on('state_changed', function progress(snapshot){
+            var precentage = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
 
-        },
-        function (){
+          },
 
-          var newImageKey = firebase.database().ref().child('imageDraft/').push().key;
-          var user = firebase.auth().currentUser;
-          var downloadURL = uploadTask.snapshot.downloadURL;
-          var updates = {};
-          var imageData = {
-            url: downloadURL,
-            user: user.uid,
-            shop: shopName
-          };
 
-          updates['/imageDraft/'+ user.uid + '/' + newImageKey] = imageData;
-          updates['/users/' + user.uid + "/image/" + newImageKey] = imageData;
-          firebase.database().ref().update(updates);
+          function error(err){
 
-        })
+          },
+          function (){
+
+            var newImageKey = firebase.database().ref().child('imageDraft/').push().key;
+            var user = firebase.auth().currentUser;
+            var downloadURL = uploadTask.snapshot.downloadURL;
+            var updates = {};
+            var imageData = {
+              url: downloadURL,
+              user: user.uid,
+              shop: shopName
+            };
+
+            updates['/imageDraft/'+ user.uid + '/' + newImageKey] = imageData;
+            updates['/users/' + user.uid + "/image/" + newImageKey] = imageData;
+            firebase.database().ref().update(updates);
+
+          })
+
+        }
+
+
+
      },
 
 
