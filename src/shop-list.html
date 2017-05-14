@@ -279,8 +279,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div>
         <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="11">
           <template is="dom-repeat" items="{{geo}}">
+            <div>
               <google-map-marker  map="{{map}}" latitude="{{item.lat}}" longitude="{{item.lng}}"  draggable="false"  click-events="true" on-google-map-marker-click="google_map_marker_click">
               </google-map-marker>
+            </div>
           </template>
         </google-map>
       </div>

@@ -17,6 +17,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+
 
 <link rel="import" href="../bower_components/google-map/google-map-directions.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
@@ -79,6 +81,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       google-map {
         height: 600px;
       }
+
+      #toast {
+
+          text-align: center;
+        }
 
       #content {
         @apply(--layout-horizontal);
@@ -241,12 +248,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div>
         <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="11">
           <template is="dom-repeat" items="{{geo}}">
+            <div>
               <google-map-marker map="{{map}}" latitude="{{item.lat}}" longitude="{{item.lng}}" draggable="false" click-events="true" on-google-map-marker-click="google_map_marker_click">
               </google-map-marker>
+            </div>
           </template>
         </google-map>
       </div>
     </iron-pages>
+
+    <paper-toast id="toast" class="fit-bottom" text="[[toastText]]"></paper-toast>
+
 
   </template>
 
@@ -282,9 +294,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           observer: '_offlineChanged'
         },
 
+        toastText: {
+          type: String,
+          notify: true
+
+        },
+
         failure: Boolean
 
       },
+
 
       observers: [
         '_categoryChanged(category, visible)'
@@ -317,42 +336,50 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       repostItem: function(event) {
         var item = event.model.item
+        if (!firebase.auth().currentUser){
 
+          this.toastText = "You need to be logged in"
+          toast.open()
 
-        var user = firebase.auth().currentUser;
+        } else {
 
-        var updates = {};
+          var user = firebase.auth().currentUser;
 
-        var updateItem = {};
+          var updates = {};
 
-        if (user.uid != null) {
+          var updateItem = {};
 
-          var itemFavorites = {
-            user: user.uid
+          if (user.uid != null) {
+
+            var itemFavorites = {
+              user: user.uid
+            };
+
+            updateItem['/items/' + item.itemid + '/userFavorites/' + user.uid + '/'] = itemFavorites;
+            firebase.database().ref().update(updateItem);
+
+            var itemData = {
+              itemLng: item.itemLat,
+              itemLat: item.itemLng,
+              itemName: item.itemName,
+              shopAddres: item.shopAddres,
+              shopId: item.shopId,
+              shopName: item.shopName,
+              shopNameUnique: item.shopNameUnique,
+              shopPhone: item.shopPhone,
+              shopTags: item.shopsTags,
+              theme: item.theme,
+              url: item.url,
+              user: item.user,
+              itemid: item.itemid
+             };
+
+             updates['/users/' + user.uid + '/favorite/' + item.itemid + '/'] = itemData;
+             firebase.database().ref().update(updates);
           };
 
-          updateItem['/items/' + item.itemid + '/userFavorites/' + user.uid + '/'] = itemFavorites;
-          firebase.database().ref().update(updateItem);
+        }
 
-          var itemData = {
-            itemLng: item.itemLat,
-            itemLat: item.itemLng,
-            itemName: item.itemName,
-            shopAddres: item.shopAddres,
-            shopId: item.shopId,
-            shopName: item.shopName,
-            shopNameUnique: item.shopNameUnique,
-            shopPhone: item.shopPhone,
-            shopTags: item.shopsTags,
-            theme: item.theme,
-            url: item.url,
-            user: item.user,
-            itemid: item.itemid
-           };
-
-           updates['/users/' + user.uid + '/favorite/' + item.itemid + '/'] = itemData;
-           firebase.database().ref().update(updates);
-        };
       },
 
 
