@@ -175,7 +175,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           @apply(--layout-center);
           font-family: 'Roboto', 'Noto', sans-serif;
           -webkit-font-smoothing: antialiased;
-          width: 75%;
+          width: 95%;
           text-transform: uppercase;
           margin-bottom: 1px;
         }
@@ -236,7 +236,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div>
           <div id="contentsub" class="layout horizontal center-justified">
             <paper-tabs id="menu" scrollable="" selected="{{displayTag}}" no-bar="" attr-for-selected="label">
-                <template is="dom-repeat" items="[[tags]]" as="tag">
+                <template is="dom-repeat" items="[[tags]]" as="tag" filter="findItems">
                     <paper-tab label="{{tag.tag}}">[[tag.tag]]</paper-tab>
                 </template>
             </paper-tabs>
@@ -254,6 +254,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </template>
               </ul>
             </div>
+
           </iron-pages>
         </div>
         <div>
@@ -382,7 +383,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </div>
         </div>
         <div>
-          <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers="" style="transit-layer">
+          <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="16 " fit-to-markers="" style="transit-layer">
               <google-map-marker map="[[map]]" latitude="[[lat]]" longitude="[[long]]" title="{{routeData.shop}}" draggable="false"></google-map-marker>
           </google-map>
         </div>
@@ -405,7 +406,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
         <div>
             <div id="content">
-             Owner of this shop? [[isShopAdmin]]
+             No official menu has been added yet.
            </div>
            <!-- Owner of this shop? [[isShopAdmin]] -->
           <ul class="grid" hidden$="[[failure]]">
@@ -528,6 +529,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       ],
 
+
+
+
       _shopAdminQueryResultChanged: function(changeRecord) {
         this.isShopAdmin = false;
 
@@ -569,6 +573,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _getListItems: function(items) {
         // Return placeholder items when the items haven't loaded yet.
         return items || [{},{},{},{},{},{},{},{},{},{}];
+      },
+
+      failure: function(){
+
       },
 
       _getItemHref: function(item) {
@@ -635,6 +643,41 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               'You are offline' : 'You are online';
           this._networkSnackbar.open();
         }
+      },
+
+
+      findItems: function(item){
+        if (!item) {
+          // set filter to null to disable filtering
+          return null;
+        } else {
+          var ref = this.items;
+          var exists = false;
+
+          ref.forEach(function(childSnapshot) {
+            var key = childSnapshot.key; // "ada"
+            // Cancel enumeration
+            exists = childSnapshot.shopsTags == item.tag;
+            return true;
+        });
+        return exists;
+        }
+      },
+
+
+      imagesExists: function(){
+        console.log("is it here")
+
+          var ref = this.items;
+          var exists = false;
+          ref.forEach(function(childSnapshot){
+            var key = childSnapshot.key;
+            if (!key) {exists = false} else {exists = true};
+            return true;
+          });
+          console.log(exists)
+          return exists;
+
       },
 
       computeFilterTags: function(string) {

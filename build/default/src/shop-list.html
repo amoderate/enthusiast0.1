@@ -230,7 +230,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                       </div>
                       <div id="favDiv" hidden$="[[!_shared(item.userFavorites)]]">
                         <!-- <paper-button  disabled id="repostButton" on-tap="repostItem">already added to favorites</paper-button> -->
-                        <iron-icon icon="image:favorite" on-tap="repostItem" class="favIcon"></iron-icon>
+                        <iron-icon icon="image:favorite" on-tap="unFavorite" class="favIcon"></iron-icon>
                       </div>
                 </div>
                 </li>
@@ -239,8 +239,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </div>
       </div>
       <div>
-        <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers="" style="transit-layer">
-          <template is="dom-repeat" items="{{geo}}" hidden$="[[failure]]">
+        <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="11">
+          <template is="dom-repeat" items="{{geo}}">
               <google-map-marker map="{{map}}" latitude="{{item.lat}}" longitude="{{item.lng}}" draggable="false" click-events="true" on-google-map-marker-click="google_map_marker_click">
               </google-map-marker>
           </template>
@@ -301,14 +301,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
       google_map_marker_click: function(event, detail, sender){
-        console.log("it was clicked");
-        console.log(event);
+
         var marker = event.target.marker;
         var item= event.model.item;
         var url = this._getShopHref(item);
 
         var contentString = '<style> a {color: var(--app-primary-color); display:block;text-decoration: none;} </style> <a href="' + url + '">' + item.shopName + '</a>'
-        console.log(contentString);
         var infowindow = new google.maps.InfoWindow({
             content: contentString
         });
@@ -319,8 +317,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       repostItem: function(event) {
         var item = event.model.item
-        console.log(item)
-        console.log("was clicked")
+
 
         var user = firebase.auth().currentUser;
 
@@ -411,6 +408,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!offline) {
           this._tryReconnect();
         }
+      },
+
+      unFavorite: function(event) {
+
+        var item = event.model.item
+
+        firebase.database().ref().child('/items/' + item.itemid + '/userFavorites/' + this.user.uid).remove();
+
+        firebase.database().ref().child('/users/' + this.user.uid + '/favorite/' + item.itemid).remove();
       },
 
       _shared: function(item) {

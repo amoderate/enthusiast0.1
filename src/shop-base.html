@@ -177,7 +177,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           @apply(--layout-center);
           font-family: 'Roboto', 'Noto', sans-serif;
           -webkit-font-smoothing: antialiased;
-          width: 75%;
+          width: 95%;
           text-transform: uppercase;
           margin-bottom: 1px;
         }
@@ -281,7 +281,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </paper-tabs>
           </div>
           <iron-pages selected="{{displayTag}}" attr-for-selected="name">
-            <div name = "{{displayTag}}">
+            <div  name = "{{displayTag}}">
               <ul class="grid">
                 <template is="dom-repeat" items="[[items]]" as="item" filter="{{computeFilterTags(displayTag)}}">
                   <li>
@@ -293,6 +293,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </template>
               </ul>
             </div>
+
           </iron-pages>
         </div>
         <div>
@@ -421,7 +422,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </div>
         </div>
         <div>
-          <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="15 " fit-to-markers style="transit-layer">
+          <google-map id="map" map="{{map}}" latitude="35.6895" longitude="139.6917" api-key="AIzaSyA_tK6zo3FBiuiXoXocS_-qLTS0KDyVd5E" zoom="16 " fit-to-markers style="transit-layer">
               <google-map-marker  map="[[map]]" latitude="[[lat]]" longitude="[[long]]" title="{{routeData.shop}}" draggable="false"></google-map-marker>
           </google-map>
         </div>
@@ -444,7 +445,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </div>
         <div>
             <div id="content">
-             Owner of this shop? [[isShopAdmin]]
+             No official menu has been added yet.
            </div>
            <!-- Owner of this shop? [[isShopAdmin]] -->
           <ul class="grid" hidden$="[[failure]]">
@@ -690,14 +691,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           return null;
         } else {
           var ref = this.items;
-          var exists = true;
-
+          var exists = false;
 
           ref.forEach(function(childSnapshot) {
             var key = childSnapshot.key; // "ada"
-
-              console.log(item.tag)
-              console.log(childSnapshot.shopsTags)
             // Cancel enumeration
             exists = childSnapshot.shopsTags == item.tag;
             return true;
@@ -706,8 +703,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
+
+      imagesExists: function(){
+        console.log("is it here")
+
+          var ref = this.items;
+          var exists = false;
+          ref.forEach(function(childSnapshot){
+            var key = childSnapshot.key;
+            if (!key) {exists = false} else {exists = true};
+            return true;
+          });
+          console.log(exists)
+          return exists;
+
+      },
+
       computeFilterTags: function(string) {
-        console.log(string)
       if (!string) {
         // set filter to null to disable filtering
         return null;
