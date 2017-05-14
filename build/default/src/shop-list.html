@@ -421,8 +421,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _shared: function(item) {
         if (item) {
-          currentUser = firebase.auth().currentUser;
-          return currentUser.uid in item;
+          if (!firebase.auth().currentUser) {return false} else {
+            currentUser = firebase.auth().currentUser;
+            return currentUser.uid in item;
+
+          }
+
           }
         }
 
