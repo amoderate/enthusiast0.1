@@ -178,7 +178,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       path="/items"
       data="{{itemList}}"
       order-by-child="/user"
-      equal-to="[[user.uid]]"
+      equal-to="[[uid]]"
       >
     </firebase-query>
 
@@ -291,6 +291,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           notify: true
         },
 
+        selected: {
+           value: 0
+       },
+
 
         shoplist: {
           type: Object,
@@ -301,6 +305,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: String,
           value: "",
           notify: true
+        },
+
+        uid: {
+          type: String,
+          value: "9999",
+          notify: true
+
         },
 
         visible: Boolean,
@@ -318,6 +329,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         failure: Boolean
 
+      },
+
+      listeners: {
+        'iron-select': '_onTabSelect',
+      },
+
+
+      _onTabSelect: function(){
+        var user = firebase.auth().currentUser;
+        if (!user) {
+
+        } else {
+          this.uid = user.uid;
+        }
       },
 
       _getListItems: function(items) {

@@ -286,7 +286,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               </div>
             </template>
           </google-map>
-        </template>         
+        </template>
       </div>
     </iron-pages>
 
@@ -302,6 +302,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       is: 'shop-list',
 
       properties: {
+
+        selected: {
+           value: 0
+       },
 
         category: Object,
 
@@ -339,7 +343,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: Boolean,
           notify: true,
           value: false
-        },           
+        },
 
         failure: Boolean
 
@@ -352,11 +356,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       ],
 
-      listeners: {        
+      listeners: {
         'iron-select': '_onTabSelect',
-      },         
+      },
 
-      _onTabSelect: function(e) {        
+      _onTabSelect: function(e) {
         this.mapActiveFlag = true;
       },
 
