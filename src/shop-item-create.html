@@ -500,7 +500,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         shopName: {
           type: String,
-          notify: true
+          notify: true,
+          observer: '_badStrings'
+
 
         },
         itemName: {
@@ -605,7 +607,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       observers: [
         '_itemChanged(item, visible)',
-        '_shopQueryResultChanged(shops.splices)'
+        '_shopQueryResultChanged(shops.splices)',
+        '_badStrings(shopName)'
 
       ],
 
@@ -642,6 +645,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             });
           });
         }
+      },
+
+
+      _badStrings: function(shopName) {
+          var cleanString = shopName.replace(/[\[\]|&.;$%@"<>()+,]/g, "");
+          console.log(cleanString)
+          this.shopName = cleanString;
       },
 
       _unescapeText: function(text) {
@@ -767,9 +777,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        else {
          var newTagKey = firebase.database().ref().child('imageDraft/').push().key;
          var newItemKey = firebase.database().ref().child('items').push().key;
+         //var cleanString = dirtyString.replace(/[|.&;$%@"<>()+,]/g, "");
 
          var user = firebase.auth().currentUser;
-         var shopNames = this.shopName;
+         var shopNames = this.shopName.replace(/[|.&;$%@"<>()+,]/g, "");
+         console.log(shopNames);
          var blogs = this.blog;
          var shopNameUniques = this.shopNameUnique;
          var shopAddress = this.value;
@@ -929,6 +941,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          };
        }
      },
+
+
 
      computeFilterTags: function(string) {
      if (!string) {
