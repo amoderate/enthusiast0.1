@@ -236,7 +236,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div>
           <div id="contentsub" class="layout horizontal center-justified">
             <paper-tabs id="menu" scrollable="" selected="{{displayTag}}" no-bar="" attr-for-selected="label">
-                <template is="dom-repeat" items="[[tags]]" as="tag" filter="findItems">
+                <template is="dom-repeat" items="[[tags]]" as="tag">
                     <paper-tab label="{{tag.tag}}">[[tag.tag]]</paper-tab>
                 </template>
             </paper-tabs>
