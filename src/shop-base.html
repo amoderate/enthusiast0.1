@@ -275,9 +275,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div>
           <div id="contentsub" class="layout horizontal center-justified">
             <paper-tabs id="menu" scrollable selected="{{displayTag}}" no-bar attr-for-selected="label">
-                <template is="dom-repeat" items="[[tags]]" as="tag" >
-                    <paper-tab label="{{tag.tag}}">[[tag.tag]]</paper-tab>
-                </template>
+              <paper-tab label="all">all</paper-tab>                    
+              <template is="dom-repeat" items="[[tags]]" as="tag" >                                    
+                  <paper-tab label="{{tag.tag}}">[[tag.tag]]</paper-tab>                    
+              </template>
             </paper-tabs>
           </div>
           <iron-pages selected="{{displayTag}}" attr-for-selected="name">
@@ -293,9 +294,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </template>
               </ul>
             </div>
-
           </iron-pages>
         </div>
+
         <div>
           <div id="content" hidden$="[[!isShopAdmin]]">
             <div class="layout-center">
@@ -514,7 +515,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         displayTag: {
           type: String,
-          value: null,
+          value: "all",
           notify: true
         },
 
@@ -649,6 +650,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
 
           this.selected = "0";
+          this.displayTag = "all";
       },
 
 
@@ -726,19 +728,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       },
 
-      computeFilterTags: function(string) {
+      computeFilterTags: function(string) {        
       if (!string) {
         // set filter to null to disable filtering
         return null;
+      } else if (string == "all") {
+        return null
       } else {
         // return a filter function for the current search string
-        string = string.toLowerCase();
+        string = string.toLowerCase();        
         return function(item) {
           var japanese_name = item.shopsTags.toLowerCase();
-          var english_name = item.shopsTags.toLowerCase();
+          var english_name = item.shopsTags.toLowerCase();          
           return (japanese_name.indexOf(string) != -1 ||
               english_name.indexOf(string) != -1);
-
         };
       }
     },
