@@ -258,18 +258,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <div>
           <div class="layout horizontal center-justified">
             <ul class="grid" hidden$="[[failure]]">
-              <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">
+              <template is="dom-repeat" items="{{itemList}}" as="item" hidden$="[[failure]]">              
                 <li>
                   <div>
-                      <a href$="[[_getItemHref(item)]]"><shop-list-menu item="[[item]]" ></shop-list-menu></a>
+                      <a href$="[[_getItemHref(item)]]"><shop-list-menu item="[[item]]" ></shop-list-menu></a>                      
                       <div id="favDiv" hidden$="[[_shared(item.userFavorites)]]">
                         <!-- <paper-button  id="repostButton" on-tap="repostItem">add to favorites</paper-button> -->
                         <iron-icon icon="image:favorite-border" on-tap="repostItem" class="favIcon"></iron-icon>
+                        {{favCount(item.userFavorites)}}
                       </div>
                       <div id="favDiv" hidden$="[[!_shared(item.userFavorites)]]">
                         <!-- <paper-button  disabled id="repostButton" on-tap="repostItem">already added to favorites</paper-button> -->
                         <iron-icon icon="image:favorite" on-tap="unFavorite" class="favIcon"></iron-icon>
-                      </div>
+                        {{favCount(item.userFavorites)}}
+                      </div>                      
                 </div>
                 </li>
               </template>
@@ -370,6 +372,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return items || [{},{},{},{},{},{},{},{},{},{}];
       },
 
+
+      favCount: function(userFavorites) {
+        // console.log(userFavorites);
+
+        if (userFavorites) {
+          // console.log(Object.entries(userFavorites).length);
+          return Object.entries(userFavorites).length;
+        } else { 
+          return null;
+        }
+      },
 
 
       google_map_marker_click: function(event, detail, sender){
